@@ -23,7 +23,8 @@
     }
   }
 </script>
-<style>
+<style scoped>
+/** scoped permette di avere solo lo stile applicato al componente/templates e non globale*/
 .backdrop{
     z-index:2;
     top: 0;
@@ -41,7 +42,7 @@
     border-radius: 1rem;
     overflow: visible;
 }
-.altoDxBtn{
+button{
     position: absolute;
     top: 0;
     right: 0;
@@ -52,5 +53,5 @@
     border: none;
 }
 
-.altoDxBtn:hover{ cursor: pointer }
+button:hover{ cursor: pointer }
 </style>

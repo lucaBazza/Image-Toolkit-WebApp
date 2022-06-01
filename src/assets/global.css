@@ -1,0 +1,6 @@
+*{
+    --var: #000;
+}
+p{
+    font-style: italic;
+}
