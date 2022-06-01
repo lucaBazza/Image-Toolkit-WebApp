@@ -3,8 +3,17 @@
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp"/>
   <input type="text" ref="name">
   <br>
-  <button @click="handleClick">click me</button>
-  <Modal />
+  <button @click.shift="handleClick">click me with shift</button>
+  <div v-if="hearts > 0" class="heartContainer">
+    <span v-for="heart in hearts">❤️</span>
+  </div>
+  
+  <Modal 
+        :header="header" 
+        :text="text"
+        theme="sale"
+        @updateCloseMain='postCloseLoggin'
+  />
 </template>
 
 <script lang="ts">
@@ -18,7 +27,10 @@ export default defineComponent({
   components: { Modal },
   data(){
     return{
-      title: "My first image toolkit app"
+      title: "My first image toolkit app",
+      header: "Sign up for the giveaway!",
+      text: "Grab your ninka swa for half price",
+      hearts: 0
     }
   },
   methods: {
@@ -26,12 +38,11 @@ export default defineComponent({
       console.log(this.$refs.name)
       let refName:any = this.$refs.name
       refName.classList.add('active')
-      refName.focus();
-    }
+      refName.focus()
+      this.hearts++
+    },
+    postCloseLoggin(){ console.log("postCloseLoggin()\t\nazione modal")}
   }
-  //components: {
-  //    HelloWorld,
-  //},
 });
 </script>
 
@@ -63,4 +74,5 @@ h1{
   width: 100%;
   object-fit: cover;
 }
+.heartContainer{ padding: 1rem }
 </style>

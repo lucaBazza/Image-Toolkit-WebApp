@@ -1,8 +1,9 @@
 <template>
     <div v-if="isShowed" class="backdrop">
-        <div class="modal">
+        <div class="modal" :class="{ sale: theme === 'sale'}">
             <button class="altoDxBtn" @click="closeModal">❌</button>
-            <p>modal content</p>
+            <h1>{{header}}</h1>
+            <p>{{text}}</p>
         </div>
     </div>
     <div v-else>
@@ -11,15 +12,15 @@
 </template>
 <script>
   export default {
+    props: [ 'header','text','theme'],
     data(){
-        return{
-            isShowed: false
-        }
+        return{ isShowed: false }
     },
     methods: {
-      closeModal () {
-        this.isShowed = ! this.isShowed;
-      }
+        closeModal () { 
+            this.isShowed = ! this.isShowed
+            this.$emit('updateCloseMain')
+        }
     }
   }
 </script>
@@ -54,4 +55,10 @@ button{
 }
 
 button:hover{ cursor: pointer }
+
+.modal.sale{
+    background: crimson;
+    color: white;
+}
+.modal.sale h1{ color: white }
 </style>
