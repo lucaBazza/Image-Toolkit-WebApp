@@ -1,5 +1,10 @@
 # vue-modal-project
 
+## Note varie
+```console
+    npm install npm-install-missing
+```
+installa dipendenze / packages mancanti
 ## Project setup
 ```
 npm install

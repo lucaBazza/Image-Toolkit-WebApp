@@ -1,7 +1,8 @@
 <template>
-  <h1>{{ title }}</h1>
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp"/>
-  <input type="text" ref="name">
+  <h1>{{ title }}</h1>
+  <br>
+  <input id="registerName" type="text" ref="name" @keyup.enter="registerName">
   <br>
   <button @click.shift="handleClick">click me with shift</button>
   <div v-if="hearts > 0" class="heartContainer">
@@ -18,9 +19,10 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+import { ExifParser } from "exif-parser";
 
 import Modal from './components/Modal.vue'
-//import HelloWorld from "./components/HelloWorld.vue";
+
 
 export default defineComponent({
   name: "App",
@@ -35,13 +37,16 @@ export default defineComponent({
   },
   methods: {
     handleClick(){
-      console.log(this.$refs.name)
       let refName:any = this.$refs.name
       refName.classList.add('active')
       refName.focus()
       this.hearts++
     },
-    postCloseLoggin(){ console.log("postCloseLoggin()\t\nazione modal")}
+    postCloseLoggin(){ console.log("postCloseLoggin()\t\n azione modal")},
+    registerName(){ 
+      const input = this.$refs.name as HTMLInputElement | null;
+      console.log( input != null ? input.value : "Catalog name missing" )
+    }
   }
 });
 </script>

@@ -25,7 +25,8 @@
   }
 </script>
 <style scoped>
-/** scoped permette di avere solo lo stile applicato al componente/templates e non globale*/
+/** scoped permette di avere solo lo stile applicato 
+                al componente/templates e non globale*/
 .backdrop{
     z-index:2;
     top: 0;
