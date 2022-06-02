@@ -15,6 +15,13 @@
         theme="sale"
         @updateCloseMain='postCloseLoggin'
   />
+
+  <upload-media 
+      class="upload-media"
+      server="http://localhost:3000/api/upload"
+      error="@error('media'){{$errMessage}}@enderror">
+  </upload-media>
+
 </template>
 
 <script lang="ts">
@@ -23,16 +30,19 @@ import { ExifParser } from "exif-parser";
 
 import Modal from './components/Modal.vue'
 
+// https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
+import { UploadMedia, UpdateMedia } from 'vue-media-upload';
 
 export default defineComponent({
   name: "App",
-  components: { Modal },
+  components: { Modal, UploadMedia, UpdateMedia },
   data(){
     return{
       title: "My first image toolkit app",
       header: "Sign up for the giveaway!",
       text: "Grab your ninka swa for half price",
-      hearts: 0
+      hearts: 0,
+      errMessage: 'asd'
     }
   },
   methods: {
@@ -80,4 +90,8 @@ h1{
   object-fit: cover;
 }
 .heartContainer{ padding: 1rem }
+.upload-media{
+  height: 100%;
+  margin-top: 40%;
+} 
 </style>

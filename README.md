@@ -1,6 +1,7 @@
 # vue-modal-project
 
 ## Note varie
+Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi da bash
 ```console
     npm install npm-install-missing
 ```
