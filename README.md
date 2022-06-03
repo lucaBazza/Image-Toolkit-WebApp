@@ -6,6 +6,10 @@ Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi da
     npm install npm-install-missing
 ```
 installa dipendenze / packages mancanti
+
+server con hot reload + debug
+
+
 ## Project setup
 ```
 npm install

@@ -2,7 +2,7 @@
  * 
  *  NODE SERVER
  *  
- *      node ./src/server
+ *      node ./src/server  || npm run devserver
  * 
  */
 
@@ -40,8 +40,6 @@ eventEmitter.on('lunch',()=>{
 //eventEmitter.emit('lunch')
 //eventEmitter.emit('lunch')
 
-
-
 const { readFile } = require('fs').promises;
 async function leggiText(path){
     const filetext = await readFile(path,'utf8');
@@ -50,65 +48,8 @@ async function leggiText(path){
 leggiText('./src/server/testDaLeggere.txt');
 
 
-// non esattamente funzionante 
-const api = require('./server/api.js');
-///console.log(api);
-
-
-// ok adesso si fa con express gli url endpoints
-app.get('/foo',(request, response)=>{
-    // request = dati che arrivano dall'utente
-    // response = quello che rispondo
-    //readFile('./src/server/foo.html','utf8',(err, html) => {
-    //    if(err)
-    //        response.status(500).send('Sorry errore interno');
-    //    response.send(html);
-    //})
-    //response.send( await readFile('./src/server/foo.html','utf8') );
-    response.send("ciao");
-});
-
-app.get('/', async (request, response)=>{
-    response.send( await readFile('./src/server/foo.html','utf8') );
-});
-
-
-
-
-// https://javascript.plainenglish.io/upload-images-in-your-node-app-e05d0423fd4a
-const multer = require('multer');
-const folderUploads = './upload/' //'./src/server/';
-
-//images to be stored in uploads
-var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, folderUploads)
-    },
-    filename: function (req, file, cb) {
-        cb(null,Date.now()+file.originalname)
-    }
-})
-const fileFilter=(req, file, cb)=>{
-    //if(file.mimetype ==='image/jpeg' || file.mimetype ==='image/jpg' || file.mimetype ==='image/png') cb(null,true);
-    //else cb(null,false);
-    cb(null, (file.mimetype ==='image/jpeg' || file.mimetype ==='image/jpg' || file.mimetype ==='image/png') );
-}
-var upload = multer({ storage: storage, fileFilter:fileFilter });
-app.post('/api/upload', upload.single('myImg'), async (request, response)=>{
-    console.log("Arrivata POST per: \t api/upload");
-    console.log(reqest);
-    //try{
-    if(request.file){
-        const pathName = request.file.path;
-        response.status(200).send(/*request.file , */pathName);
-    }
-    //}
-    //catch(ex){ console.log(ex) }
-});
-app.get('/api/upload', async (request, response)=>{ response.send( "non accetto get solo POST immagini" ); });
-
-
-
+var zabbaApiModule = require('./server/api.js')
+zabbaApiModule.avviaApi(app);
 
 
 const server_port = 3000 || process.env.PORT;
