@@ -9,6 +9,16 @@ installa dipendenze / packages mancanti
 
 server con hot reload + debug
 
+## Avviare client e server
+client
+```console
+    npm run serve
+```
+
+server
+```console
+    cd server && npm run devserver
+```
 
 ## Project setup
 ```

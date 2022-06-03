@@ -1,5 +1,6 @@
 <template>
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp"/>
+  <button class="darkModeBtn" @click="toggleDarkMode"> 🌓 </button>
   <h1>{{ title }}</h1>
   <br>
   <input id="registerName" type="text" ref="name" @keyup.enter="registerName">
@@ -18,8 +19,8 @@
 
   <upload-media 
       class="upload-media"
-      server="http://localhost:3000/api/upload"
-      error="@error('media'){{$errMessage}}@enderror">
+      server="http://localhost:3000/formidable"
+      error="">
   </upload-media>
 
 </template>
@@ -56,8 +57,19 @@ export default defineComponent({
     registerName(){ 
       const input = this.$refs.name as HTMLInputElement | null;
       console.log( input != null ? input.value : "Catalog name missing" )
+    },
+    toggleDarkMode(){
+      //document.body.classList.contains('darkMode') ? 
+      document.body.classList.toggle('darkMode');
+      console.log("toggleDark mode");
     }
-  }
+  },
+  mounted() {
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log("App launched in dark mode")
+      document.body.classList.toggle('darkMode')
+    });
+}
 });
 </script>
 
@@ -89,9 +101,25 @@ h1{
   width: 100%;
   object-fit: cover;
 }
+/*.darkMode > .headerImg{ filter:invert(0.5) } */
 .heartContainer{ padding: 1rem }
 .upload-media{
   height: 100%;
   margin-top: 40%;
-} 
+  background: var(--backgroundColor);
+}
+.darkModeBtn{
+  border: none;
+  background: transparent;
+  position: absolute;
+  top: 0.2rem;
+  right: 3.5rem;
+  font-size: 1.7rem;
+  cursor: grab;
+}
+/*.darkMode > .darkModeBtn::before{ content: 'asdf' } */
+.darkMode{
+    --backgroundColor: #111;
+    --mainText: #fff;
+}
 </style>

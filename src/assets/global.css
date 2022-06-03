@@ -1,6 +1,14 @@
 *{
     --var: #000;
+    --backgroundColor: #fff;
+    --mainText: #000;
 }
 p{
     font-style: italic;
+
+}
+
+body{
+    background-color: var(--backgroundColor);
+    color: var(--mainText);
 }
