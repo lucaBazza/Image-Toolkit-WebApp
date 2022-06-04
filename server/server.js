@@ -6,6 +6,13 @@
  * 
  */
 
+
+/*      ROADMAP
+    - fare la funzione che genera gli exif e li allega alle foto
+    - fare api che invia le foto con gli exif
+    - fare api che dato un'id foto ne cambia una proprieta
+*/
+
 console.log(".\n\n.\n\n.\t\t 👑 Server Zabba NodeJS 👑 \n\n.\n\n.")
 console.log("\t\t 👨 processo node: " + process.env.USER +"\n")
 

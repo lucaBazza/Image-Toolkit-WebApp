@@ -1,8 +1,8 @@
 <template>
     <div class="mainViewer">
-        <img :src="imageSrc"/>
+        <img :src="imageSrc" :class="class" :id="'img_'+id" :alt="imageName"/>
         <span>
-            Exif datas <button @click="reqEdit">🖊️</button>  {{imageName}}
+            Exif datas <button @click="reqEdit">🖊️</button>  {{imageTitle}}
             <li v-for="ex in exifDatas">
                     <b>{{ex.label}}</b> {{ex.val}}
             </li>
@@ -16,7 +16,10 @@
     props: {
         imageSrc: {},
         imageName: {},
-        exifDatas: {}
+        imageTitle: {},
+        exifDatas: {},
+        class: {},
+        id: {}
         /*label: {required: true, type: String},
         done: {default: false, type: Boolean},
         id: {required: true, type: String}*/
@@ -89,6 +92,12 @@
 .mainViewer > span > li{
     list-style-type: none;
     text-align: left;
+}
+
+.loading{
+    mix-blend-mode: multiply;
+    mask-image: linear-gradient(black, transparent);
+    mask-mode: luminance;
 }
 
 @keyframes gradient {

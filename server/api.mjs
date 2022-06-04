@@ -1,43 +1,30 @@
-//module.export = {
-//    science: '🍥' 
-//}
-//const { readFile } = require('fs').promises;
-
-
+/***    
+ *          API FUNCTIONS 
+ *              express gestisce gli url endpoints
+ * 
+ */
 import { readFile } from 'fs';                      // Read Write files
 import { stat } from 'fs/promises';                 // Check file exist
-import formidable from 'formidable';
+import formidable from 'formidable';                // Formattazione POST del media uploader
+import path from 'path';                            // Ottenere directory assoluta
+import {fileURLToPath} from 'url';                  // Ottenere directory assoluta
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);     // Define "require"
 
 var fs = require('fs');                             // Move files
 
+const currentCatalogUser = 'Luca';
+
+const __filename = fileURLToPath(import.meta.url);  
+const __dirname = path.dirname(__filename);         // Definisco variabile per exist()
+//console.log('directory-name 👉️', __dirname);
+
 
 export function zabbaApiModule(app){
 
-/**
- *  adesso si fa con express gli url endpoints
-*           request = dati che arrivano dall'utente
-*           response = quello che rispondo
-*/
     app.get('/', async (request, response)=>{
         const htmlfilePath = 'paginaHome.html';
-
-        /*
-                /// listo i file nella cartella del server Current Working Directory
-        scannerizzaCWD();
-        
-                /// controllo file esiste
-        controllaFileExist(htmlfilePath);
-
-                /// invio file sincrono
-        fs.readFile(htmlfilePath, 'utf8', (err, data) => {
-            if (err) { console.error(err); return; }
-            response.send( data );
-        });
-        */        
-
                 /// invio file asincrono
         response.send( await fs.promises.readFile(htmlfilePath, { encoding: 'utf8' }) );  //response.send( await readFile(htmlfilePath) ); // readFile(htmlfilePath,'utf8')
         console.log(`Request page ${htmlfilePath} \t from ${request.rawHeaders[1]}`);
@@ -45,7 +32,7 @@ export function zabbaApiModule(app){
 
 
 /**
- * 
+ *  FORMIDABLE FOR IMAGE UPLOAD CACHE
 */
     const folderUploads = './upload/';
     app.post('/formidable', async (req, res)=>{
@@ -86,7 +73,165 @@ export function zabbaApiModule(app){
         }
     });
 
+/**
+ *          ottiene lista immagini per utente
+*/
+app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
+    if( ! req.body.utente )
+        return res.send({errore: 'Utente mancante'});
     
+    if( ! (req.body.utente === currentCatalogUser) )
+        return res.send({errore: 'Utente non valido'});
+
+    // ottengo la lista delle immagini e i loro exifs
+    var globby = require('globby');
+    const imagePaths = await globby("./upload/*.jpg");
+
+    // invio la lista più le informazioni del catalogo
+    res.send({ 
+        catalogName: `Carico catalogo di ${req.body.utente}`,
+        numeroImmagini: imagePaths.length,
+        immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}] )
+        /*[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileB', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileC', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileD', exifDatas: ottieniExif('img') }
+        ]*/
+    });
+    console.log(`Carico catalogo di ${req.body.utente} \n`);
+});
+
+/**
+ *          invio per l'utente selezionato la foto che ha richiesto
+ *              parametri richiesti:    utente, richiestaImg
+*/
+app.post('/image', async (req, res)=>{
+
+    if( ! req.body.utente )
+        return res.send({errore: 'Utente mancante'});
+    if( ! (req.body.utente === currentCatalogUser) )
+        return res.send({errore: 'Utente non valido'});
+    if( ! req.body.richiestaImg )
+        return res.send({errore: 'Manca richiesta immagine'});
+
+    
+    //res.sendFile(req.body.richiestaImg);
+    
+    //const file = req.body.richiestaImg;
+    /*
+    await stat(file)
+        .then( ()  => { 
+            console.log(`${file} exist`);        
+            res.sendFile(file); 
+        })
+        .catch( () => { 
+            console.log(`${file} not exist`);    
+            //res.send({errore: `${file} non trovato`});
+            //scannerizzaCWD();
+        });
+    */
+    
+    //let hdrs = {    
+    //    'X-Custom-Header': '123',
+    //    'Content-Type': 'image/png',
+    //    'bodyUsed': true
+    //};
+
+    //var filename = 'DSC01448_ps.jpg';
+    var filename = req.body.richiestaImg.substring(req.body.richiestaImg.lastIndexOf('/')+1);
+    const file = __dirname + "/upload/" + filename;
+    //console.log(file);
+    fs.access(file, fs.F_OK, (err) => {
+        if (err) { console.error(err); return; }
+
+        //res.writeHead(200, {'Content-Type': 'image/png'})
+        //res.sendFile(file, { root: __dirname });
+        res.sendFile(file);  
+        //res.sendFile(file, {headers: hdrs, root: __dirname });
+        console.log(`Image sended 📤 ${file} `);
+    })
+});
+
+
+app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
+    if( ! req.body.utente )
+        return res.send({errore: 'Utente mancante'});
+    
+    if( ! (req.body.utente === currentCatalogUser) )
+        return res.send({errore: 'Utente non valido'});
+
+    // ottengo la lista delle immagini e i loro exifs
+    var globby = require('globby');
+    const imagePaths = await globby("./upload/*.jpg");
+
+    // invio la lista più le informazioni del catalogo
+    res.send({ 
+        catalogName: `Carico catalogo di ${req.body.utente}`,
+        numeroImmagini: imagePaths.length,
+        immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}] )
+        /*[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileB', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileC', exifDatas: ottieniExif('img') },
+            { imgFile: 'imgFileD', exifDatas: ottieniExif('img') }
+        ]*/
+    });
+    console.log(`Carico catalogo di ${req.body.utente} \n`);
+});
+
+/**
+ *         GET IMAGE with params
+*/
+app.get('/image', async (req, res)=>{
+    if( ! req.query.utente )
+        return res.send({errore: 'Utente mancante'});
+    if( ! (req.query.utente === currentCatalogUser) )
+        return res.send({errore: 'Utente non valido'});
+    if( ! req.query.richiestaImg )
+        return res.send({errore: 'Manca richiesta immagine'});
+
+    //var filename = 'DSC01448_ps.jpg';
+    var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
+    const file = __dirname + "/upload/" + filename;
+    fs.access(file, fs.F_OK, (err) => {
+        if (err) { console.error(err); return; }
+        res.sendFile(file);
+        console.log(`Image GET sended 📤 ${file} `);
+    })
+});
+
+
+}   // END OF MODULE
+
+
+function scannerizzaCWD(){
+    /// listo i file nella cartella del server
+    fs.promises.readdir(process.cwd())
+    .then(filenames => { for (let filename of filenames) console.log(filename) })   // If promise resolved and datas are fetched
+    .catch(err => {  console.log(err) })                                            // If promise is rejected
+}
+
+function controllaFileExist(file){
+    /*await*/ stat(file)
+        .then(()  => { console.log(`${file} exist`);        return true; } )         // response.send(readFile(file,'utf8') )
+        .catch(() => { console.log(`${file} not exist`);    return false; } );    // response.send(`${file} not exist`)
+}
+
+function ottieniExif(img){
+    return [
+            { label:'ImageWidth', val: '4072' }, 
+            { label:'ImageHeight', val: '6108' },
+            { label:'Software', val: 'Adobe Photoshop 22.1 (Macintosh)' },
+            { label:'ModifyDate', val: '2021:05:24 16:07:10' },
+            { label:'Copyright', val: 'zabba.lucabazzanella.com' },
+            { label:'Aspect ratio', val: '4/5' },
+            { label:'gps', val: "/"},
+            { label:'classificazione', val: "⭐⭐⭐"},
+            { label:'note', val: "..."}
+    ]
+}
+
+
+
     // https://javascript.plainenglish.io/upload-images-in-your-node-app-e05d0423fd4a
     /*const multer = require('multer');
     const folderUploads = './upload/';
@@ -119,18 +264,7 @@ export function zabbaApiModule(app){
     app.get('/api/upload', async (request, response)=>{ console.log("No file"); response.send( "non accetto get solo POST immagini" ); });
     */
 
-
-}
-
-function scannerizzaCWD(){
-    /// listo i file nella cartella del server
-    fs.promises.readdir(process.cwd())
-    .then(filenames => { for (let filename of filenames) console.log(filename) })   // If promise resolved and datas are fetched
-    .catch(err => {  console.log(err) })                                            // If promise is rejected
-}
-
-function controllaFileExist(file){
-    /*await*/ stat(file)
-        .then(()  => console.log(`${file} exist`) )         // response.send(readFile(file,'utf8') )
-        .catch(() => console.log(`${file} not exist`) );    // response.send(`${file} not exist`)
-}
+//module.export = {
+//    science: '🍥' 
+//}
+//const { readFile } = require('fs').promises;
