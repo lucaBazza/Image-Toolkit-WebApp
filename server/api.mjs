@@ -3,8 +3,7 @@
 //}
 //const { readFile } = require('fs').promises;
 
-//const formidable = require('formidable');
-//import {IncomingForm} from "formidable";
+
 import { readFile } from 'fs';                      // Read Write files
 import { stat } from 'fs/promises';                 // Check file exist
 import formidable from 'formidable';
@@ -14,27 +13,40 @@ const require = createRequire(import.meta.url);     // Define "require"
 
 var fs = require('fs');                             // Move files
 
-//var formidable = require('formidable').promises;
-/*,     http = require('http'),
-        util = require('util');
-*/
-export function zabbaApiModule(app){
-//exports.zabbaApiModule = function(app) {
 
-    /// adesso si fa con express gli url endpoints
+export function zabbaApiModule(app){
+
+/**
+ *  adesso si fa con express gli url endpoints
+*           request = dati che arrivano dall'utente
+*           response = quello che rispondo
+*/
     app.get('/', async (request, response)=>{
-        // request = dati che arrivano dall'utente
-        // response = quello che rispondo
-        const htmlFilePath = './foo.html';
-        await stat(htmlFilePath)
-            .then(() => response.send(readFile(htmlFilePath,'utf8') ) )
-            .catch(() => response.send(`${htmlFilePath} not exist`) );
-        //response.send( await readFile('foo.html'/*,'utf8'*/) );
+        const htmlfilePath = 'paginaHome.html';
+
+        /*
+                /// listo i file nella cartella del server Current Working Directory
+        scannerizzaCWD();
+        
+                /// controllo file esiste
+        controllaFileExist(htmlfilePath);
+
+                /// invio file sincrono
+        fs.readFile(htmlfilePath, 'utf8', (err, data) => {
+            if (err) { console.error(err); return; }
+            response.send( data );
+        });
+        */        
+
+                /// invio file asincrono
+        response.send( await fs.promises.readFile(htmlfilePath, { encoding: 'utf8' }) );  //response.send( await readFile(htmlfilePath) ); // readFile(htmlfilePath,'utf8')
+        console.log(`Request page ${htmlfilePath} \t from ${request.rawHeaders[1]}`);
     });
 
 
-
-
+/**
+ * 
+*/
     const folderUploads = './upload/';
     app.post('/formidable', async (req, res)=>{
         var form = new formidable.IncomingForm();
@@ -47,6 +59,33 @@ export function zabbaApiModule(app){
             res.send('File uploaded'); //res.write('File uploaded'); //res.end();
         });
     });
+
+
+/**
+ *          EXIFS
+*/
+    app.get('/exifs', async (req, res)=>{
+        var ExifImage = require('exif').ExifImage;
+        
+        const srcImage = './upload/' + 'DSC06211_ps.jpg';
+        await stat(srcImage)
+            //.then(()  => res.send(`${srcImage} exist`) )
+            .catch(() => res.send(`${srcImage} not exist`) )
+
+        try {
+            new ExifImage({ image : srcImage }, function (error, exifData) {
+                if (error)
+                    console.log('Error: '+error.message);
+                else{
+                    console.log(exifData);
+                    res.send(exifData);
+                }
+            });
+        } catch (error) {
+            console.log('Error: ' + error.message);
+        }
+    });
+
     
     // https://javascript.plainenglish.io/upload-images-in-your-node-app-e05d0423fd4a
     /*const multer = require('multer');
@@ -79,4 +118,19 @@ export function zabbaApiModule(app){
     
     app.get('/api/upload', async (request, response)=>{ console.log("No file"); response.send( "non accetto get solo POST immagini" ); });
     */
+
+
+}
+
+function scannerizzaCWD(){
+    /// listo i file nella cartella del server
+    fs.promises.readdir(process.cwd())
+    .then(filenames => { for (let filename of filenames) console.log(filename) })   // If promise resolved and datas are fetched
+    .catch(err => {  console.log(err) })                                            // If promise is rejected
+}
+
+function controllaFileExist(file){
+    /*await*/ stat(file)
+        .then(()  => console.log(`${file} exist`) )         // response.send(readFile(file,'utf8') )
+        .catch(() => console.log(`${file} not exist`) );    // response.send(`${file} not exist`)
 }

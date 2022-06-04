@@ -23,6 +23,7 @@
       error="">
   </upload-media>
 
+  <ImageExifViewer />
 </template>
 
 <script lang="ts">
@@ -30,13 +31,14 @@ import { defineComponent } from "vue";
 import { ExifParser } from "exif-parser";
 
 import Modal from './components/Modal.vue'
+import ImageExifViewer from './components/ImageExifViewer.vue'
 
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from 'vue-media-upload';
 
 export default defineComponent({
   name: "App",
-  components: { Modal, UploadMedia, UpdateMedia },
+  components: { Modal, ImageExifViewer, UploadMedia /*, UpdateMedia*/ },
   data(){
     return{
       title: "My first image toolkit app",
@@ -59,9 +61,8 @@ export default defineComponent({
       console.log( input != null ? input.value : "Catalog name missing" )
     },
     toggleDarkMode(){
-      //document.body.classList.contains('darkMode') ? 
-      document.body.classList.toggle('darkMode');
-      console.log("toggleDark mode");
+      document.body.classList.toggle('darkMode')
+      console.log("toggleDark mode")
     }
   },
   mounted() {
@@ -100,12 +101,13 @@ h1{
   height: 30vh;
   width: 100%;
   object-fit: cover;
+  /*mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 80%, transparent 100%);*/
 }
 /*.darkMode > .headerImg{ filter:invert(0.5) } */
 .heartContainer{ padding: 1rem }
 .upload-media{
   height: 100%;
-  margin-top: 40%;
+  margin-top: 20%;
   background: var(--backgroundColor);
 }
 .darkModeBtn{

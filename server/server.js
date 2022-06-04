@@ -12,7 +12,6 @@ console.log("\t\t 👨 processo node: " + process.env.USER +"\n")
 // Define "require"
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-//const path = require('path');
 
 const cors = require('cors')                // Cross-Origin Resource Sharing(CORS) configure Express to combine headers specifying that your Rest API accepts requests from any source. 
 const bodyParser = require('body-parser')   // convert the base of incoming applications into JavaScript objects
@@ -30,10 +29,9 @@ process.on('exit', function(){
 })
 
 
-//var zabbaApiModule = require('./api.mjs')
-//zabbaApiModule.avviaApi(app);
 import {zabbaApiModule} from './api.mjs';
 zabbaApiModule(app);
+
 
 const server_port = 3000 || process.env.PORT;
 app.listen( server_port, ()=> console.log(`\tHost in ascolto, raggiungibile a http://localhost:${server_port} \n\n`))
