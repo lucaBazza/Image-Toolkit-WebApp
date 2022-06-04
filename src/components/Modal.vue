@@ -58,7 +58,7 @@ button{
 button:hover{ cursor: pointer }
 
 .modal.sale{
-    background: crimson;
+    background: #222;
     color: white;
 }
 .modal.sale h1{ color: white }

@@ -1,33 +1,30 @@
 <template>
     <div class="mainViewer">
-        <img src="../../server/upload/DSC06216_ps2_4x5.jpg"/>
+        <img :src="imageSrc"/>
         <span>
-            Exif datas 🖊️
-            <li v-for="ex in exifs">
+            Exif datas <button @click="reqEdit">🖊️</button>  {{imageName}}
+            <li v-for="ex in exifDatas">
                     <b>{{ex.label}}</b> {{ex.val}}
             </li>
         </span>
     </div>
 </template>
 <script>
+// https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
   export default {
-    props: [ 'imageName','ss','dd'],
+    //props: [ 'imageName','imageSrc','exifDatas'],
+    props: {
+        imageSrc: {},
+        imageName: {},
+        exifDatas: {}
+        /*label: {required: true, type: String},
+        done: {default: false, type: Boolean},
+        id: {required: true, type: String}*/
+    },
     data(){
         return{ 
             isShowed: false,
-            isEditing: false,
-            // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
-            exifs: [
-                { label:'ImageWidth', val: '4072' }, 
-                { label:'ImageHeight', val: '6108' },
-                { label:'Software', val: 'Adobe Photoshop 22.1 (Macintosh)' },
-                { label:'ModifyDate', val: '2021:05:24 16:07:10' },
-                { label:'Copyright', val: 'zabba.lucabazzanella.com' },
-                { label:'Aspect ratio', val: '4/5' },
-                { label:'gps', val: "/"},
-                { label:'classificazione', val: "⭐⭐⭐"},
-                { label:'note', val: "..."}
-            ]
+            isEditing: false
         }
     },
     methods: {
@@ -52,6 +49,9 @@
                     upper = mediant;
                 }
             }
+        },
+        reqEdit(){
+            console.log('reqEdit()');
         }
     }
   }
@@ -77,8 +77,9 @@
     object-fit: cover;
     /*width: ;
     /*height: 80%; */
-
 }
+
+.mainViewer > span > button{ background: transparent; border: none; cursor: crosshair;}
 
 .mainViewer > span{
     flex: 50%;
@@ -95,6 +96,14 @@
 	50% { background-position: 100% 50% }
 	100% { background-position: 0% 50% }
 }
-
+@media screen and (max-width: 650px){
+    .mainViewer > img{ width: 92%; }
+    .mainViewer > span{  width: 80%; }
+    .mainViewer > span > li{  margin-left: 2rem }
+    .mainViewer{ 
+        display: block;
+        height: auto;    
+    }
+}
 
 </style>
