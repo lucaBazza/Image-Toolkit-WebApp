@@ -18,7 +18,7 @@ const currentCatalogUser = 'Luca';
 
 const __filename = fileURLToPath(import.meta.url);  
 const __dirname = path.dirname(__filename);         // Definisco variabile per exist()
-//console.log('directory-name 👉️', __dirname);
+//console.log('directory-name 👉️', __dirname); 
 
 
 export function zabbaApiModule(app){
@@ -74,34 +74,6 @@ export function zabbaApiModule(app){
     });
 
 /**
- *          ottiene lista immagini per utente
-*/
-app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
-    if( ! req.body.utente )
-        return res.send({errore: 'Utente mancante'});
-    
-    if( ! (req.body.utente === currentCatalogUser) )
-        return res.send({errore: 'Utente non valido'});
-
-    // ottengo la lista delle immagini e i loro exifs
-    var globby = require('globby');
-    const imagePaths = await globby("./upload/*.jpg");
-
-    // invio la lista più le informazioni del catalogo
-    res.send({ 
-        catalogName: `Carico catalogo di ${req.body.utente}`,
-        numeroImmagini: imagePaths.length,
-        immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}] )
-        /*[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
-            { imgFile: 'imgFileB', exifDatas: ottieniExif('img') },
-            { imgFile: 'imgFileC', exifDatas: ottieniExif('img') },
-            { imgFile: 'imgFileD', exifDatas: ottieniExif('img') }
-        ]*/
-    });
-    console.log(`Carico catalogo di ${req.body.utente} \n`);
-});
-
-/**
  *          invio per l'utente selezionato la foto che ha richiesto
  *              parametri richiesti:    utente, richiestaImg
 */
@@ -142,7 +114,7 @@ app.post('/image', async (req, res)=>{
     const file = __dirname + "/upload/" + filename;
     //console.log(file);
     fs.access(file, fs.F_OK, (err) => {
-        if (err) { console.error(err); return; }
+        if (err) { console.log(`File not found ${file}`); /*console.error(err);*/ return res.status(404); }
 
         //res.writeHead(200, {'Content-Type': 'image/png'})
         //res.sendFile(file, { root: __dirname });
@@ -152,7 +124,12 @@ app.post('/image', async (req, res)=>{
     })
 });
 
-
+/**
+ *  invia il catalogo al frontend
+ *      - check validità
+ *      - lista tutte le immagini
+ *      - invia nomecatalogo, utente, secretkey, lista immagini[{src, exifs}]
+ */
 app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
     if( ! req.body.utente )
         return res.send({errore: 'Utente mancante'});
@@ -160,22 +137,40 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
     if( ! (req.body.utente === currentCatalogUser) )
         return res.send({errore: 'Utente non valido'});
 
-    // ottengo la lista delle immagini e i loro exifs
+    // ottengo la lista delle immagini e i loro exifs, TODO caricare nome catalogo smart
     var globby = require('globby');
     const imagePaths = await globby("./upload/*.jpg");
+    const catalogName = `Album impressioni di settembre`;
 
     // invio la lista più le informazioni del catalogo
     res.send({ 
-        catalogName: `Carico catalogo di ${req.body.utente}`,
-        numeroImmagini: imagePaths.length,
-        immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}] )
+        catalogName: catalogName,
+        catalogOwner: req.body.utente,
+        secretKey: new Date(),
+        //cacheNumeroImmagini: imagePaths.length,
+
+        // Formato delle immagini
+        // { name, src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
+        immagini: imagePaths.map( (i,index) => [{
+            id: index,
+            src: i, // "./upload/DSC06211_ps.jpg"
+            src: `http://localhost:3000/image?utente=${req.body.utente}&richiestaImg=${i}`, // INVIO DIRETTAMENTE L'url magikko
+            //name: `nomefile ${i} ${index}`, 
+            name: i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
+            title: `titolo ${i.substring(i.lastIndexOf('/')+1)} `,
+            exifDatas: ottieniExif(i),
+            class: 'immagineCatalogo',
+            done: false
+        }][0])
+        
+        //immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}][0] )
         /*[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
             { imgFile: 'imgFileB', exifDatas: ottieniExif('img') },
             { imgFile: 'imgFileC', exifDatas: ottieniExif('img') },
             { imgFile: 'imgFileD', exifDatas: ottieniExif('img') }
         ]*/
     });
-    console.log(`Carico catalogo di ${req.body.utente} \n`);
+    console.log(`Invio a utente ${req.body.utente} catalogo ${catalogName}  | tot ${imagePaths.length} \n`);
 });
 
 /**
@@ -193,7 +188,8 @@ app.get('/image', async (req, res)=>{
     var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
     const file = __dirname + "/upload/" + filename;
     fs.access(file, fs.F_OK, (err) => {
-        if (err) { console.error(err); return; }
+        //if (err) { console.error(err); return; }
+        if (err) { console.log(`File not found ${file} \n ${req.query.richiestaImg}`); /*console.error(err);*/ return res.status(404); }
         res.sendFile(file);
         console.log(`Image GET sended 📤 ${file} `);
     })
@@ -217,9 +213,11 @@ function controllaFileExist(file){
 }
 
 function ottieniExif(img){
+    var sizeOf = require('image-size');
+    var dimensions = sizeOf(img);
     return [
-            { label:'ImageWidth', val: '4072' }, 
-            { label:'ImageHeight', val: '6108' },
+            { label:'ImageWidth', val: dimensions.width }, 
+            { label:'ImageHeight', val: dimensions.height },
             { label:'Software', val: 'Adobe Photoshop 22.1 (Macintosh)' },
             { label:'ModifyDate', val: '2021:05:24 16:07:10' },
             { label:'Copyright', val: 'zabba.lucabazzanella.com' },
@@ -268,3 +266,36 @@ function ottieniExif(img){
 //    science: '🍥' 
 //}
 //const { readFile } = require('fs').promises;
+
+
+
+
+/**
+ *          ottiene lista immagini per utente
+*/
+/*
+app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
+    if( ! req.body.utente )
+        return res.send({errore: 'Utente mancante'});
+    
+    if( ! (req.body.utente === currentCatalogUser) )
+        return res.send({errore: 'Utente non valido'});
+
+    // ottengo la lista delle immagini e i loro exifs
+    var globby = require('globby');
+    const imagePaths = await globby("./upload/*.jpg");
+
+    // invio la lista più le informazioni del catalogo
+    res.send({ 
+        catalogName: `Carico catalogo di ${req.body.utente}`,
+        numeroImmagini: imagePaths.length,
+        immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}] )
+        //[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
+        //    { imgFile: 'imgFileB', exifDatas: ottieniExif('img') },
+        //    { imgFile: 'imgFileC', exifDatas: ottieniExif('img') },
+        //    { imgFile: 'imgFileD', exifDatas: ottieniExif('img') }
+        //]
+    });
+    console.log(`Carico catalogo di ${req.body.utente} \n`);
+});
+*/

@@ -1,5 +1,5 @@
 *{
-    --var: #000;
+    --varExample: #000;
     --backgroundColor: #fff;
     --mainText: #000;
 }
@@ -7,8 +7,13 @@ p{
     font-style: italic;
 
 }
-
 body{
     background-color: var(--backgroundColor);
     color: var(--mainText);
 }
+
+.darkMode{
+    --backgroundColor: #111;
+    --mainText: #fff;
+}
+/*.darkMode > .darkModeBtn::before{ content: 'asdf' } */

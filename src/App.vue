@@ -1,9 +1,10 @@
 <template>
-  <p class="catalogOwner" @click="openUserSettings">👤 {{catalogOwner}}</p>
+  <p class="catalogOwner" @click="openUserSettings">👤 {{initialCatalog.catalogOwner}}</p>
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
   <div class="controlBtns">
     <button @click="toggleDarkModeBtn"  > 🌓 </button>
     <button @click="toggleUploadMode"> ☁️ </button>
+    <button @click="toggleCatalogMode"> 📚 </button>
   </div>
   <h1>{{ title }}</h1>
 
@@ -30,31 +31,33 @@
       v-bind:class="{ 'upload-media': ''}"
   />
 
-  <li v-for="img in imagesLoaded" :key="img.id">
-    <ImageExifViewer
-      :imageName="img.name"
-      :imageTitle="img.title"
-      :imageSrc="img.src"
-      :exifDatas="img.datas"
-      :class="img.class"
-      :id="img.id"
-    />
-  </li>
+  <Catalogo
+    v-if="showCatalogo"
+    bind="initialCatalog"
+
+    :catalogName="initialCatalog.catalogName"
+    :listaImmagini="initialCatalog.listaImmagini"
+    :catalogOwner="initialCatalog.catalogOwner"
+    :secretKey="initialCatalog.secretKey"
+    :class="initialCatalog.class"
+
+    ___urlServerImage="___urlServerImage"
+  />
 
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from "vue";  // QUESTO E' IL MAIN APP
 import Modal from './components/Modal.vue'
-import ImageExifViewer from './components/ImageExifViewer.vue'
+import Catalogo from './components/Catalogo.vue'
+//import ImageExifViewer from './components/ImageExifViewer.vue'
 
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from 'vue-media-upload';
 
-const urlServerImage = 'localhost:3000';
+import EventEmitter from 'events'
+const eventEmitter = new EventEmitter()
 
-const { EventEmitter } = require('events');
-const eventEmitter = new EventEmitter();
 eventEmitter.on('toggleDarkMode',()=>{
     console.log("toggleDark mode 🍔")
     document.body.classList.toggle('darkMode')
@@ -63,9 +66,11 @@ eventEmitter.on('toggleDarkMode',()=>{
     document.getElementsByClassName('headerImg')[0].setAttribute('src',reqSrc);
 })
 
-eventEmitter.on('asyncFetchServer',()=>{
-    requestCatalogForUser(`http://${urlServerImage}/imagelist`,'Luca');
-})
+//const urlServerImage = 'localhost:3000';
+//console.log(urlServerImage) 
+//eventEmitter.on('asyncFetchServer',()=>{
+//    requestCatalogForUser(`http://${urlServerImage}/imagelist`,'Luca');
+//})
 
 // POST request using fetch with async/await
 async function requestCatalogForUser(url, _catalogOwner) {
@@ -81,9 +86,9 @@ async function requestCatalogForUser(url, _catalogOwner) {
   //aggiornaMetasCatalogo(data);
   //this.aggiornaMetasCatalogo(data);
 
-  data.immagini.forEach(img => {
+  data.immagini.forEach((img,index) => {
       console.log(" - Immagine: " + img[0].imgFile);
-      requestImageForUser(`http://${urlServerImage}/image`, img[0].imgFile, _catalogOwner );
+      requestImageForUser(`http://${url}/image`, img[0].imgFile, _catalogOwner, index );
   });
   
 }
@@ -93,7 +98,7 @@ async function requestCatalogForUser(url, _catalogOwner) {
  *  - se presente nel catalogo la aggiorna
  *  - se serve aggiorna visualizzazione
  */
-async function requestImageForUser(urlServer, img, _catalogOwner) {
+async function requestImageForUser(urlServer, img, _catalogOwner, index) {
     //const requestOptions = {
     //  method: "POST",
     //  headers: { "Content-Type": "application/json" },
@@ -104,33 +109,39 @@ async function requestImageForUser(urlServer, img, _catalogOwner) {
     console.log(`\t requestImageForUser() ${_catalogOwner} - ${img}`)
     
     // non selezionare l'immagine dall'id, ma dall'attributo ALT
-    let el :  HTMLImageElement = (document.getElementById('img_0') as HTMLImageElement);
-    el.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
+    let el_id = `img_${index}`;
+    let el :  HTMLImageElement = (document.getElementById(el_id) as HTMLImageElement);
+    if(el && el.src){
+      el.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
+      el.classList.remove('loading');
+    }
+    else console.log(`Element ${el_id} missing in DOM`);
 
 
     //[...document.getElementsByTagName('img')].forEach(imgEl => {
     //  if( imgEl.getAttribute('alt') === img )
     //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
-    //});
-
-    
-    el.classList.remove('loading');
+    //});   
 }
 
 export default defineComponent({
   name: "App",
-  components: { Modal, ImageExifViewer, UploadMedia /*, UpdateMedia*/ },
+  components: { Modal, Catalogo, UploadMedia },
+  created: function(){ document.title = "Zabba image 🛠️ " },
   data(){
     return{
       title: "Image Toolkit App",
       header: "Manage easly your images",
       text: "Create a catalog, upload your photos and edit them",
-      catalogOwner: 'Luca',
       hearts: 0,
       errMessage: 'asd',
       showUploadMode: false,
-      postId: -1,
-      imagesLoaded: this.getImagesFromServer() // ritorna [{name, src ..}..]
+      showCatalogo: true,
+      // restituisce un catalogo faked mentre carica async
+      // TODO: check local or init new catalog
+      initialCatalog: this.initCatalogDatas(),
+
+      //_urlServerImage: urlServerImage
     }
   },
   methods: {
@@ -151,57 +162,49 @@ export default defineComponent({
       eventEmitter.emit('toggleDarkMode')
     },
     toggleUploadMode(){
-      this.showUploadMode = ! this.showUploadMode;
+      this.showUploadMode = ! this.showUploadMode
+    },
+    toggleCatalogMode(){
+        this.showCatalogo = ! this.showCatalogo
     },
     openUserSettings(){
       console.log("TODO openUserSettings()");
     },
-    requireExifs(){
-      return [
-              { label:'ImageWidth', val: '4072' }, 
-              { label:'ImageHeight', val: '6108' },
-              { label:'Software', val: 'Adobe Photoshop 22.1 (Macintosh)' },
-              { label:'ModifyDate', val: '2021:05:24 16:07:10' },
-              { label:'Copyright', val: 'zabba.lucabazzanella.com' },
-              { label:'Aspect ratio', val: '4/5' },
-              { label:'gps', val: "/"},
-              { label:'classificazione', val: "⭐⭐⭐"},
-              { label:'note', val: "..."}
-      ]
-    },
-    aggiornaMetasCatalogo(data){
-        console.log('aggiorna catalogo()');
-        // TODO aggiornare (attenzione che siamo fuori da app.data ! )
-        //console.log(this.imagesLoaded);
+    // ritorna l'oggetto catalogo che viene letto da data, secretKey da definire
+    initCatalogDatas(){
+      console.log('AppVue initCatalogDatas()');
+      var MD5 = function(d){var r = M(V(Y(X(d),8*d.length)));return r.toLowerCase()};function M(d){for(var _,m="0123456789ABCDEF",f="",r=0;r<d.length;r++)_=d.charCodeAt(r),f+=m.charAt(_>>>4&15)+m.charAt(15&_);return f}function X(d){for(var _=Array(d.length>>2),m=0;m<_.length;m++)_[m]=0;for(m=0;m<8*d.length;m+=8)_[m>>5]|=(255&d.charCodeAt(m/8))<<m%32;return _}function V(d){for(var _="",m=0;m<32*d.length;m+=8)_+=String.fromCharCode(d[m>>5]>>>m%32&255);return _}function Y(d,_){d[_>>5]|=128<<_%32,d[14+(_+64>>>9<<4)]=_;for(var m=1732584193,f=-271733879,r=-1732584194,i=271733878,n=0;n<d.length;n+=16){var h=m,t=f,g=r,e=i;f=md5_ii(f=md5_ii(f=md5_ii(f=md5_ii(f=md5_hh(f=md5_hh(f=md5_hh(f=md5_hh(f=md5_gg(f=md5_gg(f=md5_gg(f=md5_gg(f=md5_ff(f=md5_ff(f=md5_ff(f=md5_ff(f,r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+0],7,-680876936),f,r,d[n+1],12,-389564586),m,f,d[n+2],17,606105819),i,m,d[n+3],22,-1044525330),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+4],7,-176418897),f,r,d[n+5],12,1200080426),m,f,d[n+6],17,-1473231341),i,m,d[n+7],22,-45705983),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+8],7,1770035416),f,r,d[n+9],12,-1958414417),m,f,d[n+10],17,-42063),i,m,d[n+11],22,-1990404162),r=md5_ff(r,i=md5_ff(i,m=md5_ff(m,f,r,i,d[n+12],7,1804603682),f,r,d[n+13],12,-40341101),m,f,d[n+14],17,-1502002290),i,m,d[n+15],22,1236535329),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+1],5,-165796510),f,r,d[n+6],9,-1069501632),m,f,d[n+11],14,643717713),i,m,d[n+0],20,-373897302),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+5],5,-701558691),f,r,d[n+10],9,38016083),m,f,d[n+15],14,-660478335),i,m,d[n+4],20,-405537848),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+9],5,568446438),f,r,d[n+14],9,-1019803690),m,f,d[n+3],14,-187363961),i,m,d[n+8],20,1163531501),r=md5_gg(r,i=md5_gg(i,m=md5_gg(m,f,r,i,d[n+13],5,-1444681467),f,r,d[n+2],9,-51403784),m,f,d[n+7],14,1735328473),i,m,d[n+12],20,-1926607734),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+5],4,-378558),f,r,d[n+8],11,-2022574463),m,f,d[n+11],16,1839030562),i,m,d[n+14],23,-35309556),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+1],4,-1530992060),f,r,d[n+4],11,1272893353),m,f,d[n+7],16,-155497632),i,m,d[n+10],23,-1094730640),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+13],4,681279174),f,r,d[n+0],11,-358537222),m,f,d[n+3],16,-722521979),i,m,d[n+6],23,76029189),r=md5_hh(r,i=md5_hh(i,m=md5_hh(m,f,r,i,d[n+9],4,-640364487),f,r,d[n+12],11,-421815835),m,f,d[n+15],16,530742520),i,m,d[n+2],23,-995338651),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+0],6,-198630844),f,r,d[n+7],10,1126891415),m,f,d[n+14],15,-1416354905),i,m,d[n+5],21,-57434055),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+12],6,1700485571),f,r,d[n+3],10,-1894986606),m,f,d[n+10],15,-1051523),i,m,d[n+1],21,-2054922799),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+8],6,1873313359),f,r,d[n+15],10,-30611744),m,f,d[n+6],15,-1560198380),i,m,d[n+13],21,1309151649),r=md5_ii(r,i=md5_ii(i,m=md5_ii(m,f,r,i,d[n+4],6,-145523070),f,r,d[n+11],10,-1120210379),m,f,d[n+2],15,718787259),i,m,d[n+9],21,-343485551),m=safe_add(m,h),f=safe_add(f,t),r=safe_add(r,g),i=safe_add(i,e)}return Array(m,f,r,i)}function md5_cmn(d,_,m,f,r,i){return safe_add(bit_rol(safe_add(safe_add(_,d),safe_add(f,i)),r),m)}function md5_ff(d,_,m,f,r,i,n){return md5_cmn(_&m|~_&f,d,_,r,i,n)}function md5_gg(d,_,m,f,r,i,n){return md5_cmn(_&f|m&~f,d,_,r,i,n)}function md5_hh(d,_,m,f,r,i,n){return md5_cmn(_^m^f,d,_,r,i,n)}function md5_ii(d,_,m,f,r,i,n){return md5_cmn(m^(_|~f),d,_,r,i,n)}function safe_add(d,_){var m=(65535&d)+(65535&_);return(d>>16)+(_>>16)+(m>>16)<<16|65535&m}function bit_rol(d,_){return d<<_|d>>>32-_}
+      return {  catalogName:'',
+                //listaImmagini: [], 
+                //numeroImmagini: 0, 
+                catalogOwner: 'Luca',     // parametro verrà letto da cookies/ localstorage / mail val insieme a key
+                secretKey: MD5(new Date()), 
+                class: 'catalogClass'
+      }
     },
     // avvia una richiesta asincrona al server, intanto restituisce nullo e poi aggionra con i dati ricevuti
-    getImagesFromServer(){
-        console.log("getImagesFromServer()")
-        eventEmitter.emit('asyncFetchServer')
-        // ritorno un array fake, ma: TODO inserire nomi/titolo da catalogo, TODO quando caricato togliere classe loading
-        return [
-          { name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:0, done: false, title: 'Passo Sella' },
-          { name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
-          { name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
-        ] 
-    }
-  },
+    //getImagesFromServer(){
+    //    console.log("getImagesFromServer()")
+    //    eventEmitter.emit('asyncFetchServer')
+    //    // ritorno un array fake, ma: TODO inserire nomi/titolo da catalogo, TODO quando caricato togliere classe loading
+    //    return [
+    //      { name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:0, done: false, title: 'Passo Sella' }
+    //      //{ name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
+    //      //{ name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
+    //    ] 
+    //}
+  }, // END METHODS
   async mounted() {
-    document.addEventListener('DOMContentLoaded', function () {
-        document.title = "Zabba image 🛠️ "
-        eventEmitter.emit('toggleDarkMode')
-    });
-}
+      // TODO: non usare eventEmitter ma basterebbe avere l'istanza di app.toggleDarkModeBtn()
+      // https://stackoverflow.com/questions/54390842/how-to-access-a-property-of-the-inital-app-instance-in-a-vue-component-templat
+      document.addEventListener('DOMContentLoaded', function () { eventEmitter.emit('toggleDarkMode') });
+  }
 });
+
 </script>
 
 <style>
 /** questo è globale */
-/*.darkMode > .darkModeBtn::before{ content: 'asdf' } */
-.darkMode{
-    --backgroundColor: #111;
-    --mainText: #fff;
-}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -251,8 +254,6 @@ h1{
   font-size: 1.7rem;
   cursor: grab;
 }
-
-li{ list-style-type: none }
 
 .catalogOwner{ 
   color: var(--mainText);
