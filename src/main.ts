@@ -13,6 +13,10 @@ var MD5 = function(d){var r = M(V(Y(X(d),8*d.length)));return r.toLowerCase()};f
 //app.config.globalProperties.$http = () => {}
 app.config.globalProperties.___MD5 = MD5
 
+// inserire main.test.ts per testare loading app
+    // https://v1.test-utils.vuejs.org/guides/#getting-started
+    // https://github.com/facebook/jest
+
 // avvio app
 app.mount('#app')
 
