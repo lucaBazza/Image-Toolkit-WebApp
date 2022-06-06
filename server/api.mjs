@@ -23,6 +23,8 @@ const __dirname = path.dirname(__filename);         // Definisco variabile per e
 
 export function zabbaApiModule(app, server_ip, server_port){
 
+    let prendiNome = (s) => s.substring(s.lastIndexOf('/')+1)   // utility function ottiene nome del file da path completo
+
 /**
  *  ROOT PAGE FAKE DI TEST
  */
@@ -130,7 +132,7 @@ app.post('/image', async (req, res)=>{
 /**
  *  invia il catalogo al frontend
  *      - check validità
- *      - lista tutte le immagini
+ *      - lista tutte le immagini NELLA CARTELLA UTENTE
  *      - invia nomecatalogo, utente, secretkey, lista immagini[{src, exifs}]
  */
 app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
@@ -142,8 +144,8 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
 
     // ottengo la lista delle immagini e i loro exifs, TODO caricare nome catalogo smart
     var globby = require('globby');
-    const imagePaths = await globby("./upload/*.jpg");
-    const catalogName = `Album impressioni di settembre`;
+    const imagePaths = await globby(`./upload/${req.body.utente}/*.jpg`);
+    const catalogName = `Impressioni di settembre`;
 
     // invio la lista più le informazioni del catalogo
     res.send({ 
@@ -158,10 +160,11 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
             id: index,
             src: i, // "./upload/DSC06211_ps.jpg"
             //src: `http://localhost:3000/image?utente=${req.body.utente}&richiestaImg=${i}`,       // INVIO DIRETTAMENTE L'url magikko
-            src: `${server_ip}:${server_port}/image?utente=${req.body.utente}&richiestaImg=${i}`,   // INVIO DIRETTAMENTE L'url magikko
+            src: `${server_ip}:${server_port}/image?utente=${req.body.utente}&richiestaImg=${prendiNome(i)}`,   // INVIO DIRETTAMENTE L'url magikko
             //name: `nomefile ${i} ${index}`, 
-            name: i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
-            title: `titolo ${i.substring(i.lastIndexOf('/')+1)} `,
+            //name:  i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
+            name: prendiNome(i),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
+            title: `titolo ${prendiNome(i)} `,
             exifDatas: ottieniExif(i),
             class: 'immagineCatalogo',
             done: false
@@ -181,24 +184,31 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
  *         GET IMAGE with params
 */
 app.get('/image', async (req, res)=>{
+        // Check request datas
     if( ! req.query.utente )
         return res.send({errore: 'Utente mancante'});
     if( ! (req.query.utente === currentCatalogUser) )
         return res.send({errore: 'Utente non valido'});
     if( ! req.query.richiestaImg )
         return res.send({errore: 'Manca richiesta immagine'});
+    
+    let inviaImg = function(img,log){ res.sendFile(img,{ root: __dirname }); console.log(log+img) }
+    let inviaErr = function(log){ res.status(404); console.log(log) }
 
-    //var filename = 'DSC01448_ps.jpg';
-    var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
-    const file = __dirname + "/upload/" + filename;
-    fs.access(file, fs.F_OK, (err) => {
-        //if (err) { console.error(err); return; }
-        if (err) { console.log(`File not found ${file} \n ${req.query.richiestaImg}`); /*console.error(err);*/ return res.status(404); }
-        res.sendFile(file);
-        console.log(`Image GET sended 📤 ${file} `);
-    })
+        // Se esiste invio altrimenti lascio un messaggio di errore
+    const relPath = `/upload/${req.query.utente}/${req.query.richiestaImg}`
+    fs.access("./server"+relPath,fs.constants.R_OK, function (isExist) {
+        isExist ? inviaImg(relPath,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${file}`)
+    });
 });
 
+
+/**
+ *      DELETE ALL -> TODO implemetation
+ */
+ app.post('/deleteAll', async (req, res)=>{
+     res.send('Catalogo svuotato!')
+});
 
 }   // END OF MODULE
 
