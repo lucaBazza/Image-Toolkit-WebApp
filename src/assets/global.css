@@ -1,21 +1,25 @@
-*{
+/*
+*       DARK MODE
+    attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
+*/
+
+body{
     --varExample: #000;
     --backgroundColor: #fff;
     --background_mod: #ddd;
     --mainText: #000;
 }
-p{
-    font-style: italic;
-
+.darkMode{
+    --backgroundColor: #111;
+    --background_mod: #333;
+    --mainText: #fff;
 }
 body{
     background-color: var(--backgroundColor);
     color: var(--mainText);
 }
 
-.darkMode{
-    --backgroundColor: #111;
-    --background_mod: #333;
-    --mainText: #fff;
+h1, h2, h3{
+    color: var(--mainText)
 }
 /*.darkMode > .darkModeBtn::before{ content: 'asdf' } */

@@ -1,18 +1,22 @@
 <template>
-    <img  v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <ul>
-        <li v-for="img in catalogoDB.listaImmagini" :key="img.id">
-            <ImageExifViewer
-                :imageName="img.name"
-                :imageTitle="img.title"
-                :imageSrc="img.src"
-                :exifDatas="img.exifDatas || img.datas"
-                :class="img.class"
-                :id="img.id"
-            />
-        </li>
-        <!-- <h2 v-if="catalogoDB.listaImmagini.lenght < 1">No images in catalog</h2>-->
-    </ul>
+    <div class="catalogDiv">
+        <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
+        <h3 v-if="catalogoDB.catalogName">{{catalogoDB.catalogName}}</h3>
+        <ul>
+            <li v-for="img in catalogoDB.listaImmagini" :key="img.id">
+                <ImageExifViewer
+                    :imageName="img.name"
+                    :imageTitle="img.title"
+                    :imageSrc="img.src"
+                    :exifDatas="img.exifDatas || img.datas"
+                    :class="img.class"
+                    :id="img.id"
+                />
+            </li>
+            <!-- <h2 v-if="catalogoDB.listaImmagini.lenght < 1">No images in catalog</h2>-->
+        </ul>
+        <button @click="deleteAllImages()"> 🗑️ </button>
+    </div>
 </template>
 <script>
 import ImageExifViewer from './ImageExifViewer.vue'
@@ -43,10 +47,9 @@ import ImageExifViewer from './ImageExifViewer.vue'
                 catalogOwner: this.catalogOwner, 
                 secretKey: this.secretKey, 
                 class: this.class,
-
-                catalogIsReady: false,
-                urlServerImage: this.___urlServerImage
-            }
+            },
+            catalogIsReady: false,
+            urlServerImage: this.___urlServerImage
         }
      },
     // created avviene prima che i data() siano caricati 
@@ -59,7 +62,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
         */
         getImagePlaceHolder(){
              return [
-                { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' }
+                { name:'loading', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' }
                 //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
                 //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
             ]
@@ -68,9 +71,9 @@ import ImageExifViewer from './ImageExifViewer.vue'
             console.log("getImagesFromServer()")
             //eventEmitter.emit('asyncFetchServer') // TODO
 
-            console.log( this.urlServerImage )
+            //console.log( this.urlServerImage )
+            //this.requestCatalogForUser(`http://${this.urlServerImage}/imagelist`, this.catalogoDB.catalogOwner);
 
-            this.requestCatalogForUser(`http://${this.urlServerImage}/imagelist`, this.catalogoDB.catalogOwner);
             // ritorno un array placeholder, ma: TODO inserire nomi/titolo da catalogo, TODO quando caricato togliere classe loading
             //return [
             //    { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' },
@@ -101,12 +104,12 @@ import ImageExifViewer from './ImageExifViewer.vue'
             };
 
             const response = await fetch(url, requestOptions)
-                                    .catch(err => { console.log(`Server api ${url} is down`); });
-            //console.log('status code: ', response.status);
+                                    .catch(err => { console.log(`Server api ${url} is down 😭`); });
+
             if( ! response ) return { catalogName: 'Catalog unaviable', listaImmagini:[] };
 
             const data = await response.json();
-            console.log(`\n${data.catalogName} \t #${data.numeroImmagini} \n\n`);
+            console.log(`\n${data.catalogName} \n\n`);
 
             return data;
             //data.immagini.forEach((img,index) => {
@@ -133,7 +136,6 @@ import ImageExifViewer from './ImageExifViewer.vue'
             let urlImageRes = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img.src}`;
             console.log(urlImageRes);
             document.addEventListener('DOMContentLoaded', function () { 
-              
                 document.getElementById(`img_${img.id}`).src = urlImageRes;
                 el.classList.remove('loading');
             })
@@ -159,6 +161,17 @@ import ImageExifViewer from './ImageExifViewer.vue'
             //  if( imgEl.getAttribute('alt') === img )
             //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
             //});   
+        },
+        async deleteAllImages(){
+            console.log('deleteAllImages()')
+            var r = confirm("Are you sure you want to delete all images?");
+            if (r==true){
+                console.log("Post delete");
+                const res = await fetch(`http://${this.___urlServerImage}/deleteAll`, 
+                                            { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ utente: this.catalogoDB.catalogOwner }) })
+                                    .catch(err => { console.log(`Server api ${url} is down 😭`); });
+            }
+            else console.log("Images saved from destruction");
         }
     }, // END METHODS
     /* 
@@ -177,16 +190,29 @@ import ImageExifViewer from './ImageExifViewer.vue'
         const updateDatasCatalog = await this.requestCatalogForUser(`http://${this.___urlServerImage}/imagelist`, this.catalogoDB.catalogOwner)
 
         //console.log(updateDatasCatalog)
+        //console.log(this.catalogoDB)
 
-        // TODO VALIDITA
-        console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName}`)
+            // TODO VALIDITA
+        console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`)
+        this.catalogoDB.catalogName = updateDatasCatalog.catalogName
+        this.catalogoDB.catalogOwner = updateDatasCatalog.catalogOwner
+        this.catalogoDB.secretKey = updateDatasCatalog.secretKey
 
-        // aggiorna meta  lista immagini con metas ! attenzione aggiorna anche gli ! URLS !
+            // aggiorna meta  lista immagini con metas ! attenzione aggiorna anche gli ! URLS !
         this.catalogoDB.listaImmagini = updateDatasCatalog.immagini
+        /*
+        let imgPlaceHolder = this.catalogoDB.listaImmagini[0];
+        console.log(imgPlaceHolder)
+        this.catalogoDB.listaImmagini = []
+        for(let i = 0; i < updateDatasCatalog.immagini.length; i++)
+            this.catalogoDB.listaImmagini.push(imgPlaceHolder)
+        this.catalogoDB.listaImmagini.forEach((img,index) => {
+            img.name = updateDatasCatalog.immagini[index].name;
+            img.title = updateDatasCatalog.immagini[index].title;
+            img.datas = updateDatasCatalog.immagini[index].datas;
+        });
+        */
 
-        // TODO fare un map che aggiorna la lista immagini senza toccare il parametro src (che rimane in loading)
-        //this.caltalogoDB.listaImmagini = updateDatasCatalog.immagini.map( x=)
-        //this.catalogoDB.listaImmagini = updateDatasCatalog.immagini.map( x => x.src=`http://${this.___urlServerImage}/image?utente=${this.catalogoDB.catalogOwner}&richiestaImg=${x.src}`)
 
 
         // richiede img al server e visualizzala
@@ -210,11 +236,17 @@ import ImageExifViewer from './ImageExifViewer.vue'
 </script>
 
 <style> /** style scooped */
-/*ul{ 
-    width: 100%;
-    height: 100%;
-}*/
+ul{ padding: 0 }
 li{ list-style-type: none }
 h2{ color: white }
+h3{ border-bottom: 1px solid gray; }
 .isReadySpinner{ width:3rem; position: absolute; top:0.5rem; left:50% }
+.catalogDiv > button{
+    background: transparent;
+    border:none;
+    font-size: 2rem;
+    margin:2rem;
+}
+.catalogDiv > button:hover{ box-shadow: 20px 20px 20px 20px #888888 }
+
 </style>
