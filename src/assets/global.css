@@ -1,6 +1,7 @@
 *{
     --varExample: #000;
     --backgroundColor: #fff;
+    --background_mod: #ddd;
     --mainText: #000;
 }
 p{
@@ -14,6 +15,7 @@ body{
 
 .darkMode{
     --backgroundColor: #111;
+    --background_mod: #333;
     --mainText: #fff;
 }
 /*.darkMode > .darkModeBtn::before{ content: 'asdf' } */

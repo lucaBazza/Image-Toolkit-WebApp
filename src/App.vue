@@ -8,13 +8,7 @@
   </div>
   <h1>{{ title }}</h1>
 
-  <!-- <br>
-    <input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
-    <button @click.shift="handleClick">click me with shift</button> 
-    <div v-if="hearts > 0" class="heartContainer">
-      <span v-for="heart in hearts">❤️</span>
-    </div>
-  -->
+  <LoginArea  v-if="showLogInArea" />  
 
   <Modal 
         :header="header" 
@@ -50,6 +44,7 @@
 import { defineComponent } from "vue";  // QUESTO E' IL MAIN APP
 import Modal from './components/Modal.vue'
 import Catalogo from './components/Catalogo.vue'
+import LoginArea from './components/LoginArea.vue'
 //import ImageExifViewer from './components/ImageExifViewer.vue'
 
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
@@ -66,67 +61,9 @@ eventEmitter.on('toggleDarkMode',()=>{
     document.getElementsByClassName('headerImg')[0].setAttribute('src',reqSrc);
 })
 
-//const urlServerImage = 'localhost:3000';
-//console.log(urlServerImage) 
-//eventEmitter.on('asyncFetchServer',()=>{
-//    requestCatalogForUser(`http://${urlServerImage}/imagelist`,'Luca');
-//})
-
-// POST request using fetch with async/await
-async function requestCatalogForUser(url, _catalogOwner) {
-  const requestOptions = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: "richiesta immagini utente", utente: _catalogOwner })
-  };
-  const response = await fetch(url, requestOptions);
-  const data = await response.json();
-
-  console.log(`\n${data.catalogName} \t #${data.numeroImmagini} \n\n`);
-  //aggiornaMetasCatalogo(data);
-  //this.aggiornaMetasCatalogo(data);
-
-  data.immagini.forEach((img,index) => {
-      console.log(" - Immagine: " + img[0].imgFile);
-      requestImageForUser(`http://${url}/image`, img[0].imgFile, _catalogOwner, index );
-  });
-  
-}
-
-/**
- *  - scarica l'immagine direttamente dalla POST (TODO: era più bello l'altro metodo usando i params ma è complicato estrarre la stream response)
- *  - se presente nel catalogo la aggiorna
- *  - se serve aggiorna visualizzazione
- */
-async function requestImageForUser(urlServer, img, _catalogOwner, index) {
-    //const requestOptions = {
-    //  method: "POST",
-    //  headers: { "Content-Type": "application/json" },
-    //  body: JSON.stringify({ utente: _catalogOwner, richiestaImg: img })
-    //};
-    //const response = await fetch(url, requestOptions); //const data = await response.json();
-
-    console.log(`\t requestImageForUser() ${_catalogOwner} - ${img}`)
-    
-    // non selezionare l'immagine dall'id, ma dall'attributo ALT
-    let el_id = `img_${index}`;
-    let el :  HTMLImageElement = (document.getElementById(el_id) as HTMLImageElement);
-    if(el && el.src){
-      el.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
-      el.classList.remove('loading');
-    }
-    else console.log(`Element ${el_id} missing in DOM`);
-
-
-    //[...document.getElementsByTagName('img')].forEach(imgEl => {
-    //  if( imgEl.getAttribute('alt') === img )
-    //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
-    //});   
-}
-
 export default defineComponent({
   name: "App",
-  components: { Modal, Catalogo, UploadMedia },
+  components: { Modal, Catalogo, LoginArea, UploadMedia },
   created: function(){ document.title = "Zabba image 🛠️ " },
   data(){
     return{
@@ -137,6 +74,7 @@ export default defineComponent({
       errMessage: 'asd',
       showUploadMode: false,
       showCatalogo: true,
+      showLogInArea: false,
       // restituisce un catalogo faked mentre carica async
       // TODO: check local or init new catalog
       initialCatalog: this.initCatalogDatas(),
@@ -145,12 +83,6 @@ export default defineComponent({
     }
   },
   methods: {
-    handleClick(){
-      let refName:any = this.$refs.name
-      refName.classList.add('active')
-      refName.focus()
-      this.hearts++
-    },
     postCloseLoggin(){ 
       console.log("postCloseLoggin()\t\n azione modal")
     },
@@ -168,7 +100,7 @@ export default defineComponent({
         this.showCatalogo = ! this.showCatalogo
     },
     openUserSettings(){
-      console.log("TODO openUserSettings()");
+        this.showLogInArea = ! this.showLogInArea; console.log("TODO openUserSettings()");
     },
     // ritorna l'oggetto catalogo che viene letto da data, secretKey da definire
     initCatalogDatas(){
@@ -313,5 +245,67 @@ h1{
           { name:'indef', src: require('./assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
         ] 
     }
+-->
+
+<!--
+
+//const urlServerImage = 'localhost:3000';
+//console.log(urlServerImage) 
+//eventEmitter.on('asyncFetchServer',()=>{
+//    requestCatalogForUser(`http://${urlServerImage}/imagelist`,'Luca');
+//})
+
+// POST request using fetch with async/await
+async function requestCatalogForUser(url, _catalogOwner) {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: "richiesta immagini utente", utente: _catalogOwner })
+  };
+  const response = await fetch(url, requestOptions);
+  const data = await response.json();
+
+  console.log(`\n${data.catalogName} \t #${data.numeroImmagini} \n\n`);
+  //aggiornaMetasCatalogo(data);
+  //this.aggiornaMetasCatalogo(data);
+
+  data.immagini.forEach((img,index) => {
+      console.log(" - Immagine: " + img[0].imgFile);
+      requestImageForUser(`http://${url}/image`, img[0].imgFile, _catalogOwner, index );
+  });
+  
+}
+
+/**
+ *  - scarica l'immagine direttamente dalla POST (TODO: era più bello l'altro metodo usando i params ma è complicato estrarre la stream response)
+ *  - se presente nel catalogo la aggiorna
+ *  - se serve aggiorna visualizzazione
+ */
+async function requestImageForUser(urlServer, img, _catalogOwner, index) {
+    //const requestOptions = {
+    //  method: "POST",
+    //  headers: { "Content-Type": "application/json" },
+    //  body: JSON.stringify({ utente: _catalogOwner, richiestaImg: img })
+    //};
+    //const response = await fetch(url, requestOptions); //const data = await response.json();
+
+    console.log(`\t requestImageForUser() ${_catalogOwner} - ${img}`)
+    
+    // non selezionare l'immagine dall'id, ma dall'attributo ALT
+    let el_id = `img_${index}`;
+    let el :  HTMLImageElement = (document.getElementById(el_id) as HTMLImageElement);
+    if(el && el.src){
+      el.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
+      el.classList.remove('loading');
+    }
+    else console.log(`Element ${el_id} missing in DOM`);
+
+
+    //[...document.getElementsByTagName('img')].forEach(imgEl => {
+    //  if( imgEl.getAttribute('alt') === img )
+    //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
+    //});   
+}
+
 
 -->
