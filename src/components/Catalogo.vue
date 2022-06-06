@@ -67,20 +67,6 @@ import ImageExifViewer from './ImageExifViewer.vue'
                 //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
             ]
         },
-        async getImagesFromServer(){
-            console.log("getImagesFromServer()")
-            //eventEmitter.emit('asyncFetchServer') // TODO
-
-            //console.log( this.urlServerImage )
-            //this.requestCatalogForUser(`http://${this.urlServerImage}/imagelist`, this.catalogoDB.catalogOwner);
-
-            // ritorno un array placeholder, ma: TODO inserire nomi/titolo da catalogo, TODO quando caricato togliere classe loading
-            //return [
-            //    { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' },
-            //    { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
-            //    { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
-            //]
-        },
         // metodo fake che ristituisce i dati exif di ogni immagine
         requireExifs(){
             return [
@@ -112,10 +98,6 @@ import ImageExifViewer from './ImageExifViewer.vue'
             console.log(`\n${data.catalogName} \n\n`);
 
             return data;
-            //data.immagini.forEach((img,index) => {
-            //    console.log(" - Immagine: " + img[0].imgFile);
-            //    this.requestImageForUser(`http://${urlServerImage}/image`, img[0].imgFile, _catalogOwner, index );
-            //});
         },
 
         /**
@@ -187,10 +169,12 @@ import ImageExifViewer from './ImageExifViewer.vue'
 
         if(this.catalogIsReady) return;
 
+            // RICHIEDE CATALOGO
         const updateDatasCatalog = await this.requestCatalogForUser(`${this.___urlServerImage}/imagelist`, this.catalogoDB.catalogOwner)
 
-        //console.log(updateDatasCatalog)
-        //console.log(this.catalogoDB)
+        //updateDatasCatalog.immagini.forEach(img => console.log(img.src))
+        let listUrlImgs = updateDatasCatalog.immagini.map(img => img.src)
+        //listUrlImgs.forEach(img => console.log(img))
 
             // TODO VALIDITA
         console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`)
@@ -198,38 +182,41 @@ import ImageExifViewer from './ImageExifViewer.vue'
         this.catalogoDB.catalogOwner = updateDatasCatalog.catalogOwner
         this.catalogoDB.secretKey = updateDatasCatalog.secretKey
 
-            // aggiorna meta  lista immagini con metas ! attenzione aggiorna anche gli ! URLS !
-        this.catalogoDB.listaImmagini = updateDatasCatalog.immagini
-        
+            // Aggiorna il catalogo, ma le immagini reali sono in stato di loading
+        const loadingSrc = require('./../assets/loading.gif')
+        this.catalogoDB.listaImmagini = updateDatasCatalog.immagini;
+        this.catalogoDB.listaImmagini.forEach(function(v){ v.src = loadingSrc; v.class="loading" });
+
+
+
+            // richiede img al server e visualizzala ( in lazy mode )   
+            // https://nicholasmarmonti.com/tutorial/image-lazy-load-metodo-semplice-leggerissimo/
+
+            // https://css-tricks.com/lazy-loading-images-with-vue-js-directives-and-intersection-observer/
+
+        this.catalogoDB.listaImmagini.forEach((img,i) => {
+            img.src = listUrlImgs[i];
+            img.class = ''
+            //img.datasrc = listUrlImgs[i];
+        });
+
         /*
-        let imgPlaceHolder = this.catalogoDB.listaImmagini[0];
-        console.log(imgPlaceHolder)
-        this.catalogoDB.listaImmagini = []
-        for(let i = 0; i < updateDatasCatalog.immagini.length; i++)
-            this.catalogoDB.listaImmagini.push(imgPlaceHolder)
-        this.catalogoDB.listaImmagini.forEach((img,index) => {
-            img.name = updateDatasCatalog.immagini[index].name;
-            img.title = updateDatasCatalog.immagini[index].title;
-            img.datas = updateDatasCatalog.immagini[index].datas;
+        document.addEventListener('DOMContentLoaded', function (){
+            
+            [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
+                console.log()
+                img.setAttribute('src', img.getAttribute('data-src'));
+                img.onload = function() {
+                    img.removeAttribute('data-src');
+                    img.classList.remove('loading');
+                };
+                img.onerror = function() { console.log("Error loading "+ img.getAttribute('data-src')) };
+            })
         });
         */
 
-
-
-        // richiede img al server e visualizzala
-        /*
-        this.catalogoDB.listaImmagini.forEach(img => {
-            //console.log(" - Immagine: " + img.name);
-            this.requestImageForUser(`http://${this.___urlServerImage}/image`, img, this.catalogoDB.catalogOwner);
-        });
-        */
-
-        //data.immagini.forEach((img,index) => {
-        //    console.log(" - Immagine: " + img[0].imgFile);
-        //    requestImageForUser(`http://${urlServerImage}/image`, img[0].imgFile, _catalogOwner, index );
-        //});
-
-        //this.catalogoDB.listaImmagini = this.getImagesFromServer()
+        //updateDatasCatalog.immagini.forEach(img => console.log(img))
+        //this.catalogoDB.listaImmagini.forEach(img => console.log(img))
 
         this.catalogIsReady = true
     }

@@ -1,8 +1,9 @@
 <template>
     <div class="mainViewer">
 
-        <img :src="imageSrc" :class="class" :id="'img_'+id" :alt="imageName"/>
-
+        <!-- https://quasar.dev/vue-components/img#example--native-lazy-loading -->
+        <img :src="imageSrc" :class="class" :id="'img_'+id" :alt="imageName" @error="imageLoadError"/>
+        
         <span>
             Exif datas <button @click="reqEdit">🖊️</button>  {{imageTitle}}
             <li v-for="ex in exifDatas">
@@ -22,9 +23,6 @@
         exifDatas: {},
         class: {},
         id: {}
-        /*label: {required: true, type: String},
-        done: {default: false, type: Boolean},
-        id: {required: true, type: String}*/
     },
     data(){
         return{ 
@@ -83,6 +81,7 @@
     /*width: ;
     /*height: 80%; */
 }
+/*.mainViewer > img[data-src]{ opacity: 1 }*/
 
 .mainViewer > span > button{ background: transparent; border: none; cursor: crosshair;}
 

@@ -198,7 +198,10 @@ app.get('/image', async (req, res)=>{
         // Se esiste invio altrimenti lascio un messaggio di errore
     const relPath = `/upload/${req.query.utente}/${req.query.richiestaImg}`
     fs.access("./server"+relPath,fs.constants.R_OK, function (isExist) {
-        isExist ? inviaImg(relPath,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${file}`)
+        isExist ? inviaImg(relPath,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
+
+        //inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
+
     });
 });
 

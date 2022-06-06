@@ -55,6 +55,7 @@ eventEmitter.on('toggleDarkMode',()=>{
     console.log("toggleDark mode 🍔")
     document.body.classList.toggle('darkMode')
     const hasDarkMode = document.body.classList.contains('darkMode') ? '-darkMode':''
+    // https://stackoverflow.com/questions/35242272/vue-js-data-bind-style-backgroundimage-not-working
     const reqSrc = require(`./assets/DSC09538-ProPs${hasDarkMode}.webp`);
     document.getElementsByClassName('headerImg')[0].setAttribute('src',reqSrc);
 })
@@ -76,9 +77,7 @@ export default defineComponent({
       showLogInArea: false,
       // restituisce un catalogo faked mentre carica async
       //  -> TODO: check local or init new catalog
-      initialCatalog: this.initCatalogDatas(),
-
-      //_urlServerImage: urlServerImage
+      initialCatalog: this.initCatalogDatas()
     }
   },
   methods: {
