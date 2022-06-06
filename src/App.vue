@@ -22,7 +22,7 @@
   <upload-media 
       v-if="showUploadMode"
       class="upload-media"
-      server="http://localhost:3000/formidable"
+      :server="`${this.___urlServerImage}/formidable`"
       error=""
       v-bind:class="{ 'upload-media': ''}"
   />

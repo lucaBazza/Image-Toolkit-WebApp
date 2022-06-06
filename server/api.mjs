@@ -21,8 +21,11 @@ const __dirname = path.dirname(__filename);         // Definisco variabile per e
 //console.log('directory-name 👉️', __dirname); 
 
 
-export function zabbaApiModule(app){
+export function zabbaApiModule(app, server_ip, server_port){
 
+/**
+ *  ROOT PAGE FAKE DI TEST
+ */
     app.get('/', async (request, response)=>{
         const htmlfilePath = 'paginaHome.html';
                 /// invio file asincrono
@@ -154,7 +157,8 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
         immagini: imagePaths.map( (i,index) => [{
             id: index,
             src: i, // "./upload/DSC06211_ps.jpg"
-            src: `http://localhost:3000/image?utente=${req.body.utente}&richiestaImg=${i}`, // INVIO DIRETTAMENTE L'url magikko
+            //src: `http://localhost:3000/image?utente=${req.body.utente}&richiestaImg=${i}`,       // INVIO DIRETTAMENTE L'url magikko
+            src: `${server_ip}:${server_port}/image?utente=${req.body.utente}&richiestaImg=${i}`,   // INVIO DIRETTAMENTE L'url magikko
             //name: `nomefile ${i} ${index}`, 
             name: i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
             title: `titolo ${i.substring(i.lastIndexOf('/')+1)} `,

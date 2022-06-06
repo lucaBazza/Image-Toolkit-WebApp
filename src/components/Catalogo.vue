@@ -167,7 +167,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
             var r = confirm("Are you sure you want to delete all images?");
             if (r==true){
                 console.log("Post delete");
-                const res = await fetch(`http://${this.___urlServerImage}/deleteAll`, 
+                const res = await fetch(`${this.___urlServerImage}/deleteAll`, 
                                             { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ utente: this.catalogoDB.catalogOwner }) })
                                     .catch(err => { console.log(`Server api ${url} is down 😭`); });
             }
@@ -187,7 +187,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
 
         if(this.catalogIsReady) return;
 
-        const updateDatasCatalog = await this.requestCatalogForUser(`http://${this.___urlServerImage}/imagelist`, this.catalogoDB.catalogOwner)
+        const updateDatasCatalog = await this.requestCatalogForUser(`${this.___urlServerImage}/imagelist`, this.catalogoDB.catalogOwner)
 
         //console.log(updateDatasCatalog)
         //console.log(this.catalogoDB)
@@ -200,6 +200,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
 
             // aggiorna meta  lista immagini con metas ! attenzione aggiorna anche gli ! URLS !
         this.catalogoDB.listaImmagini = updateDatasCatalog.immagini
+        
         /*
         let imgPlaceHolder = this.catalogoDB.listaImmagini[0];
         console.log(imgPlaceHolder)

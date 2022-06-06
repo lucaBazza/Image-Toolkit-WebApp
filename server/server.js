@@ -26,6 +26,10 @@ const Sequelize = require('sequelize')
 const finale = require('finale-rest')
 const express = require('express')
 
+var ip = require("ip");
+const server_ip = "http://" + ip.address()
+const server_port = 3000 || process.env.PORT
+
 let app = express()
 app.use(cors())
 app.use(bodyParser.json())
@@ -37,11 +41,10 @@ process.on('exit', function(){
 
 
 import {zabbaApiModule} from './api.mjs';
-zabbaApiModule(app);
+zabbaApiModule(app, server_ip, server_port);
 
 
-const server_port = 3000 || process.env.PORT;
-app.listen( server_port, ()=> console.log(`\tHost in ascolto, raggiungibile a http://localhost:${server_port} \n\n`))
+app.listen( server_port, ()=> console.log(`\tHost in ascolto, raggiungibile a ${server_ip}:${server_port} \n\n`))
 
 
 

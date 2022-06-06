@@ -1,6 +1,8 @@
 <template>
     <div class="mainViewer">
+
         <img :src="imageSrc" :class="class" :id="'img_'+id" :alt="imageName"/>
+
         <span>
             Exif datas <button @click="reqEdit">🖊️</button>  {{imageTitle}}
             <li v-for="ex in exifDatas">
@@ -104,15 +106,6 @@
 	0% { background-position: 0% 50% }
 	50% { background-position: 100% 50% }
 	100% { background-position: 0% 50% }
-}
-@media screen and (max-width: 650px){
-    .mainViewer > img{ width: 92%; }
-    .mainViewer > span{  width: 80%; }
-    .mainViewer > span > li{  margin-left: 2rem }
-    .mainViewer{ 
-        display: block;
-        height: auto;    
-    }
 }
 
 </style>

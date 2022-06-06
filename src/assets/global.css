@@ -19,7 +19,31 @@ body{
     color: var(--mainText);
 }
 
-h1, h2, h3{
-    color: var(--mainText)
-}
+h1, h2, h3{ color: var(--mainText) }
 /*.darkMode > .darkModeBtn::before{ content: 'asdf' } */
+
+/* SMALL DEVICES */
+@media screen and (max-width: 650px){
+    .mainViewer > img{ width: 90%; }
+    .mainViewer > span{  width: 80%; }
+    .mainViewer > span > li{  margin-left: 2rem }
+    .mainViewer{ 
+        display: block;
+        height: auto;    
+    }
+}
+
+/* WIDE DEVICES */
+@media only screen and (min-width: 1200px){
+    .catalogDiv > ul{
+        display: flex;
+        /*flex-direction: row;
+        flex-wrap: wrap;*/
+        flex-flow: row  wrap;        
+    }
+    .catalogDiv > ul > li{
+        /*flex-grow: 0;
+        flex-shrink: 5;*/
+        flex: 1 1 0px
+    }
+}
