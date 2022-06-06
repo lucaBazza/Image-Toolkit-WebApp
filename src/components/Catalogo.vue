@@ -52,9 +52,6 @@ import ImageExifViewer from './ImageExifViewer.vue'
     // created avviene prima che i data() siano caricati 
     //created: function () { catalogoDB.listaImmagini = this.getImagesFromServer() },
     methods: {
-        //getImagesFromServer(numberOfPlaceholders){
-        //    return [getImagesFromServer()[0], getImagesFromServer()[0], getImagesFromServer()[0]];
-        //},
         /**
          *  avvia una richiesta asincrona al server, 
          *      - intanto restituisce una image placeholder di loading 
@@ -62,9 +59,9 @@ import ImageExifViewer from './ImageExifViewer.vue'
         */
         getImagePlaceHolder(){
              return [
-                { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' },
-                { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
-                { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
+                { name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas: this.requireExifs(), id:0, done: false, title: 'Passo Sella' }
+                //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
+                //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
             ]
         },
         async getImagesFromServer(){
@@ -103,7 +100,11 @@ import ImageExifViewer from './ImageExifViewer.vue'
                 body: JSON.stringify({ title: "richiesta immagini utente", utente: _catalogOwner })
             };
 
-            const response = await fetch(url, requestOptions);
+            const response = await fetch(url, requestOptions)
+                                    .catch(err => { console.log(`Server api ${url} is down`); });
+            //console.log('status code: ', response.status);
+            if( ! response ) return { catalogName: 'Catalog unaviable', listaImmagini:[] };
+
             const data = await response.json();
             console.log(`\n${data.catalogName} \t #${data.numeroImmagini} \n\n`);
 

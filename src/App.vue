@@ -2,15 +2,17 @@
   <p class="catalogOwner" @click="openUserSettings">👤 {{initialCatalog.catalogOwner}}</p>
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
   <div class="controlBtns">
-    <button @click="toggleDarkModeBtn"  > 🌓 </button>
+    <button @click="toggleDarkModeBtn"> 🌓 </button>
     <button @click="toggleUploadMode"> ☁️ </button>
     <button @click="toggleCatalogMode"> 📚 </button>
+    <button @click="toggleModalInfos">ℹ️</button>
   </div>
   <h1>{{ title }}</h1>
 
-  <LoginArea  v-if="showLogInArea" />  
+  <LoginArea v-if="showLogInArea" />  
 
   <Modal 
+        v-if="showModalInfos"
         :header="header" 
         :text="text"
         theme="sale"
@@ -35,7 +37,7 @@
     :secretKey="initialCatalog.secretKey"
     :class="initialCatalog.class"
 
-    ___urlServerImage="___urlServerImage"
+    ___urlServerImage="___urlServerImage" 
   />
 
 </template>
@@ -72,19 +74,21 @@ export default defineComponent({
       text: "Create a catalog, upload your photos and edit them",
       hearts: 0,
       errMessage: 'asd',
+      showModalInfos: false,
       showUploadMode: false,
       showCatalogo: true,
       showLogInArea: false,
       // restituisce un catalogo faked mentre carica async
-      // TODO: check local or init new catalog
+      //  -> TODO: check local or init new catalog
       initialCatalog: this.initCatalogDatas(),
 
       //_urlServerImage: urlServerImage
     }
   },
   methods: {
-    postCloseLoggin(){ 
+    postCloseLoggin(){
       console.log("postCloseLoggin()\t\n azione modal")
+      this.showModalInfos = false
     },
     registerName(){ 
       const input = this.$refs.name as HTMLInputElement | null;
@@ -92,6 +96,9 @@ export default defineComponent({
     },
     toggleDarkModeBtn(){
       eventEmitter.emit('toggleDarkMode')
+    },
+    toggleModalInfos(){
+      this.showModalInfos = ! this.showModalInfos
     },
     toggleUploadMode(){
       this.showUploadMode = ! this.showUploadMode
@@ -178,7 +185,7 @@ h1{
 .controlBtns{
   position: absolute;
   top: 0.2rem;
-  right: 3.5rem;
+  right: .2rem;
 }
 .controlBtns > button{
   border: none;

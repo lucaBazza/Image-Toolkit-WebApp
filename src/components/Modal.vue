@@ -1,24 +1,30 @@
 <template>
-    <div v-if="isShowed" class="backdrop">
+    <div class="backdrop" @v-click-away="closeModal">
         <div class="modal" :class="{ sale: theme === 'sale'}">
-            <button class="altoDxBtn" @click="closeModal">❌</button>
+            <!-- <button class="altoDxBtn" @click="closeModal">❌</button> -->
+            <span>Tutorial</span><button @click="closeModal">❌</button>
             <h1>{{header}}</h1>
             <p>{{text}}</p>
         </div>
     </div>
-    <div v-else>
-        <button class="altoDxBtn" @click="closeModal">ℹ️</button>
-    </div>
+    <!--
+        <div v-else>
+            <button class="altoDxBtn" @click="closeModal">ℹ️</button>
+        </div>
+    -->
 </template>
 <script>
   export default {
     props: [ 'header','text','theme'],
     data(){
-        return{ isShowed: false }
+        return{ 
+            //isShowed: false 
+        }
     },
     methods: {
-        closeModal () { 
-            this.isShowed = ! this.isShowed
+        closeModal(event) { 
+            ///this.isShowed = ! this.isShowed
+            console.log('closeModal')
             this.$emit('updateCloseMain')
         }
     }
@@ -44,7 +50,15 @@
     border-radius: 1rem;
     overflow: visible;
 }
-button{
+.modal > span{ margin-top: 1.5rem; font-size: 1.5rem; }
+.modal > button{    
+    font-size: 1rem;
+    background: transparent;
+    border: none;
+    float:right;
+    cursor: grabbing
+}
+/*button{
     position: absolute;
     top: 0;
     right: 0;
@@ -55,7 +69,7 @@ button{
     border: none;
 }
 
-button:hover{ cursor: pointer }
+button:hover{ cursor: pointer }*/
 
 .modal.sale{
     background: #222;
