@@ -14,13 +14,10 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env"
+      "webpack-env",
+      "jest"
     ],
-
-    // https://stackoverflow.com/questions/49258849/could-not-find-a-declaration-file-for-module-vue-xxx
-    //"allowJs": true,
-    "noImplicitAny": false, 
-
+    "noImplicitAny": false,
     "paths": {
       "@/*": [
         "src/*"
