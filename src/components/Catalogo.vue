@@ -2,7 +2,8 @@
     <div class="catalogDiv">
         <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
         <h3 v-if="catalogoDB.catalogName">{{catalogoDB.catalogName}}</h3>
-        <ul>
+        <p v-if="catalogIsOffline"> 😭 Image catalog server is offline 😭 </p>
+        <ul v-else>
             <li v-for="img in catalogoDB.listaImmagini" :key="img.id">
                 <ImageExifViewer
                     :imageName="img.name"
@@ -13,9 +14,8 @@
                     :id="img.id"
                 />
             </li>
-            <!-- <h2 v-if="catalogoDB.listaImmagini.lenght < 1">No images in catalog</h2>-->
         </ul>
-        <button @click="deleteAllImages()"> 🗑️ </button>
+        <button v-if=" ! catalogIsOffline" @click="deleteAllImages()"> 🗑️ </button>
     </div>
 </template>
 <script>
@@ -26,8 +26,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
     name: "CatalogComponent",
     components: { ImageExifViewer },
     // PROPS SONO SOLO IN LETTURA PER IL COMPONENTE     TODO: VEDERE COME PASSARE IL V-BIND CORRETTAMENTE
-    //props: [ 'initialCatalog' ], 
-    //props: { initialCatalog: {} },
+    //props: [ 'initialCatalog' ],  props: { initialCatalog: {} },
     props: {
         catalogName: String,
         //numeroImmagini: Number,
@@ -47,8 +46,10 @@ import ImageExifViewer from './ImageExifViewer.vue'
                 catalogOwner: this.catalogOwner, 
                 secretKey: this.secretKey, 
                 class: this.class,
+                //isOffline: 
             },
             catalogIsReady: false,
+            catalogIsOffline: {},
             urlServerImage: this.___urlServerImage
         }
      },
@@ -90,12 +91,25 @@ import ImageExifViewer from './ImageExifViewer.vue'
             };
 
             const response = await fetch(url, requestOptions)
-                                    .catch(err => { console.log(`Server api ${url} is down 😭`); });
+                                        .then(async response => {
+                                            const isJson = response.headers.get('content-type')?.includes('application/json');
+
+                                            // check for error response
+                                            if (!response.ok) {
+                                                const error = (data && data.message) || response.status;    // get error message from body or default to response status
+                                                return Promise.reject(error);
+                                            }
+
+                                            this.catalogIsOffline = false;
+
+                                            return response
+                                        })
+                                        .catch(err => { console.log(`Server api ${url} is down 😭`); this.catalogIsOffline = true; });
 
             if( ! response ) return { catalogName: 'Catalog unaviable', listaImmagini:[] };
 
             const data = await response.json();
-            console.log(`\n${data.catalogName} \n\n`);
+            console.log(`\n\t ${data.catalogName} \n\n`);
 
             return data;
         },
@@ -151,7 +165,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
                 console.log("Post delete");
                 const res = await fetch(`${this.___urlServerImage}/deleteAll`, 
                                             { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ utente: this.catalogoDB.catalogOwner }) })
-                                    .catch(err => { console.log(`Server api ${url} is down 😭`); });
+                                    .catch(err => { console.log(`Server api ${url} is down 😭`); catalogIsOffline = true; });
             }
             else console.log("Images saved from destruction");
         }
@@ -171,10 +185,11 @@ import ImageExifViewer from './ImageExifViewer.vue'
 
             // RICHIEDE CATALOGO
         const updateDatasCatalog = await this.requestCatalogForUser(`${this.___urlServerImage}/imagelist`, this.catalogoDB.catalogOwner)
+        if(this.catalogIsOffline)
+            return;
 
-        //updateDatasCatalog.immagini.forEach(img => console.log(img.src))
+            // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
         let listUrlImgs = updateDatasCatalog.immagini.map(img => img.src)
-        //listUrlImgs.forEach(img => console.log(img))
 
             // TODO VALIDITA
         console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`)
@@ -226,7 +241,7 @@ import ImageExifViewer from './ImageExifViewer.vue'
 <style> /** style scooped */
 ul{ padding: 0 }
 li{ list-style-type: none }
-h2{ color: white }
+h2, p { color: var(--mainText) }
 h3{ border-bottom: 1px solid gray; }
 .isReadySpinner{ width:3rem; position: absolute; top:0.5rem; left:50% }
 .catalogDiv > button{
@@ -234,7 +249,11 @@ h3{ border-bottom: 1px solid gray; }
     border:none;
     font-size: 2rem;
     margin:2rem;
+    opacity: .9;
+    backdrop-filter: blur(2px);
 }
-.catalogDiv > button:hover{ box-shadow: 20px 20px 20px 20px #888888 }
+.catalogDiv > button:hover{ cursor: grab; box-shadow: 20px 20px 20px 20px #888888 }
+
+.catalogDiv > p{ background-color: var(--backgroundColor); text-align: center; margin: 0 20%; padding: 1rem; border-radius: 1rem; }
 
 </style>
