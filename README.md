@@ -1,13 +1,14 @@
 # vue-modal-project
 
+![AppThumb](https://raw.githubusercontent.com/lucaBazza/Image-Toolkit-WebApp/master/src/assets/Thumbnail-ImageToolkitApp-v0.heif)
+
+WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utente, modificando metadata ed esportando con watermark, stich panorama, re-frame con differenti dimensioni.
+
 ## Note varie
 Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi da bash
 ```console
     npm install npm-install-missing
 ```
-installa dipendenze / packages mancanti
-
-server con hot reload + debug
 
 ## Avviare client e server
 client

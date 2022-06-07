@@ -164,7 +164,7 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
             //name: `nomefile ${i} ${index}`, 
             //name:  i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
             name: prendiNome(i),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
-            title: `titolo ${prendiNome(i)} `,
+            title: prendiNome(i).split('.')[0],
             exifDatas: ottieniExif(i),
             class: 'immagineCatalogo',
             done: false

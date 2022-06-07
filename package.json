@@ -8,7 +8,9 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test": "jest",
-    "buildWebPack": "webpack src/main.ts -o public/bundle.js"
+    "testunit": "vue-cli-service test:unit",
+    "buildWebPack": "webpack src/main.ts -o public/bundle.js",
+    "deploy":"firebase deploy --debug --token \"$FIREBASE_TOKEN\" --only hosting"
   },
   "dependencies": {
     "@vue/test-utils": "^2.0.0",
