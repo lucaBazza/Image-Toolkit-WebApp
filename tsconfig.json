@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "esnext",
     "strict": true,
     "jsx": "preserve",
@@ -28,14 +28,15 @@
       "dom",
       "dom.iterable",
       "scripthost"
-    ]
+    ],
+    //"typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
+    "src/tests/**/*.ts",
+    "src/tests/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

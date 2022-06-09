@@ -52,6 +52,53 @@ export function zabbaApiModule(app, server_ip, server_port){
         });
     });
 
+/**
+ *  VALIDA UTENTE 
+ *      TODO -> leggere info user da database ! hardcoded
+ */
+const ___user = 'Luca'
+const ___passw = 'lkjh$33ASd'
+const ___SK = 'HGF475892SDG'
+app.post('/user', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
+    if( ! req.body.utente )
+        return res.send({errore: 'Utente mancante'});
+    
+    if( ! (req.body.utente === ___user) )
+        return res.send({errore: 'Utente non valido'});
+
+    if( ! req.body.password )
+        return res.send({errore: 'Password mancante'});
+    
+    if( ! (req.body.password === ___passw) )
+        return res.send({errore: 'Password non valida'});
+
+    if( ! req.body.secretKey )
+        return res.send({errore: 'SK mancante'});
+    
+    if( ! (req.body.secretKey === ___SK) )
+        return res.send({errore: 'Password non valida'});
+
+    // Carico dati utente
+    const utente = {
+        nome: req.body.utente,
+        password: req.body.password,
+        secretKey: req.body.secretKey,
+        email: `${req.body.utente.toLowerCase()}@icloud.com`,
+        listaCataloghi: [
+            { titolo: 'Go to the mountains',    proprietario: req.body.utente, secretKey: req.body.secretKey, listaImmagini: [], catalogId: 0 },
+            { titolo: 'Schiazzi di mondi\'92',  proprietario: req.body.utente, secretKey: req.body.secretKey, listaImmagini: [], catalogId: 1 },
+            { titolo: 'Androgenia del mare',    proprietario: req.body.utente, secretKey: req.body.secretKey, listaImmagini: [], catalogId: 2 },
+            { titolo: 'Felicita sostenibile',   proprietario: req.body.utente, secretKey: req.body.secretKey, listaImmagini: [], catalogId: 3 },
+        ],
+        indexCatalogNow: 3
+    }
+
+    // invio la lista più le informazioni del catalogo
+    res.send( utente );
+    console.log(`Invio login utente ${req.body.utente} \t cataloghi: ${utente.listaCataloghi.length} \n
+                   catalogo corrente: ${utente.listaCataloghi[utente.indexCatalogNow].titolo} \n`);
+});
+
 
 /**
  *          EXIFS
@@ -82,31 +129,28 @@ export function zabbaApiModule(app, server_ip, server_port){
  *          invio per l'utente selezionato la foto che ha richiesto
  *              parametri richiesti:    utente, richiestaImg
 */
-app.post('/image', async (req, res)=>{
-
+/*app.post('/image', async (req, res)=>{
     if( ! req.body.utente )
         return res.send({errore: 'Utente mancante'});
     if( ! (req.body.utente === currentCatalogUser) )
         return res.send({errore: 'Utente non valido'});
     if( ! req.body.richiestaImg )
         return res.send({errore: 'Manca richiesta immagine'});
-
-    
     //res.sendFile(req.body.richiestaImg);
     
     //const file = req.body.richiestaImg;
-    /*
-    await stat(file)
-        .then( ()  => { 
-            console.log(`${file} exist`);        
-            res.sendFile(file); 
-        })
-        .catch( () => { 
-            console.log(`${file} not exist`);    
-            //res.send({errore: `${file} non trovato`});
-            //scannerizzaCWD();
-        });
-    */
+    
+    //await stat(file)
+    //    .then( ()  => { 
+    //        console.log(`${file} exist`);        
+    //        res.sendFile(file); 
+    //    })
+    //    .catch( () => { 
+    //        console.log(`${file} not exist`);    
+    //        //res.send({errore: `${file} non trovato`});
+    //        //scannerizzaCWD();
+    //    });
+    
     
     //let hdrs = {    
     //    'X-Custom-Header': '123',
@@ -119,7 +163,7 @@ app.post('/image', async (req, res)=>{
     const file = __dirname + "/upload/" + filename;
     //console.log(file);
     fs.access(file, fs.F_OK, (err) => {
-        if (err) { console.log(`File not found ${file}`); /*console.error(err);*/ return res.status(404); }
+        if (err) { console.log(`File not found ${file}`); return res.status(404); }
 
         //res.writeHead(200, {'Content-Type': 'image/png'})
         //res.sendFile(file, { root: __dirname });
@@ -128,47 +172,52 @@ app.post('/image', async (req, res)=>{
         console.log(`Image sended 📤 ${file} `);
     })
 });
+*/
 
 /**
  *  invia il catalogo al frontend
  *      - check validità
+ *      - se non presente il parametro id, viene assegnato di default il primo catalogo (TODO: implementare backend multi catalogo)
  *      - lista tutte le immagini NELLA CARTELLA UTENTE
  *      - invia nomecatalogo, utente, secretkey, lista immagini[{src, exifs}]
  */
 app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (req, res)=>{
+
+    const useCompiled_srcUrl = false;
+
     if( ! req.body.utente )
         return res.send({errore: 'Utente mancante'});
     
     if( ! (req.body.utente === currentCatalogUser) )
         return res.send({errore: 'Utente non valido'});
 
-    // ottengo la lista delle immagini e i loro exifs, TODO caricare nome catalogo smart
+    let idCatalgoReq = req.body.id ? req.body.id : 0;
+
+    // carico lista delle immagini dalla sotto dir upload/utente     TODO => caricare nome catalogo smart
     var globby = require('globby');
     const imagePaths = await globby(`./upload/${req.body.utente}/*.jpg`);
-    const catalogName = `Impressioni di settembre`;
+    
+    const catalogName = (idCatalgoReq==0 ?`Impressioni di settembre`: ( idCatalgoReq==1 ? 'Amore tempestoso': 'Androgenia aerea' ));    // TODO : C O R R E G G E R E
+
 
     // invio la lista più le informazioni del catalogo
     res.send({ 
         catalogName: catalogName,
         catalogOwner: req.body.utente,
-        secretKey: new Date(),
-        //cacheNumeroImmagini: imagePaths.length,
 
         // Formato delle immagini
         // { name, src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
         immagini: imagePaths.map( (i,index) => [{
             id: index,
-            src: i, // "./upload/DSC06211_ps.jpg"
-            //src: `http://localhost:3000/image?utente=${req.body.utente}&richiestaImg=${i}`,       // INVIO DIRETTAMENTE L'url magikko
-            src: `${server_ip}:${server_port}/image?utente=${req.body.utente}&richiestaImg=${prendiNome(i)}`,   // INVIO DIRETTAMENTE L'url magikko
-            //name: `nomefile ${i} ${index}`, 
-            //name:  i.substring(i.lastIndexOf('/')+1),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
-            name: prendiNome(i),    //var filename = req.query.richiestaImg.substring(req.query.richiestaImg.lastIndexOf('/')+1);
+            src: useCompiled_srcUrl ? `${server_ip}:${server_port}/image?utente=${req.body.utente}&richiestaImg=${prendiNome(i)}`: prendiNome(i),   // INVIO DIRETTAMENTE L'url magikko
+            name: prendiNome(i),
             title: prendiNome(i).split('.')[0],
             exifDatas: ottieniExif(i),
-            class: 'immagineCatalogo',
+            classStyle: 'immagineCatalogo',
             done: false
-        }][0])
+        }][0]),
+        secretKey: new Date(),
+        idCatalogo: idCatalgoReq
         
         //immagini: imagePaths.map( i => [{imgFile: i, exifDatas: ottieniExif('img')}][0] )
         /*[ { imgFile: 'imgFileA', exifDatas: ottieniExif('img') },
@@ -184,6 +233,7 @@ app.post('/imagelist', async (req, res)=>{  //app.post('/images/Luca', async (re
  *         GET IMAGE with params
 */
 app.get('/image', async (req, res)=>{
+    //const useCompiled_srcUrl = false;
         // Check request datas
     if( ! req.query.utente )
         return res.send({errore: 'Utente mancante'});
@@ -198,7 +248,9 @@ app.get('/image', async (req, res)=>{
         // Se esiste invio altrimenti lascio un messaggio di errore
     const relPath = `/upload/${req.query.utente}/${req.query.richiestaImg}`
     fs.access("./server"+relPath,fs.constants.R_OK, function (isExist) {
-        isExist ? inviaImg(relPath,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
+        //console.log('send: '+(useCompiled_srcUrl ? relPath : req.query.richiestaImg))
+        //isExist ? inviaImg( useCompiled_srcUrl ? relPath : req.query.richiestaImg,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
+        isExist ? inviaImg( relPath,"Image GET 📤 \t") : inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
 
         //inviaErr(`File not found 😔 ${req.query.richiestaImg}`)
 

@@ -1,95 +1,85 @@
 <template>
   <div class="mainViewer">
-    <!-- https://quasar.dev/vue-components/img#example--native-lazy-loading -->
     <img
-      :src="imageSrc"
-      :class="class"
-      :id="'img_' + id"
-      :alt="imageName"
-      @error="imageLoadError"
-      @click="openEditorImage"
+        :src="image_ref.src"
+        :class="image_ref.classStyle"
+        :id=" 'img_' + image_ref.id"
+        :alt="image_ref.alt"
+        @error="imageLoadError"
+        @click="openEditorImage"
     />
 
     <span>
-      {{ imageTitle }}<button @click="reqEdit">🖊️</button><br />
-      <li v-for="ex in exifDatas">
+      {{ image_ref.nomeFile }}<button @click="reqEdit">🖊️</button><br />
+      <li v-for="ex in image_ref.exifDatas" :key="ex.label">
         <b>{{ ex.label }}</b> {{ ex.val }}
       </li>
     </span>
   </div>
 </template>
-<script>
+<script lang="ts">
+import Immagine from '@/types/Immagine'
+import AspectRatio from '@/utilities/AspectRatio' //import AspectRatio from "./../utilities/AspectRatio"
+
+// https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
+
 export default {
-  //props: [ 'imageName','imageSrc','exifDatas'],
+  name: 'ImageExifViewer',
   props: {
-    imageSrc: {},
-    imageName: {},
-    imageTitle: {},
-    exifDatas: {},
-    class: {},
-    id: {},
+    imageRf: { required: true, type: Immagine}
   },
-  data() {
-    return {
-      isShowed: false,
-      isEditing: false,
-    };
+  //data() { return { isShowed: false, isEditing: false } },
+  setup(props){
+    const image_ref = props.imageRf;
+
+    const imageLoadError = ()=>{
+      console.log('imageLoadError()')
+      image_ref.src = require("@/assets/noImg.jpg")
+      image_ref.classStyle = 'loading'
+    }
+
+    //console.log(image_ref)
+
+    return{ image_ref, imageLoadError }
   },
   methods: {
     aspect_ratioZab(width, height) {
-      aspect_ratio(width / height, 50);
-    },
-    aspect_ratio(val, lim) {
-      // ritorna array coppia    [ 16, 9 ]
-      var lower = [0, 1];
-      var upper = [1, 0];
-      while (true) {
-        var mediant = [lower[0] + upper[0], lower[1] + upper[1]];
-
-        if (val * mediant[1] > mediant[0]) {
-          if (lim < mediant[1]) {
-            return upper;
-          }
-          lower = mediant;
-        } else if (val * mediant[1] == mediant[0]) {
-          if (lim >= mediant[1]) {
-            return mediant;
-          }
-          if (lower[1] < upper[1]) {
-            return lower;
-          }
-          return upper;
-        } else {
-          if (lim < mediant[1]) {
-            return lower;
-          }
-          upper = mediant;
-        }
-      }
+      AspectRatio(width / height, 50) //this.aspect_ratio(width / height, 50);
     },
     reqEdit() {
       console.log("reqEdit()");
     },
     openEditorImage() {
-      console.log("open editor");
+      console.log("open editor image()");
     },
-  },
-};
+  }
+}
 </script>
 
+
+
 <style>
+.mainViewer{
+  --lighWarmGradinet: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  /*--darkColdGradinet: linear-gradient(-45deg, #4E156C, #831838, #975038, #213892);*/
+}
 .mainViewer {
   margin: 5%; /*margin-left: 5%; margin-top: 5%;*/
   width: 90%;
   min-width: 550px;
   max-width: 1200px;
   height: 30vh;
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background: var(--lighWarmGradinet); /*linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);*/
   background-size: 400% 400%;
   animation: gradient 10s ease infinite;
+  -moz-animation: gradient 10s ease infinite;
   border-radius: 0.8rem;
   display: flex;
+}
+.darkMode .mainViewer{ 
+    box-shadow: inset 0px 0px 400px 110px rgba(0, 0, 0, .7);
+    color: var(--mainText)
 }
 .mainViewer > img {
   flex: 50%;
@@ -131,19 +121,13 @@ export default {
 
 .loading {
   mix-blend-mode: multiply;
-  mask-image: linear-gradient(black, transparent);
-  mask-mode: luminance;
+  /*mask-image: linear-gradient(black, transparent);
+  mask-mode: luminance;*/
 }
 
 @keyframes gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0% { background-position: 0% 50% }
+  50% { background-position: 100% 50% }
+  100% { background-position: 0% 50% }
 }
 </style>

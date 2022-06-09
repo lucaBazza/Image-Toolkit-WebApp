@@ -14,10 +14,18 @@ body{
     --background_mod: #333;
     --mainText: #fff;
 }
+
+/*
+    CSS DECLARATIONS
+*/
 body{
     background-color: var(--backgroundColor);
     color: var(--mainText);
+    min-width: 300px;
 }
+
+.headerImg { content: url("./DSC09538-ProPs.webp") }
+.darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
 
 h1, h2, h3{ color: var(--mainText) }
 /*.darkMode > .darkModeBtn::before{ content: 'asdf' } */
@@ -32,6 +40,15 @@ h1, h2, h3{ color: var(--mainText) }
         height: auto;
         place-items: center;
     }
+    .catalogDiv > p {
+        width: 100%;
+        margin: 3rem 0;
+    }
+    .loginForm{
+        margin: 1rem;
+        width: auto;
+    }
+    .loginForm > input{ margin: 1rem .2rem }
 }
 
 /* WIDE DEVICES */
