@@ -1,3 +1,6 @@
+const {defaults} = require('jest-config') // non necessario
+//const {fetch} = require('node-fetch')
+
 module.exports = {
   name: "Image Toolkit Jest",
   preset: "@vue/cli-plugin-unit-jest/presets/typescript",
@@ -11,5 +14,5 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)"
   ],
-  globals:{ fetch, Response, Request }
+  //globals:{ fetch, Response, Request }
 };

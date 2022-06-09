@@ -1,13 +1,10 @@
 import { mount, shallowMount } from "@vue/test-utils";
 import CatalogoForm from './../../src/components/CatalogoForm.vue'
-//import CatalogoForm from '@/src/components/CatalogoForm.vue'
 import Catalogo from './../../src/types/Catalogo'
-import fetch from "node-fetch"
-
 
 describe("CatalogoForm.vue", () => {
-    global.window = Object.create(window);
-    const urlServerImage = "http://example.com";
+    // global.window = Object.create(window);   // TypeError: Cannot redefine property: window
+    const urlServerImage = "http://example-test.site.com";
     Object.defineProperty(window, 'location', {
         value: {  href: urlServerImage  }
     });
