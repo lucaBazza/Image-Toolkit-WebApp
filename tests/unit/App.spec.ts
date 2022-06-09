@@ -5,6 +5,10 @@ import fetch from 'node-fetch';
 const { Response } = jest.requireActual('node-fetch');
 jest.mock('node-fetch');
 
+// Necessario per fetch function in test
+/*import fetch from "node-fetch"
+import { unwatchFile } from 'fs'*/
+
 describe('App.vue', function () {
     it('Checking <h1> tag text, TO IMPLEMENT', function () {
         //const wrapper = shallowMount(App)        

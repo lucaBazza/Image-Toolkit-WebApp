@@ -9,8 +9,7 @@
     "test:unit": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
     "deploy": "firebase deploy --debug --token \"$FIREBASE_TOKEN\" --only hosting",
-    "buildWebPack": "webpack src/main.ts -o public/bundle.js",
-    "test": "vue-cli-service test:unit --watch"
+    "buildWebPack": "webpack src/main.ts -o public/bundle.js"
   },
   "dependencies": {
     "@vue/test-utils": "^2.0.0",
@@ -30,7 +29,8 @@
     "supervisor": "^0.12.0",
     "vue": "^3.2.13",
     "vue-media-upload": "^1.1.4",
-    "vue-meta": "^2.4.0"
+    "vue-meta": "^2.4.0",
+    "node-fetch": "3.2.6"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",

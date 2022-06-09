@@ -56,10 +56,6 @@ import Immagine from './types/Immagine'
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from "vue-media-upload"
 
-// Necessario per fetch function in test
-/*import fetch from "node-fetch"
-import { unwatchFile } from 'fs'*/
-
 const eventEmitter = new EventEmitter();
 eventEmitter.on("toggleDarkMode", () => {
   console.log("toggleDark mode 🌓 ");

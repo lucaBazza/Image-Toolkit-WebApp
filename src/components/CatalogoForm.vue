@@ -17,7 +17,6 @@ import Settings from '@/types/Settings';
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
 import Immagine from '@/types/Immagine'
-//import fetch from "node-fetch"
 
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 export default defineComponent({
