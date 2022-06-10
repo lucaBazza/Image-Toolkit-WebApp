@@ -39,6 +39,7 @@
     :urlServerImage="settings.urlImageServer"
     :catalogoRef="utenteSng.getCatalogoCurrent()"
   />
+  <div v-if=" ! settings.isDevelopMode()" class="productionMode"><h2>Aviable soon</h2></div>
 </template>
 
 <script lang="ts">
@@ -48,6 +49,7 @@ import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import Modal from "./components/Modal.vue"
 import MD5 from "./utilities/MD5.js"
+import FetchUser from './utilities/FetchUser'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
@@ -107,7 +109,7 @@ export default defineComponent({
     */
 
     //const utenteSng : Utente = ref( new Utente('Luca', 'Yhsdg654@as', new Array<Catalogo>()) )
-    let utenteSng : any | Utente = ref(new Utente('','',''))
+    const utenteSng = ref<Utente>(new Utente('','',''))
     const settings = Settings.getInstance();
 
     let isLoading = ref(true)
@@ -135,7 +137,10 @@ export default defineComponent({
       eventEmitter.emit("toggleDarkMode");
     }
 
-    const loadingDone = ()=>{ console.log("loadingDone()"); isLoading.value = false }
+    const loadingDone = ()=>{ 
+      console.log("loading user data done 😊")
+      isLoading.value = false
+    }
     //const registerName = ()=>{ const input = this.$refs.name as HTMLInputElement | null; console.log(input != null ? input.value : "Catalog name missing") }
 
     return {  utenteSng, settings, isLoading,
@@ -143,7 +148,7 @@ export default defineComponent({
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone }
   },
   methods: {
-    async getUserFromServer(user, password, secretKey){
+    /*async getUserFromServer(user, password, secretKey){
       console.log("getUserFromServer()")
       
       const requestOptions = {
@@ -167,9 +172,6 @@ export default defineComponent({
                             //return null;
                           })
 
-      //if (!res.ok) {
-      //  return null //throw new Error(`HTTP error! status: ${res.status}`);
-      //}
       const data = res
       if( !data ) return null //if( !res.ok) return null
 
@@ -178,62 +180,32 @@ export default defineComponent({
       helpUser.setCurrentCatalog(data.indexCatalogNow)     
 
       return helpUser
-
-  /*
-      const response = await fetch(this.settings.urlImageServer+"/user", requestOptions)
-                              .then(async (response) => {
-                                  const isJson = response.headers.get("content-type")?.includes("application/json");
-                                  if( ! isJson ){
-                                    console.log('API /user has not JSON response')
-                                    return Promise.reject('API /user has not JSON response')
-                                  }
-
-                                  if ( ! response.ok ) {
-                                    //const error = (data && data.message) || response.status;
-                                    //console.log('API /user ! response.ok')
-                                    return Promise.reject(response.status);
-                                  }
-                                  return response.json();
-                              })
-                              .catch((err) => {
-                                //console.log(`Server api ${this.settings.urlImageServer} is down 😭`);
-                                throw new Error(`Server api ${Settings.getInstance().urlImageServer} is down 😭 \n ${err}`);
-                              });
-
-        if( ! response )
-          return null 
-      //try{
-          const data  =  await response.json();
-          const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo, cat.secretKey ))
-          const helpUser : Utente = new Utente(data.nome, data.password, helpListaCat ).setEmail(data.email)
-          helpUser.setCurrentCatalog(data.indexCatalogNow)
-          return helpUser
-      //}
-      //catch(ex){
-        //console.log(ex);
-        //return null; ///new Utente('','',[])
-      //}
-*/
-      //const data = await response;
-      //if( ! data ){ console.log("getUserFromServer() has no data"); return; }
-      /*
-      const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo, cat.secretKey ))
-      const helpUser : Utente = new Utente(data.nome, data.password, helpListaCat ).setEmail(data.email)
-      helpUser.setCurrentCatalog(data.indexCatalogNow)
-      return helpUser
-      */
+    },*/
+    productionView(){
+      console.log('productionView()')
+      document.getElementsByClassName('catalogOwner')[0].setAttribute('hidden','');
+      document.getElementsByClassName('controlBtns')[0].setAttribute('hidden','');
     }
   },
   async mounted() {
-    // TODO: non usare eventEmitter ma basterebbe avere l'istanza di app.toggleDarkModeBtn()
+          // Avvio dark mode
+      // TODO: non usare eventEmitter ma basterebbe avere l'istanza di app.toggleDarkModeBtn()
       // https://stackoverflow.com/questions/54390842/how-to-access-a-property-of-the-inital-app-instance-in-a-vue-component-templat
     document.addEventListener("DOMContentLoaded", function () { eventEmitter.emit("toggleDarkMode"); })
-    // invio credenziali mandate al server
-    this.utenteSng = await this.getUserFromServer('Luca','lkjh$33ASd','HGF475892SDG')
-    //console.log(this.utenteSng)
 
-    if( this.utenteSng )
+        // Check se produzione nascondo implementazione
+    if( ! this.settings.isDevelopMode() ) this.productionView()
+
+    // invio credenziali mandate al server
+    //this.utenteSng = await this.getUserFromServer('Luca','lkjh$33ASd','HGF475892SDG')
+    //if( this.utenteSng )
+    //  this.loadingDone()
+
+    let helperUtente : Utente = await FetchUser('Luca','lkjh$33ASd','HGF475892SDG') //this.getUserFromServer('Luca','lkjh$33ASd','HGF475892SDG')
+    if( helperUtente.nome !== "" ){
+      this.utenteSng = helperUtente
       this.loadingDone()
+    }
   }
 });
 </script>
@@ -256,9 +228,7 @@ h1 {
   background: 10rem rgba(0, 0, 0, 0.4);
   border-radius: 0.5rem;
 }
-h3 {
-  margin: 0;
-}
+h3 { margin: 0 }
 
 .headerImg {
   z-index: -1;
@@ -269,18 +239,16 @@ h3 {
   width: 100%;
   object-fit: cover;
   filter: blur(2px);
+  transform: scale(1.05);
   /*mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 80%, transparent 100%);*/
 }
 /*.darkMode > .headerImg{ filter:invert(0.5) } */
-.heartContainer {
-  padding: 1rem;
-}
+.heartContainer { padding: 1rem }
 .upload-media {
   margin-left: 10%;
   width: 80%;
   height: 100%;
-  margin-top: 5%;
-  /*background: var(--backgroundColor);*/
+  margin-top: 5%; /*background: var(--backgroundColor);*/
 }
 
 .controlBtns {
@@ -313,4 +281,5 @@ h3 {
   transition: 0.4s;
   cursor: cell;
 }
+
 </style>

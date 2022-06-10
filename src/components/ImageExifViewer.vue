@@ -8,7 +8,6 @@
         @error="imageLoadError"
         @click="openEditorImage"
     />
-
     <span>
       {{ image_ref.nomeFile }}<button @click="reqEdit">🖊️</button><br />
       <li v-for="ex in image_ref.exifDatas" :key="ex.label">
@@ -16,10 +15,13 @@
       </li>
     </span>
   </div>
+  <ImageEditorModalVue v-if="showImgEditModal" :imageProp="image_ref" />
 </template>
 <script lang="ts">
+import { ref } from 'vue'
 import Immagine from '@/types/Immagine'
-import AspectRatio from '@/utilities/AspectRatio' //import AspectRatio from "./../utilities/AspectRatio"
+import AspectRatio from '@/utilities/AspectRatio'
+import ImageEditorModalVue from './ImageEditorModal.vue'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
@@ -29,9 +31,12 @@ export default {
   props: {
     imageRf: { required: true, type: Immagine}
   },
+  components: { ImageEditorModalVue },
   //data() { return { isShowed: false, isEditing: false } },
   setup(props){
     const image_ref = props.imageRf;
+
+    let showImgEditModal = ref(false);
 
     const imageLoadError = ()=>{
       console.log('imageLoadError()')
@@ -39,9 +44,12 @@ export default {
       image_ref.classStyle = 'loading'
     }
 
-    //console.log(image_ref)
+    const openEditorImage = ()=>{
+      console.log("open editor image()");
+      showImgEditModal.value = ! showImgEditModal.value;
+    }
 
-    return{ image_ref, imageLoadError }
+    return{ image_ref, imageLoadError, showImgEditModal, openEditorImage }
   },
   methods: {
     aspect_ratioZab(width, height) {
@@ -49,10 +57,7 @@ export default {
     },
     reqEdit() {
       console.log("reqEdit()");
-    },
-    openEditorImage() {
-      console.log("open editor image()");
-    },
+    }
   }
 }
 </script>
@@ -124,10 +129,11 @@ export default {
   /*mask-image: linear-gradient(black, transparent);
   mask-mode: luminance;*/
 }
-
+/*
 @keyframes gradient {
   0% { background-position: 0% 50% }
   50% { background-position: 100% 50% }
   100% { background-position: 0% 50% }
 }
+*/
 </style>

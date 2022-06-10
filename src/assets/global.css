@@ -2,24 +2,30 @@
 *       DARK MODE
     attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
 */
-
 body{
     --varExample: #000;
     --backgroundColor: #fff;
     --background_mod: #ddd;
     --mainText: #000;
+    --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
 }
 .darkMode{
     --backgroundColor: #111;
     --background_mod: #333;
     --mainText: #fff;
+    --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
 }
 
+
 /*
-    CSS DECLARATIONS
+    B A S E     D E C L A R A T I O N S
 */
 body{
-    background-color: var(--backgroundColor);
+    background: var(--homeBackGradinet) no-repeat;
+    background-size: 2000% 2000%;
+    animation: gradient 10s ease infinite;
+    -moz-animation: gradient 10s ease infinite;
+
     color: var(--mainText);
     min-width: 300px;
 }
@@ -28,14 +34,46 @@ body{
 .darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
 
 h1, h2, h3{ color: var(--mainText) }
-/*.darkMode > .darkModeBtn::before{ content: 'asdf' } */
 
-/* SMALL DEVICES */
-@media screen and (max-width: 650px){
+@keyframes gradient {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+}
+
+
+/*
+    P R O D U C T I O N     M O D E
+*/
+.productionMode{ animation: action .5s infinite  alternate }
+.productionMode > h2{
+  border: 2px solid gray;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 1rem;
+  padding: 1rem;
+  width: max(50%,300px);
+  margin: 10% auto;
+}
+.productionMode > h2::before, .productionMode > h2::after{ content:' 🔥 '}
+.productionMode:hover{
+  transform: scale(120%);
+  transition: 1s;
+  animation: none;
+}
+@keyframes action {
+    0% { transform: translateY(0) }
+    100% { transform: translateY(-10px) }
+}
+
+
+/*
+M E D I A   Q U E R Y E S
+*/
+@media screen and ( max-width: 650px ){           /* SMALL DEVICES */
     .mainViewer > img{ min-width:90% }
     .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
     .mainViewer{
-        display: grid; /*block;*/
+        display: grid;
         min-width: 350px;
         height: auto;
         place-items: center;
@@ -51,17 +89,14 @@ h1, h2, h3{ color: var(--mainText) }
     .loginForm > input{ margin: 1rem .2rem }
 }
 
-/* WIDE DEVICES */
-@media only screen and (min-width: 1180px){
+@media only screen and (min-width: 1180px){     /* WIDE DEVICES */
     .catalogDiv > ul{
         display: flex;
-        flex-flow: row  wrap;        
-        /*flex-direction: row; flex-wrap: wrap;*/
+        flex-flow: row  wrap;
     }
-    .catalogDiv > ul > li{ flex: 1 1 0px /*flex-grow: 0; flex-shrink: 5;*/ }
+    .catalogDiv > ul > li{ flex: 1 1 0px }
 }
 
-/* ULTRA WIDE DEVICES / 4K */
-@media only screen and (min-width: 2140px){
+@media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES / 4K */
     .mainViewer{ min-width: 750px }
 }

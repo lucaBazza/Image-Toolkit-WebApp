@@ -1,4 +1,4 @@
-const {defaults} = require('jest-config') // non necessario
+//const {defaults} = require('jest-config') // non necessario
 //const {fetch} = require('node-fetch')
 
 module.exports = {

@@ -21,6 +21,11 @@ server
     cd server && npm run devserver
 ```
 
+client in modalità production
+```console
+    npm run build && serve -s dist
+```
+
 ## Project setup
 ```
 npm install
