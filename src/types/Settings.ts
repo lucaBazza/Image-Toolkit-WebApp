@@ -36,4 +36,8 @@ export default class Settings{
         return this._urlImageServer;
     }
 
+    public isDevelopMode(): boolean{
+        return process.env.NODE_ENV=='development'
+    }
+
 }
