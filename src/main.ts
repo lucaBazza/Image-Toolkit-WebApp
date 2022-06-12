@@ -2,7 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import "./registerServiceWorker";
 import "./assets/global.css";
-
+//import Cors from 
 
 //createApp(App).mount("#app");
 const app = createApp(App)
@@ -18,7 +18,8 @@ app.config.globalProperties.___urlServerImage = new String(window.location.proto
 
 app.config.errorHandler = (err, instance, info) => {
     // report error to tracking services
-    console.log(`${err} \n ${instance} \n ${info}`)
+    //console.log(`${err} \n ${instance} \n ${info}`)
+    console.log( "app.config.errorHandler() - \n " + err )
 }
 
 //app.config.globalProperties.$http = () => {}

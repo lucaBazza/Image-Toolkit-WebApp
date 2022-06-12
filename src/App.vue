@@ -148,39 +148,6 @@ export default defineComponent({
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone }
   },
   methods: {
-    /*async getUserFromServer(user, password, secretKey){
-      console.log("getUserFromServer()")
-      
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          utente: user,
-          password: password,
-          secretKey: secretKey
-        })
-      }
-
-      const res = await fetch(this.settings.urlImageServer+"/user", requestOptions)
-                          .then(response => response.json())
-                          .then(data => {
-                            //console.log('Success:', data);
-                            return data
-                          })
-                          .catch((error) => {
-                            console.error('Error:', error);
-                            //return null;
-                          })
-
-      const data = res
-      if( !data ) return null //if( !res.ok) return null
-
-      const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo, cat.secretKey ))
-      const helpUser : Utente = new Utente(data.nome, data.password, helpListaCat ).setEmail(data.email)
-      helpUser.setCurrentCatalog(data.indexCatalogNow)     
-
-      return helpUser
-    },*/
     productionView(){
       console.log('productionView()')
       document.getElementsByClassName('catalogOwner')[0].setAttribute('hidden','');
@@ -196,11 +163,17 @@ export default defineComponent({
         // Check se produzione nascondo implementazione
     if( ! this.settings.isDevelopMode() ) this.productionView()
 
-    // invio credenziali mandate al server
-    //this.utenteSng = await this.getUserFromServer('Luca','lkjh$33ASd','HGF475892SDG')
-    //if( this.utenteSng )
-    //  this.loadingDone()
 
+
+    
+    // example consuming code
+    //const response = await post<{ id: number }>("https://jsonplaceholder.typicode.com/posts", { title: "my post", body: "some content" } );
+    //const rs = await post<{ id: number }>("http://localhost:3000/", { mode: 'no-cors', credential: 'omit', title: "my post", body: "some content" } );
+
+
+
+
+        // invio credenziali mandate al server
     let helperUtente : Utente = await FetchUser('Luca','lkjh$33ASd','HGF475892SDG') //this.getUserFromServer('Luca','lkjh$33ASd','HGF475892SDG')
     if( helperUtente.nome !== "" ){
       this.utenteSng = helperUtente

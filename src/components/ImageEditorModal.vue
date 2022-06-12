@@ -66,14 +66,13 @@ export default {
 <style src="@vueform/slider/themes/default.css"></style>
 <style>
 .imgEditorModal{
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    /*width: max(90%, 400px ); height: 90%; margin: max(2%, 50px); */
     width: 100vw;
     height: 100vh;
-    
     background-color: rgba(0, 0, 0, 0.6);
+    /*width: max(90%, 400px ); height: 90%; margin: max(2%, 50px); */
 }
 .imgEditorModal > div{ width: 90%; margin: 0 auto; }
 /*.imgEditorModal > div > h2{ 
