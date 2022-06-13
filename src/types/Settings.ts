@@ -40,4 +40,5 @@ export default class Settings{
         return process.env.NODE_ENV=='development'
     }
 
+    
 }

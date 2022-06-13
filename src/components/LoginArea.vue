@@ -34,26 +34,18 @@ export default defineComponent({
   props: {
     utente: {
       type: Utente,
-      require: false
+      require: true
     }
   },
   setup(props){
     const eventEmitter = new EventEmitter();
     
-    //let utente: Utente
-    //if( props.utente ) 
-    //  utente = props.utente
-    //else 
-    //  utente = new Utente('','',[])    
-
     let utente : Utente = props.utente ? props.utente : new Utente('','',[])
 
     let userName = ""
     let email = ""
     let passWord = ""
     let keepLogIn = true
-
-    //let utenteRef = props.utente ? ref<Utente>(props.utente) : ref<Utente>();
 
     function logIn() {
         console.log(`${userName} ${email} try to log in with psw: ${passWord}, keep logged: ${keepLogIn ? "yes" : "no"}`);
@@ -64,7 +56,6 @@ export default defineComponent({
 
     function logOut(_utente){
         console.log(`logOut( ${utente.nome} )`)
-        // props è readOnly!
         eventEmitter.emit("userHasLoggedOut()", _utente);
         _utente = undefined;
     } 
@@ -114,10 +105,20 @@ export default defineComponent({
 .loginForm > ul > li:last-child{ margin-bottom: 3rem }
 </style>
 
-  <!-- <br>
-        <input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
-        <button @click.shift="handleClick">click me with shift</button> 
-        <div v-if="hearts > 0" class="heartContainer">
-            <span v-for="heart in hearts">❤️</span>
-        </div>
-    -->
+<!--  
+
+<br>
+<input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
+<button @click.shift="handleClick">click me with shift</button> 
+<div v-if="hearts > 0" class="heartContainer">
+    <span v-for="heart in hearts">❤️</span>
+</div>
+
+
+//let utente: Utente | any
+//if( props.utente ) 
+//  utente = props.utente
+//else 
+//  utente = new Utente('','',[])    
+
+-->
