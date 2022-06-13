@@ -47,9 +47,9 @@ export default class Utente{
     }
 
     isCurrentCatalog(catalogoId : number){
-        console.log(this.listaCataloghi)
+        //console.log(this.listaCataloghi)
         //console.log(`utente.ts isCurrentCatalog() \t ${catalogoId} === ${this.listaCataloghi[this.indexCatalogNow].getCurrentId()}`)
-        console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
+        //console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
         return catalogoId === this.listaCataloghi[this.indexCatalogNow].getCurrentId();
     }
 

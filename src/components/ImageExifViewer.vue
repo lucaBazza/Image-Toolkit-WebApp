@@ -16,7 +16,7 @@
     </span>
   </div>
   <ImageEditorModalVue 
-      v-show="showImgEditModal" 
+      v-if="showImgEditModal" 
       :imageProp="image_ref"
       @toggle-editor-fn="toggleEditorFn" /> <!-- :isShowedEditor="showImgEditModal" -->
 </template>

@@ -5,16 +5,16 @@
             <img :src="image_ref.src" :style="getStyles()">
             <ul>
                 <li @click.shift="parameterReset(saturationValue.value)">
-                    <h2>Saturazione</h2>
+                    <h2>Saturation</h2>
                     <Slider v-model="saturationValue.value" v-bind="saturationValue"/>
                 </li>
                 <li>
-                    <h2>Contrasto</h2>
+                    <h2>Contrast</h2>
                     <Slider v-model="contrastValue.value"  v-bind="contrastValue"/>
                 </li>
                 <li>
                     <h2>Temperature</h2>
-                    <Slider v-model="temperatureValue"/>
+                    <Slider v-model="temperatureValue.value" v-bind="temperatureValue"/>
                 </li>
                 <li>
                     <h2>Brightness</h2>
@@ -64,7 +64,16 @@ export default defineComponent({
     setup(props){
         const image_ref = props.imageProp;
         
-        let temperatureValue = ref(0);
+        let temperatureValue = ref({
+            value: 0,
+            default: 0,
+            min: 0,
+            max: 100,
+            tooltipPosition: 'bottom',
+            format: function (value) {
+                return `${Math.round(value)}%`
+            }
+        })
 
         let saturationValue = ref({
             value: 0,
@@ -102,7 +111,7 @@ export default defineComponent({
         //const currentFilter = ref({ filterName: 'saturation', value: 30 })
 
         const getStyles = ()=>{
-            const filterOutput = `filter: saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value}%) brightness(${brightnessValue.value.value +100}%); `
+            const filterOutput = `filter: saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%); `
             //console.log(filterOutput)
             return filterOutput
         }
@@ -152,6 +161,7 @@ export default defineComponent({
     border: transparent;
 }
 .imgEditorModal > div{ width: 90%; margin: 0 auto; }
+.imgEditorModal > button:hover{ cursor: grab }
 /*.imgEditorModal > div > h2{ 
     margin: 0 auto; 
     margin-bottom: 2.5rem;
@@ -165,7 +175,8 @@ export default defineComponent({
 .imgEditorModal > ul > li{
     padding: 1rem;
 }
-.imgEditorModal > ul > li > label { color: var(--mainText); display: block;}
+.imgEditorModal > ul > li:last-child{ height: 20rem; }
+.imgEditorModal > ul > li > h2 { margin-bottom: .1rem; }
 .imgEditorModal > ul > li > select { 
     padding: 1rem; 
     color: var(--mainText); 
@@ -174,19 +185,19 @@ export default defineComponent({
 }
 .imgEditorModal > ul > li > select:hover{ background-color: rgba(0, 0, 0, 0.1) }
 .imgEditorModal > img{
-    width: 80%;
+    width: 60%;
     margin: min(50%, 4rem) 0;
     object-fit: contain;
     border-radius: .4rem;
     /*height: 80%;*/
     /*background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #fff 100%);*/
 }
-.imgEditorModal > img::before{
+/*.imgEditorModal > img::before{
     display: block;
     position: relative;
     background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #DE0 100%);
     width: 100%;
     content: '';
-}
+}*/
 
 </style>

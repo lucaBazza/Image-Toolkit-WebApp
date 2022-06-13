@@ -4,7 +4,7 @@
     <ul>
       <h4>Cataloghi</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.getCurrentId()">
-        <b>Titolo:</b> {{cat.titolo}} <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span>
+        <b>Titolo:</b> {{cat.titolo}} <!-- <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span> -->
       </li>
     </ul>
     <button @click="logOut(utente)">🚪 Log Out</button>
@@ -18,8 +18,9 @@
     <button class="altoDxBtn" @click="logIn()">Log In!</button>
   </div>
 </template>
+
 <script lang="ts">
-//import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
 import Utente from '@/types/Utente';
 import Catalogo from '@/types/Catalogo';
 
@@ -29,7 +30,7 @@ eventEmitter.on("userHasLoggedOut", (user: Utente) => {
   console.log("userHasLoggedOut 🌓 ");
 })
 
-export default {
+export default defineComponent({
   props: {
     utente: {
       type: Utente,
@@ -39,8 +40,13 @@ export default {
   setup(props){
     const eventEmitter = new EventEmitter();
     
-    let utente: any | Utente
-    if( props.utente ) utente = props.utente
+    //let utente: Utente
+    //if( props.utente ) 
+    //  utente = props.utente
+    //else 
+    //  utente = new Utente('','',[])    
+
+    let utente : Utente = props.utente ? props.utente : new Utente('','',[])
 
     let userName = ""
     let email = ""
@@ -63,10 +69,11 @@ export default {
         _utente = undefined;
     } 
 
-    return{ /*utenteRef,*/ utente, userName, email, passWord, keepLogIn, logIn, logOut }
+    return{ utente, userName, email, passWord, keepLogIn, logIn, logOut }
   }
-};
+})
 </script>
+
 <style>
 .loginForm {
   display: block;

@@ -129,6 +129,8 @@ M E D I A   Q U E R Y E S
     .catalogDiv > ul{
         display: flex;
         flex-flow: row  wrap;
+        width: 96%;
+        margin: 0 auto;
     }
     .catalogDiv > ul > li{ flex: 1 1 0px }
 }
