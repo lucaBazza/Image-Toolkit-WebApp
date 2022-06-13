@@ -1,32 +1,24 @@
-# vue-modal-project
+# Image Toolkit App
 
-![AppThumb](https://github.com/lucaBazza/Image-Toolkit-WebApp/blob/testing/src/assets/Thumbnail-ImageToolkitApp-v0.jpg)
+![AppThumb](https://github.com/lucaBazza/Image-Toolkit-WebApp/blob/testing/src/assets/Thumbnail-ImageToolkitApp-v0.jpg?raw=true)
 
 WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utente, modificando metadata ed esportando con watermark, stich panorama, re-frame con differenti dimensioni.
 
-## Note varie
-Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi da bash
-```console
-    npm install npm-install-missing
-```
+.
 
-## Avviare client e server
-client
-```console
-    npm run serve
-```
+> [image-toolkit-app.web.app](https://image-toolkit-app.web.app/)
 
-server
+.
+
+.
+
+### Launch server
 ```console
     cd server && npm run devserver
 ```
 
-client in modalità production
-```console
-    npm run build && serve -s dist
-```
 
-## Project setup
+### Project setup
 ```
 npm install
 ```
@@ -41,6 +33,11 @@ npm run serve
 npm run build
 ```
 
+### Launch client in production mode
+```**console**
+    npm run build && serve -s dist
+```
+
 ### Lints and fixes files
 ```
 npm run lint
@@ -49,6 +46,23 @@ npm run lint
 ### Testing
 ```
 npm run test
+```
+
+### Firebase deploy
+```
+firebase deploy
+```
+
+.
+
+.
+
+---
+
+## Note varie
+Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi:
+```console
+    npm install npm-install-missing
 ```
 
 ### Customize configuration

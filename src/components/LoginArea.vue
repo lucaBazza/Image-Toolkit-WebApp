@@ -4,7 +4,7 @@
     <ul>
       <h4>Cataloghi</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.getCurrentId()">
-        <b>Titolo:</b> {{cat.titolo}} <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span>
+        <b>Titolo:</b> {{cat.titolo}} <!-- <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span> -->
       </li>
     </ul>
     <button @click="logOut(utente)">🚪 Log Out</button>
@@ -18,8 +18,9 @@
     <button class="altoDxBtn" @click="logIn()">Log In!</button>
   </div>
 </template>
+
 <script lang="ts">
-//import { ref } from 'vue'
+import { ref, defineComponent } from 'vue'
 import Utente from '@/types/Utente';
 import Catalogo from '@/types/Catalogo';
 
@@ -29,25 +30,22 @@ eventEmitter.on("userHasLoggedOut", (user: Utente) => {
   console.log("userHasLoggedOut 🌓 ");
 })
 
-export default {
+export default defineComponent({
   props: {
     utente: {
       type: Utente,
-      require: false
+      require: true
     }
   },
   setup(props){
     const eventEmitter = new EventEmitter();
     
-    let utente: any | Utente
-    if( props.utente ) utente = props.utente
+    let utente : Utente = props.utente ? props.utente : new Utente('','',[])
 
     let userName = ""
     let email = ""
     let passWord = ""
     let keepLogIn = true
-
-    //let utenteRef = props.utente ? ref<Utente>(props.utente) : ref<Utente>();
 
     function logIn() {
         console.log(`${userName} ${email} try to log in with psw: ${passWord}, keep logged: ${keepLogIn ? "yes" : "no"}`);
@@ -58,15 +56,15 @@ export default {
 
     function logOut(_utente){
         console.log(`logOut( ${utente.nome} )`)
-        // props è readOnly!
         eventEmitter.emit("userHasLoggedOut()", _utente);
         _utente = undefined;
     } 
 
-    return{ /*utenteRef,*/ utente, userName, email, passWord, keepLogIn, logIn, logOut }
+    return{ utente, userName, email, passWord, keepLogIn, logIn, logOut }
   }
-};
+})
 </script>
+
 <style>
 .loginForm {
   display: block;
@@ -107,10 +105,20 @@ export default {
 .loginForm > ul > li:last-child{ margin-bottom: 3rem }
 </style>
 
-  <!-- <br>
-        <input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
-        <button @click.shift="handleClick">click me with shift</button> 
-        <div v-if="hearts > 0" class="heartContainer">
-            <span v-for="heart in hearts">❤️</span>
-        </div>
-    -->
+<!--  
+
+<br>
+<input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
+<button @click.shift="handleClick">click me with shift</button> 
+<div v-if="hearts > 0" class="heartContainer">
+    <span v-for="heart in hearts">❤️</span>
+</div>
+
+
+//let utente: Utente | any
+//if( props.utente ) 
+//  utente = props.utente
+//else 
+//  utente = new Utente('','',[])    
+
+-->

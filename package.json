@@ -1,12 +1,12 @@
 {
   "name": "imagetoolkit_app",
-  "version": "0.3.0",
+  "version": "0.3.5",
   "private": true,
   "description": "Web App for photo editing",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "test:unit": "vue-cli-service test:unit",
+    "test": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
     "deploy": "firebase deploy --debug --token \"$FIREBASE_TOKEN\" --only hosting",
     "buildWebPack": "webpack src/main.ts -o public/bundle.js"

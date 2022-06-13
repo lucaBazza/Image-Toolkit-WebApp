@@ -6,7 +6,7 @@
         :id=" 'img_' + image_ref.id"
         :alt="image_ref.alt"
         @error="imageLoadError"
-        @click="openEditorImage"
+        @click="toggleEditorFn"
     />
     <span>
       {{ image_ref.nomeFile }}<button @click="reqEdit">🖊️</button><br />
@@ -15,10 +15,13 @@
       </li>
     </span>
   </div>
-  <ImageEditorModalVue v-if="showImgEditModal" :imageProp="image_ref" />
+  <ImageEditorModalVue 
+      v-if="showImgEditModal" 
+      :imageProp="image_ref"
+      @toggle-editor-fn="toggleEditorFn" /> <!-- :isShowedEditor="showImgEditModal" -->
 </template>
 <script lang="ts">
-import { ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import Immagine from '@/types/Immagine'
 import AspectRatio from '@/utilities/AspectRatio'
 import ImageEditorModalVue from './ImageEditorModal.vue'
@@ -26,17 +29,14 @@ import ImageEditorModalVue from './ImageEditorModal.vue'
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 
-export default {
+export default defineComponent({
   name: 'ImageExifViewer',
   props: {
     imageRf: { required: true, type: Immagine}
   },
   components: { ImageEditorModalVue },
-  //data() { return { isShowed: false, isEditing: false } },
   setup(props){
     const image_ref = props.imageRf;
-
-    let showImgEditModal = ref(false);
 
     const imageLoadError = ()=>{
       console.log('imageLoadError()')
@@ -44,22 +44,34 @@ export default {
       image_ref.classStyle = 'loading'
     }
 
-    const openEditorImage = ()=>{
-      console.log("open editor image()");
-      showImgEditModal.value = ! showImgEditModal.value;
-    }
+    var showImgEditModal = ref(false)
 
-    return{ image_ref, imageLoadError, showImgEditModal, openEditorImage }
+    return{ image_ref, imageLoadError, showImgEditModal /*, toggleImageEditor*/ }
   },
   methods: {
     aspect_ratioZab(width, height) {
       AspectRatio(width / height, 50) //this.aspect_ratio(width / height, 50);
     },
     reqEdit() {
-      console.log("reqEdit()");
+      console.log("ImageExifViewer.reqEdit()");
+    },
+    toggleEditorFn : function(){
+      console.log("ImageExifViewer.toggleEditorFn()")
+      this.showImgEditModal = ! this.showImgEditModal
     }
-  }
-}
+  },
+  mounted() { 
+       //this.$root.$on('a-far-away-event', (name) => {
+      //  //alert('Hello ' + name)
+      //  console.log("ImageExifViewer.reqEdit()"); 
+      //})
+      
+      /*bus.$on('toggleImageEditor',(data)=>{
+        console.log(data);
+        //this.setup.toggleImageEditor()
+      })*/
+  },
+})
 </script>
 
 
