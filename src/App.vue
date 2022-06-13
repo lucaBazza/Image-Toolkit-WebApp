@@ -1,7 +1,9 @@
 <template>
   <p class="catalogOwner" v-if="isLoading">👤 Loading...</p>
   <p class="catalogOwner" v-else @click="openUserSettings">
-    👤 {{ utenteSng.nome }}
+    <img v-if="utenteSng.nome" src="./assets/test-userProf-pic.jpg"/>
+    <span v-else> 👤  </span>
+    <span>{{ utenteSng.nome }}</span>
   </p>
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
   <div class="controlBtns">
@@ -243,16 +245,27 @@ h3 { margin: 0 }
   margin: 0;
   top: 0.4rem;
   left: 0.4rem;
-  line-height: 1;
+  /*line-height: 1;*/
   border-radius: 0.3rem;
   background-color: rgba(255, 255, 255, 0.3);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  text-align: right;
+  vertical-align: middle;
 }
 .catalogOwner:hover {
   font-size: 150%;
   transition: 0.4s;
   cursor: cell;
+}
+.catalogOwner > img { 
+  width: 1.7rem;
+  border-radius: 100%;
+  margin-right: .5rem;
+}
+.catalogOwner > span {
+  margin: 0 0 10rem 0;
+  translate: transposeY(20px);
 }
 
 </style>
