@@ -18,24 +18,18 @@
       <button @click="openDocumentation">Need help? 📖</button>
     </div>
   </div>
-  <!--
-        <div v-else>
+  <!--  <div v-else>
             <button class="altoDxBtn" @click="closeModal">ℹ️</button>
-        </div>
-    -->
+        </div> -->
 </template>
 
 <script lang="ts">
 import { ref, defineComponent } from 'vue'
 
 export default defineComponent({
-  props: [/*"header", "text",*/ "theme"],
-  //data() {
-  //  return { isShowed: false  };
-  //},
+  props: ["theme"],
   methods: {
     closeModal(event) {
-      ///this.isShowed = ! this.isShowed
       console.log("closeModal");
       this.$emit("updateCloseMain");
     },
@@ -61,8 +55,6 @@ export default defineComponent({
 .modal {
   padding: 20px;
   margin: 40vh auto;
-  /*width: 200px;*/
-  /*background: white;*/
   border-radius: 1rem;
   overflow: visible;
 }
@@ -83,18 +75,6 @@ export default defineComponent({
 }
 .modal > button:hover{ cursor: grab }  
 .modal > button:last-child{ margin: -2rem auto }  
-/*button{
-    position: absolute;
-    top: 0;
-    right: 0;
-    float: right;
-    text-align: top;
-    font-size: 2rem;
-    background: transparent;
-    border: none;
-}*/
-
-
 
 .modal.sale {
   background: var(--background_mod);
