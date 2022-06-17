@@ -123,6 +123,14 @@ M E D I A   Q U E R Y E S
         overflow-y: auto;
         height: max( 50%, 500px);
     }
+    .avatar{ 
+        margin: .2rem; 
+        width: min(50%, 100px ); 
+        overflow: hidden;
+        box-shadow: 5px 10px 15px rgba(0,0,0,.3);
+    }
+    .avatar > img{ width: 1.2rem; float:left; }
+    .avatar > span{ float:left; }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */

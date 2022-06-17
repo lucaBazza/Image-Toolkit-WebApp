@@ -4,18 +4,22 @@ import Immagine from "./Immagine"
 //interface Catalogo{
 export default class Catalogo{
 
-    private _titolo: string
+    titolo: string
     proprietario: string
+    uid: string
     listaImmagini: Immagine[]
-    secretkey: string | undefined
+    secretkey: string
     static id: number = 0
+    createdAt: Date
 
-    constructor(proprietario: string, titolo: string, id: number) {
-        this._titolo = titolo
+    constructor(proprietario: string, titolo: string) {
+        this.titolo = titolo
         this.proprietario = proprietario
+        this.uid = ''
+        this.secretkey = ' '
         this.listaImmagini = []
-        Catalogo.id = ++Catalogo.id     //this.id = id
-
+        Catalogo.id = ++Catalogo.id
+        this.createdAt = new Date
         //console.log(`Catalogo costruito ${titolo} \t- id: ${Catalogo.id}`)
     }
 
@@ -23,17 +27,20 @@ export default class Catalogo{
         this.listaImmagini = listaImmagini
     }
 
-    public get titolo(): string {
-        return this._titolo
+    /*public getTitolo(): string {
+        return this.titolo
     }
-    public set titolo(value: string) {
-        this._titolo = value
-    }       
+    public setTitolo(value: string) {
+        this.titolo = value
+    }  */     
 
-    getCurrentId():number{
+    getCurrentId() : number{
         return Catalogo.id
     }
 
+    getUid(): string{
+        return this.uid;
+    }
 }
 
 interface Catalogo_extended extends Catalogo {

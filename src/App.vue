@@ -1,54 +1,48 @@
 <template>
-  <p class="catalogOwner" v-if="isLoading">👤 Loading...</p>
-  <p class="catalogOwner" v-else @click="openUserSettings">
-    <img v-if="utenteSng.nome" src="./assets/test-userProf-pic.jpg"/>
-    <span v-else> 👤  </span>
-    <span>{{ utenteSng.nome }}</span>
-  </p>
+
+  <AvatarUser v-if="isLogin" :utente="utenteSng" :userFS="user" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
+  <button v-else @click="signIn" class="googleSignIn">
+      <img src='./assets/logoGoogle.svg'/>Sign In
+  </button>
+
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
   <div class="controlBtns">
-    <button @click="toggleDarkModeBtn">🌓</button>
-    <button @click="toggleUploadMode">☁️</button>
-    <button @click="toggleCatalogMode">📚</button>
-    <button @click="toggleModalInfos">ℹ️</button>
+      <button @click="toggleDarkModeBtn">🌓</button>
+      <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
+      <button @click="toggleCatalogMode" v-if="isLogin" >📚</button>
+      <button @click="toggleModalInfos">ℹ️</button>
   </div>
+
   <h1 id="mainTitle">Image Toolkit App</h1>
 
   <LoginArea v-if="showLogInArea" :utente="utenteSng" />
 
-  <Modal
-    v-if="showModalInfos"
-    theme="sale"
-    @updateCloseMain="postCloseLoggin"
-  />
+  <Modal v-if="showModalInfos" theme="sale" @updateCloseMain="postCloseLoggin" />
 
   <upload-media
-    v-if="showUploadMode"
-    class="upload-media"
-    :server="settings.urlImageServer+'/formidable'"
-    error=""
-    v-bind:class="{ 'upload-media': '' }"
+      v-if="showUploadMode"
+      class="upload-media"
+      :server="settings.urlImageServer+'/formidable'"
+      error=""
+      v-bind:class="{ 'upload-media': '' }"
   />
 
   <CatalogoForm
-    v-if="showCatalogo && ! isLoading"
-    :catalogName="initialCatalog.catalogName"
-    :catalogOwner="initialCatalog.catalogOwner"
-    :secretKey="initialCatalog.secretKey"
-    :class="initialCatalog.class"
-    :urlServerImage="settings.urlImageServer"
-    :catalogoRef="utenteSng.getCatalogoCurrent()"
+      v-if="showCatalogo && ! isLoading"
+      :urlServerImage="settings.urlImageServer"
+      :catalogoRef="utenteSng.getCatalogoCurrent()"
   />
+
   <div v-if=" ! settings.isDevelopMode()" class="productionMode"><h2>Aviable soon</h2></div>
+
 </template>
 
+
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import Modal from "./components/Modal.vue"
-import MD5 from "./utilities/MD5.js"
-import FetchUser from './utilities/FetchUser'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
@@ -57,22 +51,39 @@ import Immagine from './types/Immagine'
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from "vue-media-upload"
 
+import { useAuth } from '@/firebase'
+import firebase from 'firebase/compat/app';
+import AvatarUser from './components/AvatarUser.vue';
+import { getCataloghi, addCatalogo, cataloghiCollection, getCataloghi_B, onAuthStateChanged_luca, onAuthStateChanged_lucaB } from './types/FirebaseModel'
+import { getDoc, getDocs } from '@firebase/firestore'
+
+/**
+ *    Roadmap
+ *  . connettersi al database fire
+ *  . registrare/loggare utente ( mail o google account )
+ *  . prendere credenziali
+ *  . visualizzarle asyncronamente sulla app
+ *  . caricare la lista catalogo corrrentemente selezionata
+ *  . per ogni catalogo, caricare la sotto-lista exifDatas e adjustments
+ *  . caricato un catalogo, creare una secretKey per scaricare le foto
+ *  . scaricare le foto
+ *      - prima con get tradizionale
+ *      - poi con post header ( secret key + user )
+ * 
+ *      https://www.youtube.com/watch?v=Htt8AKeF1Kw&t=283s 
+ */
+
 export default defineComponent({
   name: "App",
-  components: { Modal, CatalogoForm, LoginArea, UploadMedia },
-  created: function () { document.title = "Zabba image 🛠️ " },
-  data() {
-    console.log('appvue - data()')
-    return {
-      // restituisce un catalogo faked mentre carica async
-      initialCatalog: { catalogName: "", catalogOwner: "Luca", secretKey: MD5(new Date()), class: "catalogClass" },
-    };
-  },
+  components: { Modal, CatalogoForm, LoginArea, UploadMedia, AvatarUser },
+  created(){ document.title = "Zabba image 🛠️ " },
   setup(){
-    const utenteSng = ref<Utente>(new Utente('','',''))
+    //const utenteSng = ref<Utente>(new Utente('','',''))
+    let utenteSng = new Utente(''/*,'',''*/)
     const settings = Settings.getInstance();
 
     let isLoading = ref(true)
+
     let showModalInfos = ref(false)
     let showUploadMode = ref(false)
     let showCatalogo = ref(true)
@@ -103,9 +114,28 @@ export default defineComponent({
       isLoading.value = false
     }
 
+    const { user, isLogin, signIn, unsubscribe} = useAuth()
+
+    const signIn_utente = ()=>{
+      console.log("App.signIn_utente()")
+      signIn()
+    }
+
+    /*const getUtente = () : Utente =>{
+      return utenteSng
+    }*/
+
+    function setUtente(utente: Utente){
+      utenteSng = utente
+    }
+
+    console.log(`app.setup() \t isLogin is : ${ isLogin ? 'true ' : 'false'}`)
+
     return {  utenteSng, settings, isLoading,
               showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
-              toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone }
+              toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone, /*getUtente,*/
+              setUtente,
+              user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
       // in produzione al momento visualizzo solo il pulsante 'aviable soon'
@@ -116,18 +146,52 @@ export default defineComponent({
     }
   },
   async mounted() {
+    console.log('app.mounted()')
+
           // Avvio in dark mode
     document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
 
-        // Check se produzione nascondo implementazione
+          // Check se produzione nascondo implementazione
     if( ! this.settings.isDevelopMode() ) this.productionView()
 
-        // Carico utente > invio credenziali mandate al server
-    let helperUtente : Utente = await FetchUser('Luca','lkjh$33ASd','HGF475892SDG')
-    if( helperUtente.nome !== "" ){
-      this.utenteSng = helperUtente
-      this.loadingDone()
+          // Carico utente > invio credenziali mandate al server  MODO A    
+    //let helperUtente : Utente = await FetchUser('Luca','lkjh$33ASd','HGF475892SDG')
+    //if( helperUtente.nome !== "" ){
+    //  this.utenteSng = helperUtente
+    //  this.loadingDone()
+    //}
+    
+          // Carico utente > Firebase
+    //onAuthStateChanged_luca( this.utenteSng )
+    //onAuthStateChanged_lucaB()
+    //  .then( (res)=>{ console.log('utente caricato, ora carico cataloghi!', res) })
+    //  .catch( err => console.log(err) )
+
+    function convertUser_Utente(u : firebase.User) : Utente{
+        let displayName :string = u.displayName !
+        let email = u.email !
+        let photoURL = u.photoURL !
+        let uid = u.uid
+        return new Utente(displayName/*,'psw Google',[]*/)
+                                  .setEmail(email).setPhotoURL(photoURL).setUID(uid).setCurrentCatalog(0)        
     }
+    const auth = firebase.auth()
+    auth.onAuthStateChanged( user =>{
+      if( user ){
+          console.log('Auth status changed, user logged: ', user['displayName'])
+          this.utenteSng = convertUser_Utente(user as firebase.User)
+          getCataloghi_B(this.utenteSng.uid)
+            .then(datas => this.utenteSng.setListaCataloghi(datas) )
+            .catch(ex => console.log('getCataloghi error: ', ex) )
+      }
+      else {
+        console.log('Auth status is: user un-logged')
+        //unsub_refCatalogs && unsub_refCatalogs()
+        this.utenteSng = new Utente(''/*,'',[]*/)
+        this.showLogInArea = false
+        this.showCatalogo = false
+      }
+    })
   }
 });
 </script>
@@ -214,6 +278,8 @@ h3 { margin: 0 }
   translate: transposeY(20px);
 }
 
+.googleSignIn{ position: absolute; top: 0; left: 0; background: rgba(2,2,2, .3); border-radius: .5rem; border: none; margin: .3rem;   width: min(40%, 120px); color: var(--mainText)}
+.googleSignIn > img{ width: 1.7rem; margin-right: .3rem; padding: .5rem; vertical-align: middle; }
 </style>
 
 <!-- 

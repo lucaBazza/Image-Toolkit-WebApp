@@ -10,18 +10,22 @@ export default class Utente{
     password: string;
     secretKey: string;
     listaCataloghi: Catalogo[];
-    private indexCatalogNow: number;
+    indexCatalogNow: number;
+    photoURL: string;
+    uid: string;
     
     /**
      *      di default se l'utente ha più cataloghi vado a selezionare il primo
      */
-    constructor(nome: string, password: string, listaCataloghi : Catalogo[] | any){
+    constructor(nome: string /*, password: string, listaCataloghi : Catalogo[] | any*/){
         this.nome = nome
-        this.password = password
-        this.secretKey = MD5(nome+password)
-        this.listaCataloghi = listaCataloghi
+        this.password = ''
+        this.secretKey = '' //MD5(nome+password)
+        this.listaCataloghi = [] //listaCataloghi
         this.indexCatalogNow = 0
         this.email= ''
+        this.photoURL= ''
+        this.uid='-'
     }
     
     //setKeepLogin(isKeepingLog: boolean){
@@ -31,6 +35,11 @@ export default class Utente{
     setEmail(email: string){
         this.email = email
         return this;
+    }
+
+    setListaCataloghi(cats: Catalogo[]){
+        this.listaCataloghi = cats
+        return this
     }
 
     setCurrentCatalog(index: number){
@@ -51,6 +60,22 @@ export default class Utente{
         //console.log(`utente.ts isCurrentCatalog() \t ${catalogoId} === ${this.listaCataloghi[this.indexCatalogNow].getCurrentId()}`)
         //console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
         return catalogoId === this.listaCataloghi[this.indexCatalogNow].getCurrentId();
+    }
+
+    setPhotoURL(url: string){
+        this.photoURL = url;
+        return this
+    }
+
+    setUID(uid: string){
+        this.uid = uid;
+        return this
+    }
+
+    static getInstance(){
+        if( Utente.instance )
+            return Utente.instance
+        else throw Error('User not istanced')
     }
 
     /*

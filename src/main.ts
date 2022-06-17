@@ -2,6 +2,7 @@ import { createApp } from "vue"
 import App from "./App.vue"
 import "./registerServiceWorker"
 import "./assets/global.css"
+import Settings from "./types/Settings"
 
 const app = createApp(App)  //createApp(App).mount("#app");
 
@@ -10,9 +11,11 @@ const app = createApp(App)  //createApp(App).mount("#app");
 //app.config.globalProperties.___urlServerImage //= window.location.protocol + "//" + window.location.hostname + ":3000" //'localhost:3000'
 //app.config.globalProperties.___urlServerImage = new String(window.location.protocol +"//"+window.location.hostname+":3000")
 
+if( ! Settings.getInstance().isDevelopMode() ){
     // report error to tracking services
-app.config.errorHandler = (err, instance, info) => {
-    console.log( "app.config.errorHandler() - \n " + err )  //console.log(`${err} \n ${instance} \n ${info}`)
+    app.config.errorHandler = (err, instance, info) => {
+        console.log( "app.config.errorHandler() - \n " + err )  //console.log(`${err} \n ${instance} \n ${info}`)
+    }
 }
 
     // inserire main.test.ts per testare loading app

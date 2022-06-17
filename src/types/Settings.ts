@@ -1,5 +1,5 @@
-import MD5 from "@/utilities/MD5.js";
-import Catalogo from "./Catalogo";
+///import MD5 from "@/utilities/MD5.js";
+///import Catalogo from "./Catalogo";
 
 export default class Settings{
 

@@ -219,7 +219,7 @@ export default defineComponent({
 
     // TODO VALIDITA
     console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`);
-    this.cataRef.titolo = updateDatasCatalog.catalogName;       //this.catalogoDB.catalogName = updateDatasCatalog.catalogName;
+    this.cataRef.titolo = updateDatasCatalog.catalogName      //this.catalogoDB.catalogName = updateDatasCatalog.catalogName;
     this.cataRef.proprietario = updateDatasCatalog.catalogOwner //this.catalogoDB.catalogOwner = updateDatasCatalog.catalogOwner;
     this.cataRef.secretkey = updateDatasCatalog.secretKey       //this.catalogoDB.secretKey = updateDatasCatalog.secretKey;
 

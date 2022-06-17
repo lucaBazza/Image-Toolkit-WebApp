@@ -1,36 +1,28 @@
 <template>
-  <div v-if="utente" class="loginForm">
-    <span><h2>{{utente.nome}}</h2> {{utente.email}} </span>
+  <div class="loginForm">
+    <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
     <ul>
-      <h4>Cataloghi</h4>
+      <h4>Cataloghi <button @click="addNewCatalogo">+</button></h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.getCurrentId()">
         <b>Titolo:</b> {{cat.titolo}} <!-- <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span> -->
       </li>
+      <span v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</span>
     </ul>
-    <button @click="logOut(utente)">🚪 Log Out</button>
-  </div>
-  <div v-else class="loginForm">
-    <input type="text" v-model.lazy="userName" placeholder="Username..." /><br />
-    <input type="text" v-model.lazy="email" placeholder="Email..." /><br />
-    <input type="text" v-model.lazy="passWord" placeholder="Password..." /><br />
-    <input type="checkbox" id="checkbox" v-model="keepLogIn" />
-    <label for="checkbox">Keep me logged</label><br />
-    <button class="altoDxBtn" @click="logIn()">Log In!</button>
+    <button @click="signOut">🚪 Log-Out</button>
   </div>
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { ref, reactive, defineComponent } from 'vue'
 import Utente from '@/types/Utente';
 import Catalogo from '@/types/Catalogo';
 
-import EventEmitter from "events";
-const eventEmitter = new EventEmitter();
-eventEmitter.on("userHasLoggedOut", (user: Utente) => {
-  console.log("userHasLoggedOut 🌓 ");
-})
+import { useAuth } from '@/firebase'
+import { addCatalogo } from '@/types/FirebaseModel';
+import Immagine from '@/types/Immagine';
 
 export default defineComponent({
+  name: "LoginArea",
   props: {
     utente: {
       type: Utente,
@@ -38,29 +30,27 @@ export default defineComponent({
     }
   },
   setup(props){
-    const eventEmitter = new EventEmitter();
-    
-    let utente : Utente = props.utente ? props.utente : new Utente('','',[])
+    console.log('LoginArea.setup()')
+    const { signOut } = useAuth()
 
-    let userName = ""
-    let email = ""
-    let passWord = ""
-    let keepLogIn = true
 
-    function logIn() {
-        console.log(`${userName} ${email} try to log in with psw: ${passWord}, keep logged: ${keepLogIn ? "yes" : "no"}`);
-        let newUser = new Utente(userName,passWord, new Array<Catalogo>())
-        //newUser.setKeepLogin(keepLogIn)
-        eventEmitter.emit("userHasLoggedSuccesful()", newUser);
+    // TODO: controllare perchè props.utente può essere undefined
+    let utente: Utente = props.utente ? props.utente : Utente.getInstance() //new Utente('user.name','',null);
+    /*const form = reactive({name:'',email: '', password: ''})*/
+
+    /* */
+    const addNewCatalogo = ()=>{
+        console.log('LoginArea.addNewCatalogo()')        
+        addCatalogo(new Catalogo(utente.nome,'New catalog'), utente.uid)
     }
 
-    function logOut(_utente){
-        console.log(`logOut( ${utente.nome} )`)
-        eventEmitter.emit("userHasLoggedOut()", _utente);
-        _utente = undefined;
-    } 
+    //console.log('LoginArea.setup() - utente: ', props.utente, utente)
 
-    return{ utente, userName, email, passWord, keepLogIn, logIn, logOut }
+
+    return{ 
+            addNewCatalogo,
+            utente, signOut
+          }
   }
 })
 </script>
@@ -76,9 +66,10 @@ export default defineComponent({
   padding: 1.5rem;
   backdrop-filter: blur(5px);
 }
+.loginForm > h2 { display: inline-block; margin-right: 1rem; }
 .loginForm > span{ border-bottom: 1px solid gray }
-.loginForm > span > h2 { display: inline-block; margin-right: 1rem; }
-.loginForm > input {
+
+/*.loginForm > input {
   margin: 1rem 4rem;
   width: min(80%, 200px);
   background-color: transparent;
@@ -92,12 +83,17 @@ export default defineComponent({
 .loginForm > input[type=checkbox] {
   width: 1rem;
   margin-right: 1rem;
-}
+}*/
+.loginForm > button > img { width: 1.5rem; margin-right: .8rem; vertical-align:middle; }
 .loginForm > button {
-  padding: 1rem 25%;
+  padding: 1rem;
   background: rgba(0, 0, 0, 0.2);
   color: var(--mainText);
-  border-radius: .3rem;
+  border-radius: .4em;
+
+  display: inline-block;
+  width: 40%;
+  margin: .5rem;
 }
 
 .loginForm > ul > li > b { float: left }
