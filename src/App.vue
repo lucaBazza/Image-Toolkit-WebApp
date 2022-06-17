@@ -29,7 +29,6 @@
 
   <CatalogoForm
       v-if="showCatalogo && ! isLoading"
-      :urlServerImage="settings.urlImageServer"
       :catalogoRef="utenteSng.getCatalogoCurrent()"
   />
 
@@ -54,8 +53,7 @@ import { UploadMedia, UpdateMedia } from "vue-media-upload"
 import { useAuth } from '@/firebase'
 import firebase from 'firebase/compat/app';
 import AvatarUser from './components/AvatarUser.vue';
-import { getCataloghi, addCatalogo, cataloghiCollection, getCataloghi_B, onAuthStateChanged_luca, onAuthStateChanged_lucaB } from './types/FirebaseModel'
-import { getDoc, getDocs } from '@firebase/firestore'
+import { getCataloghi_C } from './types/FirebaseModel'
 
 /**
  *    Roadmap
@@ -78,8 +76,7 @@ export default defineComponent({
   components: { Modal, CatalogoForm, LoginArea, UploadMedia, AvatarUser },
   created(){ document.title = "Zabba image 🛠️ " },
   setup(){
-    //const utenteSng = ref<Utente>(new Utente('','',''))
-    let utenteSng = new Utente(''/*,'',''*/)
+    let utenteSng = new Utente('')  //ref<Utente>( new Utente('') )
     const settings = Settings.getInstance();
 
     let isLoading = ref(true)
@@ -123,18 +120,18 @@ export default defineComponent({
 
     /*const getUtente = () : Utente =>{
       return utenteSng
-    }*/
-
-    function setUtente(utente: Utente){
-      utenteSng = utente
     }
 
-    console.log(`app.setup() \t isLogin is : ${ isLogin ? 'true ' : 'false'}`)
+    function setUtente(utente: Utente){
+      utenteSng.value = utente
+    }*/
+
+    console.log(`app.setup()`/*,` \t isLogin is : ${ isLogin ? 'true ' : 'false'}`*/)
 
     return {  utenteSng, settings, isLoading,
               showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone, /*getUtente,*/
-              setUtente,
+              //setUtente,
               user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
@@ -143,6 +140,54 @@ export default defineComponent({
       console.log('productionView()')
       document.getElementsByClassName('catalogOwner')[0].setAttribute('hidden','');
       document.getElementsByClassName('controlBtns')[0].setAttribute('hidden','');
+    },
+    convertUser_Utente(u : firebase.User) : Utente{
+        let displayName :string = u.displayName !
+        let email = u.email !
+        let photoURL = u.photoURL !
+        let uid = u.uid
+        return new Utente(displayName)
+                      .setEmail(email).setPhotoURL(photoURL).setUID(uid).setCurrentCatalog(0)        
+    },
+    async loadUserDatasAsync(){
+      
+      // TODO superato testing togliere timeout !
+      setTimeout(()=>{ 
+          console.log(' 🕰 App.loadUserDatasAsync() ')
+
+          /*
+          getCataloghi_B(this.utenteSng.uid)
+            .then( datas => {
+              console.log("\n 💀 getCataloghi_B() POST cataloghi caricati: ", datas.length , "\n\n")
+              let ut : Utente = this.utenteSng.setListaCataloghi(datas as Catalogo[])
+              return ut
+            })
+            .then( resUtente => console.log(resUtente, 
+                                resUtente.listaCataloghi.length, 
+                                this.utenteSng.listaCataloghi.length,
+                                resUtente.getListaCataloghi().length 
+                              ) 
+            )
+            .catch(ex => console.log(ex) )
+         */
+
+          let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1),
+                                        new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3) ]
+
+          getCataloghi_C(this.utenteSng.uid)
+            .then( res => {
+              console.log("\n ✅  getCataloghi_C()  \t cataloghi caricati: ", res.length , "\n\n")
+              return this.utenteSng.setListaCataloghi(res)
+            })
+            .then( res =>{
+              this.utenteSng = res.setListaImmagini_currentCatalog(testImgs)
+              console.log('\n ✅  getCataloghi_C() \t lista imgs cat selez. :  ',this.utenteSng.getCatalogoCurrent().listaImmagini.length, '\n\n')
+              this.loadingDone()
+            })
+            .catch(ex => console.log(ex) )
+
+      }, 50)
+
     }
   },
   async mounted() {
@@ -162,27 +207,50 @@ export default defineComponent({
     //}
     
           // Carico utente > Firebase
-    //onAuthStateChanged_luca( this.utenteSng )
-    //onAuthStateChanged_lucaB()
-    //  .then( (res)=>{ console.log('utente caricato, ora carico cataloghi!', res) })
-    //  .catch( err => console.log(err) )
-
-    function convertUser_Utente(u : firebase.User) : Utente{
-        let displayName :string = u.displayName !
-        let email = u.email !
-        let photoURL = u.photoURL !
-        let uid = u.uid
-        return new Utente(displayName/*,'psw Google',[]*/)
-                                  .setEmail(email).setPhotoURL(photoURL).setUID(uid).setCurrentCatalog(0)        
-    }
     const auth = firebase.auth()
     auth.onAuthStateChanged( user =>{
       if( user ){
           console.log('Auth status changed, user logged: ', user['displayName'])
-          this.utenteSng = convertUser_Utente(user as firebase.User)
+          this.utenteSng = this.convertUser_Utente(user as firebase.User)
+
+          this.loadUserDatasAsync()
+          //console.log('Done user ath change')
+          /*
           getCataloghi_B(this.utenteSng.uid)
-            .then(datas => this.utenteSng.setListaCataloghi(datas) )
+            .then(datas => { 
+              this.utenteSng.setListaCataloghi(datas) 
+              loadImagesFromCatalog_firebaseA( this.utenteSng.getIndexCatalogoCurrent() )
+                .then( resImgs => { 
+                  console.log(this.utenteSng.listaCataloghi.length)
+
+                  resImgs = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
+                  //setImagesForCurrentCatalog(this.utenteSng, resImgs )
+                })
+            
+            })
             .catch(ex => console.log('getCataloghi error: ', ex) )
+            /*.then( ()=> {
+              let catalogID = this.utenteSng.getIndexCatalogoCurrent()
+              console.log('getCataloghi_B() -> then() II  \n\n ' , this.utenteSng)
+
+              loadImagesFromCatalog_firebaseA(catalogID)
+                //.then( resImgs => resImgs && this.utenteSng.getCatalogoCurrent().setListaImmagini(resImgs)  )
+                .then( resImgs => { 
+                    let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
+                    if(resImgs){
+                      console.log(this.utenteSng.listaCataloghi)
+                      //console.log('utente sng current cat: ', this.utenteSng.getCatalogoCurrent())
+                      //this.utenteSng.getCatalogoCurrent().setListaImmagini([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
+                      //this.utenteSng.setImagesForCurrentCatalog([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
+                      setImagesForCurrentCatalog(this.utenteSng,testImgs )
+                    }
+                    else 
+                      console.log('no imgs')  
+                })
+                .then( () => this.loadingDone() )
+                .catch( ex =>  console.log('getCataloghi getImages error: ', ex) )
+            }) 
+            */
       }
       else {
         console.log('Auth status is: user un-logged')
@@ -204,7 +272,7 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  /*margin-top: 60px;*/
 }
 h1 {
   border-bottom: 1px solid #aaa;
@@ -229,7 +297,7 @@ h3 { margin: 0 }
   /*mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 80%, transparent 100%);*/
 }
 /*.darkMode > .headerImg{ filter:invert(0.5) } */
-.heartContainer { padding: 1rem }
+#mainTitle{ width: max(30%, 200px); margin: 4rem auto; }
 .upload-media {
   margin-left: 10%;
   width: 80%;

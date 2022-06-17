@@ -27,7 +27,7 @@ body{
     -moz-animation: gradient 10s ease infinite;
 
     color: var(--mainText);
-    min-width: 300px;
+    min-width: 250px;
 }
 
 .headerImg { content: url("./DSC09538-ProPs.webp") }
@@ -101,8 +101,8 @@ M E D I A   Q U E R Y E S
         place-items: center;
     }
     .catalogDiv > p {
-        width: 100%;
-        margin: 3rem 0;
+        width: max(85%, 200px);
+        margin-top: 2rem;
     }
     .loginForm{
         margin: 1rem;
@@ -125,12 +125,10 @@ M E D I A   Q U E R Y E S
     }
     .avatar{ 
         margin: .2rem; 
-        width: min(50%, 100px ); 
+        width: min(40%, 80px ); 
         overflow: hidden;
         box-shadow: 5px 10px 15px rgba(0,0,0,.3);
     }
-    .avatar > img{ width: 1.2rem; float:left; }
-    .avatar > span{ float:left; }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */

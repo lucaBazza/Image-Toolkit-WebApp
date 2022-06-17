@@ -3,12 +3,12 @@
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
     <ul>
       <h4>Cataloghi <button @click="addNewCatalogo">+</button></h4>
-      <li v-for="cat in utente.listaCataloghi" :key="cat.getCurrentId()">
-        <b>Titolo:</b> {{cat.titolo}} <!-- <span v-if="utente.isCurrentCatalog(cat.getCurrentId())"> 👈 </span> -->
+      <li v-for="cat in utente.listaCataloghi" :key="cat.id">
+        <b>Titolo:</b> {{cat.titolo}} <span v-if="utente.isCurrentCatalog(cat.id)"> 👈 </span>
       </li>
       <span v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</span>
     </ul>
-    <button @click="signOut">🚪 Log-Out</button>
+    <button @click="signOut">🚪 Log out</button>
   </div>
 </template>
 
@@ -33,24 +33,16 @@ export default defineComponent({
     console.log('LoginArea.setup()')
     const { signOut } = useAuth()
 
-
     // TODO: controllare perchè props.utente può essere undefined
-    let utente: Utente = props.utente ? props.utente : Utente.getInstance() //new Utente('user.name','',null);
+    let utente: Utente = props.utente ? props.utente : new Utente('unkonw') //? props.utente : Utente.getInstance() //new Utente('user.name','',null);
     /*const form = reactive({name:'',email: '', password: ''})*/
 
-    /* */
     const addNewCatalogo = ()=>{
         console.log('LoginArea.addNewCatalogo()')        
         addCatalogo(new Catalogo(utente.nome,'New catalog'), utente.uid)
     }
 
-    //console.log('LoginArea.setup() - utente: ', props.utente, utente)
-
-
-    return{ 
-            addNewCatalogo,
-            utente, signOut
-          }
+    return{ addNewCatalogo, utente, signOut }
   }
 })
 </script>
@@ -96,9 +88,10 @@ export default defineComponent({
   margin: .5rem;
 }
 
-.loginForm > ul > li > b { float: left }
 .loginForm > ul > li { text-align: right; margin: 1rem 0; }
+.loginForm > ul > li:hover{ /*border-bottom: 1px gray solid*/ text-decoration: underline; } 
 .loginForm > ul > li:last-child{ margin-bottom: 3rem }
+.loginForm > ul > li > b { float: left }
 </style>
 
 <!--  

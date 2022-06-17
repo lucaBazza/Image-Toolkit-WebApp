@@ -48,7 +48,7 @@ export default defineComponent({
   left: 0; 
   color: var(--mainText);
   border-radius: 0.5rem;
-  width: max(40%, 120px);
+  width: max(25%, 120px);
   padding: .5rem;
   margin: .5rem;
   box-shadow: 10px 20px 30px rgba(0,0,0,.4);
@@ -59,7 +59,9 @@ export default defineComponent({
   border-radius: 50%;
   width: 2rem;
   margin-right: .6rem;
-  vertical-align: middle;
+  /*vertical-align: middle;*/
+  float: left;
 }
+.avatar > span{ float: left; margin-top: 0.3rem; }
 </style>
 

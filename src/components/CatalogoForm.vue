@@ -8,7 +8,7 @@
         <ImageExifViewer :imageRf="img" />
       </li>
     </ul>
-    <button v-if="!catalogIsOffline" @click="deleteAllImages()">🗑️</button>
+    <button @click="deleteAllImages()"> &nbsp; 🗑️ &nbsp; </button>
   </div>
 </template>
 <script lang="ts">
@@ -25,13 +25,11 @@ export default defineComponent({
   // PROPS SONO SOLO IN LETTURA PER IL COMPONENTE
   props: {
     //urlServerImage: { required: true, type: String},
-    catalogoRef: { required: true, type: Catalogo }
+    catalogoRef: { type: Catalogo, default: new Catalogo('','') }
   },
   setup(props){
+    console.log('CatalogoForm.setup() '/*,props.catalogoRef*/)
     let cataRef = props.catalogoRef
-
-    cataRef.titolo = '. . . loading catalog . . .' //console.log("setup titolo: " + cataRef.titolo);
-
     return { cataRef }
   },
   data() {
@@ -43,9 +41,9 @@ export default defineComponent({
     }
   },
   computed: {
-    isServerOffline(){ return fetch(Settings.getInstance().urlImageServer) //return fetch(this.___urlServerImage)
-                                .then(function(res){ return res.status!==200})
-                                .catch((err) => { return false });
+    isServerOffline(){ return fetch( Settings.getInstance().urlImageServer )
+                                .then( res => { return res.status!==200 })
+                                .catch(() => { return false }) //.catch((err) => { return false })
     }
   },
   // created avviene prima che i data() siano caricati
@@ -66,11 +64,245 @@ export default defineComponent({
           id: 0,
           done: false,
           title: "Passo Sella",
-        },
-        //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
-        //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
+        }
       ];
     },
+
+
+    async deleteAllImages() {
+      console.log("deleteAllImages()");
+    },
+  }, // END METHODS
+  /*
+   *   mounted avviene dopo che datas sono stati caricati
+   *       -> richiede il catalogo reale dal server
+   *       -> TODO: controlla la validità utente, secret key, class
+   *       -> aggiorna la listaImmagini inserendo solo i metas
+   *       -> per ogni immagine-meta nel db, la richiede al server e visualizza
+   *
+   */
+  async mounted() {
+    console.log("Catalogo: mounted()");
+
+    if (this.catalogIsReady) return;
+
+        // RICHIEDE CATALOGO
+    const updateDatasCatalog = this.cataRef;
+    //if (this.catalogIsOffline) return;
+
+        // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
+    let listUrlImgs = updateDatasCatalog.listaImmagini.map((img) => img.src);
+
+        // TODO VALIDITA
+
+
+        // AGGIORNA il catalogo, ma le immagini reali sono in stato di loading    
+
+
+
+        // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
+    this.cataRef.listaImmagini.forEach((img, i) => {
+      const useCompiledURL = false;
+      
+          // Metodo con server che invia indirizzo assoluto
+      //img.src = listUrlImgs[i];
+          // Metodo con server che invia solo nomefile relativo
+      //img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
+
+      //img.classStyle = "";
+    });
+    
+    this.catalogIsReady = true;
+    this.catalogIsOffline = false;
+  },
+})
+</script>
+
+<style>
+/** style scooped */
+ul {
+  padding: 0;
+}
+li {
+  list-style-type: none;
+}
+h2, p {
+  color: var(--mainText);
+}
+h3 {
+  border-bottom: 1px solid gray;
+}
+.isReadySpinner {
+  width: 3rem;
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+}
+.catalogDiv{ margin: 4rem 0 }
+.catalogDiv > button {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  margin: 2rem;
+  opacity: 0.9;
+  backdrop-filter: blur(2px);
+}
+.catalogDiv > button:hover {
+  cursor: grab;
+  box-shadow: 20px 20px 20px 20px #888888;
+}
+
+.catalogDiv > p {
+  background-color: var(--backgroundColor);
+  text-align: center;
+  margin: 0 auto;
+  padding: 1rem;
+  border-radius: 1rem;
+}
+</style>
+
+
+
+
+<!--
+
+
+    /**
+     *  - scarica l'immagine direttamente dalla GET
+     *       - TODO: era più bello l'altro metodo con POST usando i params ma è complicato estrarre la stream response
+     *  - se presente nei placeholder la aggiorna, altrimenti assegna unviable
+     *  - se serve aggiorna visualizzazione
+     */
+    /*
+    async requestImageForUser(urlServer, img, _catalogOwner) {
+          //const requestOptions = {
+          //  method: "POST",
+          //  headers: { "Content-Type": "application/json" },
+          //  body: JSON.stringify({ utente: _catalogOwner, richiestaImg: img })
+          //};
+          //const response = await fetch(url, requestOptions); //const data = await response.json();
+
+      //console.log(`\t request Image For User() ${_catalogOwner} - ${img.name} - id: ${img.id}`)
+      let urlImageRes = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img.src}`;
+      console.log(urlImageRes);
+      document.addEventListener("DOMContentLoaded", function () {
+        let el  = document.getElementById(`img_${img.id}`) as HTMLImageElement;
+        el.src = urlImageRes;
+        el.classList.remove("loading");
+      });
+
+      
+      //      // non selezionare l'immagine dall'id, ma dall'attributo ALT
+      //      let el_id = `img_${img.id}`;
+      //      //let el :  HTMLImageElement = (document.getElementById(el_id) as HTMLImageElement);
+      //      let el = document.getElementById(el_id);
+      //      if(el){
+      //          let urlImageRes = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img.src}`
+      //          // TODO : impleentare caso in cui la risorsa non c'è e quindi dà unviable
+      //          el.src = urlImageRes;
+      //          el.classList.remove('loading');
+      //      }
+      //      else console.log(`Element ${el_id} missing in DOM`);
+
+            //[...document.getElementsByTagName('img')].forEach(imgEl => {
+            //  if( imgEl.getAttribute('alt') === img )
+            //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
+            //});
+    },
+    */
+
+
+
+
+    async mounted(){
+
+      ... ... ... 
+
+      //const loadingSrc = require("./../assets/loading.gif");
+      //this.catalogoDB.listaImmagini = updateDatasCatalog.immagini;
+      //this.catalogoDB.listaImmagini.forEach(function (v) {
+      //  v.src = loadingSrc;
+      //  v.class = "loading";
+      //});
+
+          // richiede img al server e visualizzala ( in lazy mode )
+      // https://nicholasmarmonti.com/tutorial/image-lazy-load-metodo-semplice-leggerissimo/
+      // https://css-tricks.com/lazy-loading-images-with-vue-js-directives-and-intersection-observer/
+
+      
+      //this.catalogoDB.listaImmagini.forEach((img, i) => {
+      //  img.src = listUrlImgs[i];
+      //  img.class = ""; //img.datasrc = listUrlImgs[i];
+      //});
+      
+            /*
+                document.addEventListener('DOMContentLoaded', function (){
+                    
+                    [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
+                        console.log()
+                        img.setAttribute('src', img.getAttribute('data-src'));
+                        img.onload = function() {
+                            img.removeAttribute('data-src');
+                            img.classList.remove('loading');
+                        };
+                        img.onerror = function() { console.log("Error loading "+ img.getAttribute('data-src')) };
+                    })
+                });
+                */
+
+            //updateDatasCatalog.immagini.forEach(img => console.log(img))
+            //this.catalogoDB.listaImmagini.forEach(img => console.log(img))
+
+
+    }
+
+
+
+  async mounted() {
+    console.log("Catalogo: mounted()");
+  
+    if (this.catalogIsReady) return;
+
+        // RICHIEDE CATALOGO
+    //const updateDatasCatalog = await this.requestCatalogForUser(this.cataRef.proprietario, Catalogo.id );
+    //if (this.catalogIsOffline) return;
+
+        // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
+    let listUrlImgs = updateDatasCatalog.immagini.map((img) => img.src);
+
+        // TODO VALIDITA
+    console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`);
+    this.cataRef.titolo = updateDatasCatalog.catalogName      //this.catalogoDB.catalogName = updateDatasCatalog.catalogName;
+    this.cataRef.proprietario = updateDatasCatalog.catalogOwner //this.catalogoDB.catalogOwner = updateDatasCatalog.catalogOwner;
+    this.cataRef.secretkey = updateDatasCatalog.secretKey       //this.catalogoDB.secretKey = updateDatasCatalog.secretKey;
+
+        // AGGIORNA il catalogo, ma le immagini reali sono in stato di loading    
+    const li : Immagine[] = listUrlImgs.map((img,idx) => { 
+        //console.log(img); 
+        let helpImg : Immagine = new Immagine(img,idx)
+        helpImg.setExifDatas(updateDatasCatalog.immagini[idx].exifDatas)
+        return helpImg;
+    });
+    this.cataRef.setListaImmagini(li)
+
+        // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
+    this.cataRef.listaImmagini.forEach((img, i) => {
+      const useCompiledURL = false;
+      
+          // Metodo con server che invia indirizzo assoluto
+      //img.src = listUrlImgs[i];
+          // Metodo con server che invia solo nomefile relativo
+      img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
+
+      img.classStyle = "";
+    });
+    
+    this.catalogIsReady = true;
+  }
+
+
+
+
     /**
      *  RICHESTA CATALOGO ATTUALMENTE SELEZIONATO DALL'UTENTE
      *    - ritorna una     
@@ -120,213 +352,8 @@ export default defineComponent({
       console.log(`\n\t Catalogo: ${data.catalogName} \n\n`);
 
       return data;
-      
-
-
-      /*try {
-        const response = await fetch(Settings.getInstance().urlImageServer,
-                                      { method: 'POST', headers: { accept: 'application/json' }});
-
-        if (!response.ok) {
-          throw new Error(`Error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        return result;
-      } catch (err) { console.log(err); }
-      return { catalogName: "Catalog unaviable", listaImmagini: [] } */
-
     },
 
-    /**
-     *  - scarica l'immagine direttamente dalla GET
-     *       - TODO: era più bello l'altro metodo con POST usando i params ma è complicato estrarre la stream response
-     *  - se presente nei placeholder la aggiorna, altrimenti assegna unviable
-     *  - se serve aggiorna visualizzazione
-     */
-    /*
-    async requestImageForUser(urlServer, img, _catalogOwner) {
-          //const requestOptions = {
-          //  method: "POST",
-          //  headers: { "Content-Type": "application/json" },
-          //  body: JSON.stringify({ utente: _catalogOwner, richiestaImg: img })
-          //};
-          //const response = await fetch(url, requestOptions); //const data = await response.json();
 
-      //console.log(`\t request Image For User() ${_catalogOwner} - ${img.name} - id: ${img.id}`)
-      let urlImageRes = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img.src}`;
-      console.log(urlImageRes);
-      document.addEventListener("DOMContentLoaded", function () {
-        let el  = document.getElementById(`img_${img.id}`) as HTMLImageElement;
-        el.src = urlImageRes;
-        el.classList.remove("loading");
-      });
 
-      
-      //      // non selezionare l'immagine dall'id, ma dall'attributo ALT
-      //      let el_id = `img_${img.id}`;
-      //      //let el :  HTMLImageElement = (document.getElementById(el_id) as HTMLImageElement);
-      //      let el = document.getElementById(el_id);
-      //      if(el){
-      //          let urlImageRes = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img.src}`
-      //          // TODO : impleentare caso in cui la risorsa non c'è e quindi dà unviable
-      //          el.src = urlImageRes;
-      //          el.classList.remove('loading');
-      //      }
-      //      else console.log(`Element ${el_id} missing in DOM`);
-
-            //[...document.getElementsByTagName('img')].forEach(imgEl => {
-            //  if( imgEl.getAttribute('alt') === img )
-            //    imgEl.src = `${urlServer}?utente=${_catalogOwner}&richiestaImg=${img}`;
-            //});
-    },
-    */
-    async deleteAllImages() {
-      console.log("deleteAllImages()");
-      var r = confirm("Are you sure you want to delete all images?");
-      if (r == true) {
-        console.log("Post delete");
-        const res = await fetch(`${Settings.getInstance().urlImageServer}/deleteAll`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ utente: this.cataRef.proprietario /*this.catalogoDB.catalogOwner*/ }),
-        }).catch((err) => {
-          console.log(`Server api ${Settings.getInstance().urlImageServer} is down 😭`);
-          this.catalogIsOffline = true;
-        });
-      } else console.log("Images saved from destruction");
-    },
-  }, // END METHODS
-  /*
-   *   mounted avviene dopo che datas sono stati caricati
-   *       -> richiede il catalogo reale dal server
-   *       -> TODO: controlla la validità utente, secret key, class
-   *       -> aggiorna la listaImmagini inserendo solo i metas
-   *       -> per ogni immagine-meta nel db, la richiede al server e visualizza
-   *
-   */
-  async mounted() {
-    console.log("Catalogo: mounted()");
-
-    if (this.catalogIsReady) return;
-
-    // RICHIEDE CATALOGO
-    const updateDatasCatalog = await this.requestCatalogForUser(/*`${Settings.getInstance().urlImageServer}/imagelist`,*/ this.cataRef.proprietario, Catalogo.id/*this.cataRef.id*/ );
-    if (this.catalogIsOffline) return;
-
-    // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
-    let listUrlImgs = updateDatasCatalog.immagini.map((img) => img.src);
-
-    // TODO VALIDITA
-    console.log(`TODO check validità database todo ${updateDatasCatalog.catalogName} \t dimensione: ${updateDatasCatalog.immagini.length} 🌁`);
-    this.cataRef.titolo = updateDatasCatalog.catalogName      //this.catalogoDB.catalogName = updateDatasCatalog.catalogName;
-    this.cataRef.proprietario = updateDatasCatalog.catalogOwner //this.catalogoDB.catalogOwner = updateDatasCatalog.catalogOwner;
-    this.cataRef.secretkey = updateDatasCatalog.secretKey       //this.catalogoDB.secretKey = updateDatasCatalog.secretKey;
-
-    // Aggiorna il catalogo, ma le immagini reali sono in stato di loading
-    //const li : Immagine[] = []
-    //listUrlImgs.forEach(i => li.push(new Immagine(i.src,i.id)));
-      //listUrlImgs.map((img,idx) => new Immagine(img.src,img.id).setExifDatas(updateDatasCatalog.immagini[idx].exifDatas));
-    
-    const li : Immagine[] = listUrlImgs.map((img,idx) => { 
-        //console.log(img); 
-        let helpImg : Immagine = new Immagine(img,idx)
-        helpImg.setExifDatas(updateDatasCatalog.immagini[idx].exifDatas)
-        return helpImg;
-    });
-    this.cataRef.setListaImmagini(li)
-
-    // in base al tipo di url che ho nel catalogo, vado a richiedere al server
-    this.cataRef.listaImmagini.forEach((img, i) => {
-      const useCompiledURL = false;
-      
-          // Metodo con server che invia indirizzo assoluto
-      //img.src = listUrlImgs[i];
-          // Metodo con server che invia solo nomefile relativo
-      img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
-
-      img.classStyle = "";
-    });
-    
-    //const loadingSrc = require("./../assets/loading.gif");
-    //this.catalogoDB.listaImmagini = updateDatasCatalog.immagini;
-    //this.catalogoDB.listaImmagini.forEach(function (v) {
-    //  v.src = loadingSrc;
-    //  v.class = "loading";
-    //});
-
-        // richiede img al server e visualizzala ( in lazy mode )
-    // https://nicholasmarmonti.com/tutorial/image-lazy-load-metodo-semplice-leggerissimo/
-    // https://css-tricks.com/lazy-loading-images-with-vue-js-directives-and-intersection-observer/
-
-    
-    //this.catalogoDB.listaImmagini.forEach((img, i) => {
-    //  img.src = listUrlImgs[i];
-    //  img.class = ""; //img.datasrc = listUrlImgs[i];
-    //});
-    
-          /*
-              document.addEventListener('DOMContentLoaded', function (){
-                  
-                  [].forEach.call(document.querySelectorAll('img[data-src]'), function(img) {
-                      console.log()
-                      img.setAttribute('src', img.getAttribute('data-src'));
-                      img.onload = function() {
-                          img.removeAttribute('data-src');
-                          img.classList.remove('loading');
-                      };
-                      img.onerror = function() { console.log("Error loading "+ img.getAttribute('data-src')) };
-                  })
-              });
-              */
-
-          //updateDatasCatalog.immagini.forEach(img => console.log(img))
-          //this.catalogoDB.listaImmagini.forEach(img => console.log(img))
-
-    this.catalogIsReady = true;
-  },
-})
-</script>
-
-<style>
-/** style scooped */
-ul {
-  padding: 0;
-}
-li {
-  list-style-type: none;
-}
-h2, p {
-  color: var(--mainText);
-}
-h3 {
-  border-bottom: 1px solid gray;
-}
-.isReadySpinner {
-  width: 3rem;
-  position: absolute;
-  top: 0.5rem;
-  left: 50%;
-}
-.catalogDiv{ margin: 4rem 0 }
-.catalogDiv > button {
-  background: transparent;
-  border: none;
-  font-size: 2rem;
-  margin: 2rem;
-  opacity: 0.9;
-  backdrop-filter: blur(2px);
-}
-.catalogDiv > button:hover {
-  cursor: grab;
-  box-shadow: 20px 20px 20px 20px #888888;
-}
-
-.catalogDiv > p {
-  background-color: var(--backgroundColor);
-  text-align: center;
-  margin: 0 20%;
-  padding: 1rem;
-  border-radius: 1rem;
-}
-</style>
+-->
