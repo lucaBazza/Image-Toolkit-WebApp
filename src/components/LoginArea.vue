@@ -2,11 +2,16 @@
   <div class="loginForm">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
     <ul>
-      <h4>Cataloghi <button @click="addNewCatalogo">+</button></h4>
+      <h4>Cataloghi 
+        <!-- <button @click="addNewCatalogo">+</button> -->
+        
+      </h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.id">
-        <b>Titolo:</b> {{cat.titolo}} <span v-if="utente.isCurrentCatalog(cat.id)"> 👈 </span>
+        <span v-if="utente.isCurrentCatalog(cat.id)">  👉  </span>
+        <b>Titolo:</b> {{cat.titolo}}
       </li>
       <span v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</span>
+      <input type="text" @keyup.enter="addNewCatalogo"  placeholder="➕ Enter a new catalog"/>
     </ul>
     <button @click="signOut">🚪 Log out</button>
   </div>
@@ -18,8 +23,8 @@ import Utente from '@/types/Utente';
 import Catalogo from '@/types/Catalogo';
 
 import { useAuth } from '@/firebase'
-import { addCatalogo } from '@/types/FirebaseModel';
-import Immagine from '@/types/Immagine';
+import { addCatalogo, addCatalogo2 } from '@/types/FirebaseModel';
+//import Immagine from '@/types/Immagine';
 
 export default defineComponent({
   name: "LoginArea",
@@ -37,9 +42,10 @@ export default defineComponent({
     let utente: Utente = props.utente ? props.utente : new Utente('unkonw') //? props.utente : Utente.getInstance() //new Utente('user.name','',null);
     /*const form = reactive({name:'',email: '', password: ''})*/
 
-    const addNewCatalogo = ()=>{
-        console.log('LoginArea.addNewCatalogo()')        
-        addCatalogo(new Catalogo(utente.nome,'New catalog'), utente.uid)
+    const addNewCatalogo = (e)=>{
+        console.log('LoginArea.addNewCatalogo() \n', e.target.value)     
+        //addCatalogo(new Catalogo(utente.nome, e.target.value), utente.uid)
+        addCatalogo2(new Catalogo(utente.nome, e.target.value), utente.uid)
     }
 
     return{ addNewCatalogo, utente, signOut }
@@ -48,6 +54,7 @@ export default defineComponent({
 </script>
 
 <style>
+
 .loginForm {
   display: block;
   color: var(--mainText);
@@ -60,18 +67,20 @@ export default defineComponent({
 }
 .loginForm > h2 { display: inline-block; margin-right: 1rem; }
 .loginForm > span{ border-bottom: 1px solid gray }
-
+.loginForm > ul > input[type=text] {
+  padding: 1.1rem;
+  color: var(--mainText);
+  border-radius: .3rem;
+  border-style: groove;
+  background-color: transparent;
+  /*float:right;*/
+}
 /*.loginForm > input {
   margin: 1rem 4rem;
   width: min(80%, 200px);
   background-color: transparent;
 }
-.loginForm > input[type=text] {
-  padding: 1.1rem;
-  color: var(--mainText);
-  border-radius: .3rem;
-  border-style: groove;
-}
+
 .loginForm > input[type=checkbox] {
   width: 1rem;
   margin-right: 1rem;

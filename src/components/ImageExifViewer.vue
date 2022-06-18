@@ -39,7 +39,7 @@ export default defineComponent({
     const image_ref = props.imageRf;
 
     const imageLoadError = ()=>{
-      console.log('imageLoadError()')
+      console.log('ImageExifViewer.imageLoadError()')
       image_ref.src = require("@/assets/noImg.jpg")
       image_ref.classStyle = 'loading'
     }
@@ -55,22 +55,11 @@ export default defineComponent({
     reqEdit() {
       console.log("ImageExifViewer.reqEdit()");
     },
-    toggleEditorFn : function(){
+    toggleEditorFn(){
       console.log("ImageExifViewer.toggleEditorFn()")
       this.showImgEditModal = ! this.showImgEditModal
     }
-  },
-  mounted() { 
-       //this.$root.$on('a-far-away-event', (name) => {
-      //  //alert('Hello ' + name)
-      //  console.log("ImageExifViewer.reqEdit()"); 
-      //})
-      
-      /*bus.$on('toggleImageEditor',(data)=>{
-        console.log(data);
-        //this.setup.toggleImageEditor()
-      })*/
-  },
+  }
 })
 </script>
 

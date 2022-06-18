@@ -8,6 +8,8 @@
 <script lang="ts">
 import { ref, reactive, defineComponent } from 'vue'
 
+// TODO Implemetare usando script lang ts setup
+
 export default defineComponent({
   name: "AvatarUser",
   props: {

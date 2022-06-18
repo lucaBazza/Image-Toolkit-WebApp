@@ -27,6 +27,8 @@
       v-bind:class="{ 'upload-media': '' }"
   />
 
+  <input type="file" @change="uploadImageInput" class="uploadImageCodeInspire"  accept="image/*" multiple/>
+
   <CatalogoForm
       v-if="showCatalogo && ! isLoading"
       :catalogoRef="utenteSng.getCatalogoCurrent()"
@@ -46,14 +48,17 @@ import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
 import Immagine from './types/Immagine'
+import AvatarUser from './components/AvatarUser.vue'
 
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from "vue-media-upload"
 
 import { useAuth } from '@/firebase'
-import firebase from 'firebase/compat/app';
-import AvatarUser from './components/AvatarUser.vue';
-import { getCataloghi_C } from './types/FirebaseModel'
+import firebase from 'firebase/compat/app'
+
+import { getCataloghi_C, loadImagesFromCatalog_firebaseA, get_firebaseID_currentCatalogo } from './types/FirebaseModel'
+import uploadImageCodeInspire from '@/utilities/uploadImageCodeInspire'
+
 
 /**
  *    Roadmap
@@ -62,7 +67,7 @@ import { getCataloghi_C } from './types/FirebaseModel'
  *  . prendere credenziali
  *  . visualizzarle asyncronamente sulla app
  *  . caricare la lista catalogo corrrentemente selezionata
- *  . per ogni catalogo, caricare la sotto-lista exifDatas e adjustments
+ *  . per ogni catalogo, caricare la sotto-lista exifDatas e adjustments  TODO check it
  *  . caricato un catalogo, creare una secretKey per scaricare le foto
  *  . scaricare le foto
  *      - prima con get tradizionale
@@ -155,24 +160,15 @@ export default defineComponent({
       setTimeout(()=>{ 
           console.log(' 🕰 App.loadUserDatasAsync() ')
 
-          /*
-          getCataloghi_B(this.utenteSng.uid)
-            .then( datas => {
-              console.log("\n 💀 getCataloghi_B() POST cataloghi caricati: ", datas.length , "\n\n")
-              let ut : Utente = this.utenteSng.setListaCataloghi(datas as Catalogo[])
-              return ut
-            })
-            .then( resUtente => console.log(resUtente, 
-                                resUtente.listaCataloghi.length, 
-                                this.utenteSng.listaCataloghi.length,
-                                resUtente.getListaCataloghi().length 
-                              ) 
-            )
-            .catch(ex => console.log(ex) )
-         */
 
-          let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1),
-                                        new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3) ]
+          let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0).setNomeFile('DSC04644_ps'),
+                                        new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04514_ps.jpg?alt=media&token=002e505b-941d-4a10-a619-0d31a1e6a271',1),
+                                        new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04483_ps.jpg?alt=media&token=aa966cbd-b5ae-41a2-a217-15560b7eb862',2),
+                                        new Immagine('asdD.jpg',3), 
+                                        new Immagine('asdD.jpg',4), 
+                                        new Immagine('asdD.jpg',5),
+                                      ]
+                                      
 
           getCataloghi_C(this.utenteSng.uid)
             .then( res => {
@@ -183,12 +179,22 @@ export default defineComponent({
               this.utenteSng = res.setListaImmagini_currentCatalog(testImgs)
               console.log('\n ✅  getCataloghi_C() \t lista imgs cat selez. :  ',this.utenteSng.getCatalogoCurrent().listaImmagini.length, '\n\n')
               this.loadingDone()
+
+              //get_firebaseID_currentCatalogo(this.utenteSng.getIndexCatalogoCurrent()).then(x=>console.log(x))
             })
             .catch(ex => console.log(ex) )
 
       }, 50)
 
-    }
+    },
+    /**
+     *  catalogID specifica il nome del catalogo FS (quindi se custm genera una nuova entry)
+     */
+    async uploadImageInput(event){
+      //let selected_catalogID = get_firebaseID_currentCatalogo(this.utenteSng.getIndexCatalogoCurrent())
+      //uploadImageCodeInspire(event, selected_catalogID)
+      get_firebaseID_currentCatalogo(this.utenteSng.getIndexCatalogoCurrent()).then(x=>uploadImageCodeInspire(event,x))
+    },
   },
   async mounted() {
     console.log('app.mounted()')
@@ -198,13 +204,6 @@ export default defineComponent({
 
           // Check se produzione nascondo implementazione
     if( ! this.settings.isDevelopMode() ) this.productionView()
-
-          // Carico utente > invio credenziali mandate al server  MODO A    
-    //let helperUtente : Utente = await FetchUser('Luca','lkjh$33ASd','HGF475892SDG')
-    //if( helperUtente.nome !== "" ){
-    //  this.utenteSng = helperUtente
-    //  this.loadingDone()
-    //}
     
           // Carico utente > Firebase
     const auth = firebase.auth()
@@ -214,43 +213,6 @@ export default defineComponent({
           this.utenteSng = this.convertUser_Utente(user as firebase.User)
 
           this.loadUserDatasAsync()
-          //console.log('Done user ath change')
-          /*
-          getCataloghi_B(this.utenteSng.uid)
-            .then(datas => { 
-              this.utenteSng.setListaCataloghi(datas) 
-              loadImagesFromCatalog_firebaseA( this.utenteSng.getIndexCatalogoCurrent() )
-                .then( resImgs => { 
-                  console.log(this.utenteSng.listaCataloghi.length)
-
-                  resImgs = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
-                  //setImagesForCurrentCatalog(this.utenteSng, resImgs )
-                })
-            
-            })
-            .catch(ex => console.log('getCataloghi error: ', ex) )
-            /*.then( ()=> {
-              let catalogID = this.utenteSng.getIndexCatalogoCurrent()
-              console.log('getCataloghi_B() -> then() II  \n\n ' , this.utenteSng)
-
-              loadImagesFromCatalog_firebaseA(catalogID)
-                //.then( resImgs => resImgs && this.utenteSng.getCatalogoCurrent().setListaImmagini(resImgs)  )
-                .then( resImgs => { 
-                    let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
-                    if(resImgs){
-                      console.log(this.utenteSng.listaCataloghi)
-                      //console.log('utente sng current cat: ', this.utenteSng.getCatalogoCurrent())
-                      //this.utenteSng.getCatalogoCurrent().setListaImmagini([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
-                      //this.utenteSng.setImagesForCurrentCatalog([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
-                      setImagesForCurrentCatalog(this.utenteSng,testImgs )
-                    }
-                    else 
-                      console.log('no imgs')  
-                })
-                .then( () => this.loadingDone() )
-                .catch( ex =>  console.log('getCataloghi getImages error: ', ex) )
-            }) 
-            */
       }
       else {
         console.log('Auth status is: user un-logged')
@@ -261,7 +223,7 @@ export default defineComponent({
       }
     })
   }
-});
+})
 </script>
 
 <style>
@@ -348,9 +310,24 @@ h3 { margin: 0 }
 
 .googleSignIn{ position: absolute; top: 0; left: 0; background: rgba(2,2,2, .3); border-radius: .5rem; border: none; margin: .3rem;   width: min(40%, 120px); color: var(--mainText)}
 .googleSignIn > img{ width: 1.7rem; margin-right: .3rem; padding: .5rem; vertical-align: middle; }
+
+.uploadImageCodeInspire{ 
+  margin: 2rem auto;
+  display: block;   
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--mainText);
+  padding: 1rem;
+  border-radius: .8rem;
+}
 </style>
 
+
+
+
 <!-- 
+
+
 
     // Create Fake datas
     //let _listaCataloghi = getUserFromServer('Luca', 'Yhsdg654@as','ASKJ23487');
@@ -365,6 +342,70 @@ h3 { margin: 0 }
     */
       new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)
     ]);
+
+
+
+
+
+
+ON USER STATE CHANGE TRUE
+
+          
+  getCataloghi_B(this.utenteSng.uid)
+    .then(datas => { 
+      this.utenteSng.setListaCataloghi(datas) 
+      loadImagesFromCatalog_firebaseA( this.utenteSng.getIndexCatalogoCurrent() )
+        .then( resImgs => { 
+          console.log(this.utenteSng.listaCataloghi.length)
+
+          resImgs = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
+          //setImagesForCurrentCatalog(this.utenteSng, resImgs )
+        })
+    
+    })
+    .catch(ex => console.log('getCataloghi error: ', ex) )
+    /*.then( ()=> {
+      let catalogID = this.utenteSng.getIndexCatalogoCurrent()
+      console.log('getCataloghi_B() -> then() II  \n\n ' , this.utenteSng)
+
+      loadImagesFromCatalog_firebaseA(catalogID)
+        //.then( resImgs => resImgs && this.utenteSng.getCatalogoCurrent().setListaImmagini(resImgs)  )
+        .then( resImgs => { 
+            let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
+            if(resImgs){
+              console.log(this.utenteSng.listaCataloghi)
+              //console.log('utente sng current cat: ', this.utenteSng.getCatalogoCurrent())
+              //this.utenteSng.getCatalogoCurrent().setListaImmagini([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
+              //this.utenteSng.setImagesForCurrentCatalog([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
+              setImagesForCurrentCatalog(this.utenteSng,testImgs )
+            }
+            else 
+              console.log('no imgs')  
+        })
+        .then( () => this.loadingDone() )
+        .catch( ex =>  console.log('getCataloghi getImages error: ', ex) )
+            }) 
+            
+
+
+
+
+      LOAD ASYNC DATAS
+
+getCataloghi_B(this.utenteSng.uid)
+  .then( datas => {
+    console.log("\n 💀 getCataloghi_B() POST cataloghi caricati: ", datas.length , "\n\n")
+    let ut : Utente = this.utenteSng.setListaCataloghi(datas as Catalogo[])
+    return ut
+  })
+  .then( resUtente => console.log(resUtente, 
+                      resUtente.listaCataloghi.length, 
+                      this.utenteSng.listaCataloghi.length,
+                      resUtente.getListaCataloghi().length 
+                    ) 
+  )
+  .catch(ex => console.log(ex) )
+
 
 
 --> 

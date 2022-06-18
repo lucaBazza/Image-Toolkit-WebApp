@@ -108,8 +108,6 @@ export default defineComponent({
             }
         })
 
-        //const currentFilter = ref({ filterName: 'saturation', value: 30 })
-
         const getStyles = ()=>{
             const filterOutput = `filter: saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%); `
             //console.log(filterOutput)
@@ -123,7 +121,7 @@ export default defineComponent({
             slider = 0 
         }
 
-        return{ image_ref, getStyles, parameterReset, saturationValue, contrastValue, temperatureValue, brightnessValue /*currentFilter */ }
+        return{ image_ref, getStyles, parameterReset, saturationValue, contrastValue, temperatureValue, brightnessValue }
     }
 })
 </script>

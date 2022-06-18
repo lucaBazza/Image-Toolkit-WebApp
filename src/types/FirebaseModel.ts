@@ -26,6 +26,34 @@ export const addCatalogo = ( catalogo : Catalogo, user_id : string )=>{
 
 }
 
+/**
+ *   Inserisce nella raccolta 'cataloghi' firebase un nuovo documento catalogo
+ *    - imoprta i campi della classe catalogo
+ *    - NO inizializza una sotto-raccolta immagini
+ *    - restituisce un speciale id : string che è l'identificativo firebase del documento
+ *        + TODO: vedere se / come occorre usare/aggionrare tale id  nel client 
+ */
+export const addCatalogo2 = async ( catalogo : Catalogo, user_id : string )=>{
+
+  console.log('\n addCatalogo2() \n\n')
+
+   let cataloghiRef = db.collection('cataloghi')
+
+   const { serverTimestamp } = firebase.firestore.FieldValue
+
+   let resp = await cataloghiRef.add({
+        titolo: catalogo.titolo,
+        proprietario: catalogo.proprietario,
+        uid: user_id,
+        // Lista immagini has one to many relationship with catalogId
+        secretKey: catalogo.secretkey,
+        id: catalogo.id,
+        createdAt: serverTimestamp()
+   })
+
+  console.log('ID firebase del documento aggiunto : ', resp.id)
+}
+
 
 /**
  *      Carica da firestore la lista cataloghi e in un simil-DAO per convertirlo in oggetto Catalogo[]
@@ -140,7 +168,7 @@ const catalogoConverter = {
  *          - Uso q.get()  le risorse vengono caricate one-shot-time !
  */
  export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
-  console.log(' \n \n getCataloghi_B : ', user_id, " \n\n")
+  //console.log(' \n \n getCataloghi_C : ', user_id, " \n\n")
   
   let lc : Catalogo[] = []
 
@@ -220,6 +248,26 @@ export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]
   utente.listaCataloghi[utente.indexCatalogNow].listaImmagini = immagini 
 
   return utente
+}
+
+
+
+/**
+ *  ottiene l'idFirebase del catalogo matchando l'id
+ */
+export async function get_firebaseID_currentCatalogo(catalogID){
+
+  const q = db.collection("cataloghi").where("id", "==", catalogID)
+  const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))
+
+  /*
+  let out = "" //querySnapshot.docs[0].id
+  await q.get()
+        .then(querySnapshot => Promise.resolve(querySnapshot.docs[0].id) console.log('get_firebaseID_currentCatalogo() : ', , querySnapshot) )
+  */
+  //console.log('get_firebaseID_currentCatalogo() : ', out)
+  
+  return out
 }
 
 

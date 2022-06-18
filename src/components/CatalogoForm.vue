@@ -12,7 +12,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, computed } from "vue"
+import { defineComponent, PropType, computed, ref } from "vue"
 import Settings from '@/types/Settings';
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
@@ -28,17 +28,12 @@ export default defineComponent({
     catalogoRef: { type: Catalogo, default: new Catalogo('','') }
   },
   setup(props){
-    console.log('CatalogoForm.setup() '/*,props.catalogoRef*/)
+    //console.log('CatalogoForm.setup() '/*,props.catalogoRef*/)
     let cataRef = props.catalogoRef
-    return { cataRef }
-  },
-  data() {
-    // counter only uses this.initialCounter as the initial value;
-    // it is disconnected from future prop updates.
-    return {
-      catalogIsReady: false,
-      catalogIsOffline: true,
-    }
+
+    let catalogIsReady = ref(false)
+    let catalogIsOffline = ref(true)
+    return { cataRef, catalogIsReady, catalogIsOffline }
   },
   computed: {
     isServerOffline(){ return fetch( Settings.getInstance().urlImageServer )
@@ -46,72 +41,49 @@ export default defineComponent({
                                 .catch(() => { return false }) //.catch((err) => { return false })
     }
   },
-  // created avviene prima che i data() siano caricati
-  //created: function () { catalogoDB.listaImmagini = this.getImagesFromServer() },
   methods: {
-    /**
-     *  avvia una richiesta asincrona al server,
-     *      - intanto restituisce una image placeholder di loading
-     *      - poi aggionra con i dati ricevuti
-     */
-    getImagePlaceHolder() {
-      return [
-        {
-          name: "loading",
-          src: require("./../assets/loading.gif"),
-          class: "loading",
-          datas: [], //this.requireFakeExifs(),
-          id: 0,
-          done: false,
-          title: "Passo Sella",
-        }
-      ];
-    },
-
-
     async deleteAllImages() {
       console.log("deleteAllImages()");
     },
-  }, // END METHODS
+  },
   /*
-   *   mounted avviene dopo che datas sono stati caricati
-   *       -> richiede il catalogo reale dal server
-   *       -> TODO: controlla la validità utente, secret key, class
-   *       -> aggiorna la listaImmagini inserendo solo i metas
-   *       -> per ogni immagine-meta nel db, la richiede al server e visualizza
-   *
+   *   mounted avviene dopo che datas sono stati caricati      
+   *      - [ ha già il catalogo con le immagini,  ma non adjustments ] TODO con metatag ?
+   *      - trasforma i segnaposto loading nelle immagini reali oppure lascia errore
    */
   async mounted() {
-    console.log("Catalogo: mounted()");
+    console.log("CatalogoForm.mounted()");
 
     if (this.catalogIsReady) return;
-
-        // RICHIEDE CATALOGO
-    const updateDatasCatalog = this.cataRef;
     //if (this.catalogIsOffline) return;
 
         // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
-    let listUrlImgs = updateDatasCatalog.listaImmagini.map((img) => img.src);
-
-        // TODO VALIDITA
-
-
-        // AGGIORNA il catalogo, ma le immagini reali sono in stato di loading    
-
+    //let listUrlImgs = this.cataRef.listaImmagini.map( img => img.src );
+    //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
+    let listUrlImgs = this.cataRef.listaImmagini.map( img => img.realURL )
+    listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
 
 
         // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
+    
+    
+    ///this.cataRef.listaImmagini.forEach((img, i) => { img.src = listUrlImgs[i]; img.classStyle = ""; })
+    
+
+
+    /*
     this.cataRef.listaImmagini.forEach((img, i) => {
       const useCompiledURL = false;
       
           // Metodo con server che invia indirizzo assoluto
       //img.src = listUrlImgs[i];
           // Metodo con server che invia solo nomefile relativo
-      //img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
+      img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
 
-      //img.classStyle = "";
+      img.classStyle = "";
     });
-    
+    */
+
     this.catalogIsReady = true;
     this.catalogIsOffline = false;
   },
@@ -120,16 +92,12 @@ export default defineComponent({
 
 <style>
 /** style scooped */
-ul {
-  padding: 0;
-}
-li {
-  list-style-type: none;
-}
-h2, p {
-  color: var(--mainText);
-}
-h3 {
+ul { padding: 0 }
+li { list-style-type: none }
+h2, p { color: var(--mainText) }
+.catalogDiv > h3 {
+  width: 50%;
+  margin: 0 auto;
   border-bottom: 1px solid gray;
 }
 .isReadySpinner {
