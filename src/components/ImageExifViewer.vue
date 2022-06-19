@@ -1,7 +1,7 @@
 <template>
   <div class="mainViewer">
     <img
-        :src="image_ref.src"
+        :src="src_real"
         :class="image_ref.classStyle"
         :id=" 'img_' + image_ref.id"
         :alt="image_ref.alt"
@@ -18,49 +18,42 @@
   <ImageEditorModalVue 
       v-if="showImgEditModal" 
       :imageProp="image_ref"
-      @toggle-editor-fn="toggleEditorFn" /> <!-- :isShowedEditor="showImgEditModal" -->
+      @toggle-editor-fn="toggleEditorFn" />
 </template>
-<script lang="ts">
-import { defineComponent, ref } from 'vue'
+
+<script setup lang="ts">
+import { ref } from 'vue'
 import Immagine from '@/types/Immagine'
-import AspectRatio from '@/utilities/AspectRatio'
 import ImageEditorModalVue from './ImageEditorModal.vue'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 
-export default defineComponent({
-  name: 'ImageExifViewer',
-  props: {
-    imageRf: { required: true, type: Immagine}
-  },
-  components: { ImageEditorModalVue },
-  setup(props){
-    const image_ref = props.imageRf;
+const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 
-    const imageLoadError = ()=>{
-      console.log('ImageExifViewer.imageLoadError()')
-      image_ref.src = require("@/assets/noImg.jpg")
-      image_ref.classStyle = 'loading'
-    }
+let image_ref = props.imageRf
+let src_real = ref(props.imageRf.src)
+let showImgEditModal = ref(false)
 
-    var showImgEditModal = ref(false)
+function imageLoadError(e){
+  console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
+  src_real.value = require("@/assets/noImg.jpg")
+  image_ref.classStyle = 'loading'
+}
 
-    return{ image_ref, imageLoadError, showImgEditModal /*, toggleImageEditor*/ }
-  },
-  methods: {
-    aspect_ratioZab(width, height) {
-      AspectRatio(width / height, 50) //this.aspect_ratio(width / height, 50);
-    },
-    reqEdit() {
-      console.log("ImageExifViewer.reqEdit()");
-    },
-    toggleEditorFn(){
-      console.log("ImageExifViewer.toggleEditorFn()")
-      this.showImgEditModal = ! this.showImgEditModal
-    }
-  }
-})
+function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
+
+function reqEdit() {
+    console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
+}
+
+function toggleEditorFn(){
+    console.log("ImageExifViewer.toggleEditorFn() ",image_ref.src)
+    if( isImgLoaded() )
+      showImgEditModal.value = ! showImgEditModal.value
+    else
+      console.log('No image loaded, cant edit')    
+}
 </script>
 
 

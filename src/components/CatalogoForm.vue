@@ -8,7 +8,7 @@
         <ImageExifViewer :imageRf="img" />
       </li>
     </ul>
-    <button @click="deleteAllImages()"> &nbsp; 🗑️ &nbsp; </button>
+    <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
 </template>
 <script lang="ts">
@@ -67,7 +67,7 @@ export default defineComponent({
         // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
     
     
-    ///this.cataRef.listaImmagini.forEach((img, i) => { img.src = listUrlImgs[i]; img.classStyle = ""; })
+    this.cataRef.listaImmagini.forEach((img, i) => { img.src = listUrlImgs[i]; img.classStyle = ""; })
     
 
 
@@ -117,7 +117,8 @@ h2, p { color: var(--mainText) }
 }
 .catalogDiv > button:hover {
   cursor: grab;
-  box-shadow: 20px 20px 20px 20px #888888;
+  transform: scale(120%);
+  transition: .1s;
 }
 
 .catalogDiv > p {
