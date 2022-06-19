@@ -1,6 +1,6 @@
 <template>
 
-  <AvatarUser v-if="isLogin" :utente="utenteSng" :userFS="user" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
+  <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
   <button v-else @click="signIn" class="googleSignIn">
       <img src='./assets/logoGoogle.svg'/>Sign In
   </button>
@@ -30,7 +30,7 @@
   <input type="file" @change="uploadImageInput" class="uploadImageCodeInspire"  accept="image/*" multiple/>
 
   <CatalogoForm
-      v-if="showCatalogo && ! isLoading"
+      v-if="showCatalogo && ( ! isLoading ) && isLogin"
       :catalogoRef="utenteSng.getCatalogoCurrent()"
   />
 

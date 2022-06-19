@@ -1,46 +1,22 @@
 <template>
     <div class="avatar">
         <img :src="photoURL">
-        <span>{{nameOnly(nomeUtente)}}</span>
+        <span>{{nomeShorted}}</span>
     </div>
 </template>
 
-<script lang="ts">
-import { ref, reactive, defineComponent } from 'vue'
+<script setup lang="ts">
 
-// TODO Implemetare usando script lang ts setup
-
-export default defineComponent({
-  name: "AvatarUser",
-  props: {
-    /*utente: {
-      type: Utente,
-      require: true
-    },
-    userFS: {
-      type: FirebaseUser,
-      require: true
-    }*/
-    /*utente: {
-      type: FirebaseUser,
-      require: true
-    }*/
-    nome: { type: String },
-    photoURL: { type: String }
-  },
-  setup(props){
-    //console.log( props.utente )
-    let nomeUtente = props.nome !
-
-    //console.log('AvatarUser.setup() : ', nomeUtente, props.photoURL)
-
-    const nameOnly = (nomeCompleto:string)=>{
-      return nomeCompleto ? nomeCompleto.split(' ')[0] : ''
-    }
-
-    return { nameOnly, nomeUtente }
-  }
+const props = defineProps({
+    nome: {     type: String, default: 'Unknown' },
+    photoURL: { type: String, default: require('@/assets/loading-io-spinner.gif') }
 })
+
+const nameOnly = (nomeCompleto:string) => { return nomeCompleto.includes(' ') ? nomeCompleto.split(' ')[0] : '' }
+
+let nomeShorted = nameOnly( props.nome )
+let photoURL = props.photoURL
+
 </script>
 
 <style>
@@ -61,7 +37,6 @@ export default defineComponent({
   border-radius: 50%;
   width: 2rem;
   margin-right: .6rem;
-  /*vertical-align: middle;*/
   float: left;
 }
 .avatar > span{ float: left; margin-top: 0.3rem; }
