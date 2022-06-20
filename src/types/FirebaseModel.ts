@@ -102,41 +102,7 @@ export const cataloghiCollection = createCollection<Catalogo[]>('cataloghi')
 
 
 
-/**
- *      Restituisce promessa di array di cataloghi per l'utente selezionato
- *        !! attenzione: onSnaphot è reattivo al database firestore, TODO async push
- */
-export async function getCataloghi_B(user_id: string) : Promise<Catalogo[]>{
-    console.log('\ngetCataloghi_B : ', user_id, " \n\n")
-    
-    let lc : Catalogo[] = []
 
-    let cataloghiRef = await db.collection('cataloghi').where('uid', '==', user_id).orderBy('createdAt')
-
-    unsubscribeToRefs = cataloghiRef
-
-    console.log('💉 getCataloghi_B() test async: cataloghiRef : ', cataloghiRef)
-
-    cataloghiRef.onSnapshot( querySnapshot =>{
-        querySnapshot.docs.forEach(doc => {
-            const datiCat =  doc.data()
-            //console.log('querySnapshot.docs : ', datiCat)
-
-            let c : Catalogo = new Catalogo(datiCat.proprietario, datiCat.titolo)
-            c.createdAt = datiCat.createdAt
-            c.secretkey = datiCat.secretKey
-            c.uid = datiCat.uid
-            c.id = datiCat.id
-
-            lc.push(c)
-            console.log('💉 getCataloghi_B() push: ', c.titolo)
-        })
-        console.log('💉 getCataloghi_B() complete push, tot: ', lc.length)
-    })
-    console.log('💉 getCataloghi_B() ENDS return tot: ',lc.length)
-
-    return lc
-}
 
 
 // Firestore data converter per il catalogo
@@ -161,11 +127,44 @@ const catalogoConverter = {
     }
 }
 
+// Firestore data converter per immagine
+const immagineConverter = {
+  toFirestore: (immagine) => {
+      return {
+          nomeFile: immagine.nomeFile,
+          src: immagine.src,
+          realURL: immagine.realURL,
+          id: immagine.id,
+          //classStyle: '',
+          alt: immagine.alt,
+          catalogoID: immagine.catalogoID,
+          adjustmentID: immagine.adjustmentID
+      }
+  },
+  fromFirestore: (snapshot, options) => {
+      //console.log('FirebaseModel.immagineConverter() ', snapshot)
+      const data = snapshot.data(options)
+      let out = new Immagine(''/*data.src*/, -1)
+
+      out.nomeFile = data.nomefile
+      out.realURL = data.src
+      out.id = data.id
+      out.catalogoID = data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
+      out.createdAt = data.createdAt
+      out.adjustmentID = data.adjustmentID
+    
+      return out
+  }
+}
+
+
+
 /**
  *      Restituisce promessa di array di cataloghi per l'utente selezionato
  *        vers. C : 
  *          - Promise viene soddisfatta solo quando l'array catalogo è riempito
  *          - Uso q.get()  le risorse vengono caricate one-shot-time !
+ *          - I cataloghi caricati NON comprendono la lista delle immagini
  */
  export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
   //console.log(' \n \n getCataloghi_C : ', user_id, " \n\n")
@@ -184,59 +183,8 @@ const catalogoConverter = {
   
   //console.log('💉 getCataloghi_B() ENDS return tot: ', lc.length)
 
-  return lc.length > 0 ? Promise.resolve(lc) : Promise.reject('Snapshoot cataloghi ancora in lavorazione...')
+  return lc.length > 0 ? Promise.resolve(lc) : Promise.reject('\t ✋ Snapshot catalogs is loading...')
 }
-
-
-
-
-
-/**
- *  Gestisce stato log in/out
- *    - aggiorna Utente con dati di firebase
- *    - quando slogga toglie le refs utente a firebase
- */
-export async function onAuthStateChanged_luca(utenteSng : Utente){ 
-    console.log('onAuthStateChanged_luca() '/*, utenteSng*/)
-
-    const auth = firebase.auth()
-
-    auth.onAuthStateChanged( user =>{
-        //console.log('check user fs: ', user)
-        if( user ){
-            let u = user as firebase.User
-            console.log('Auth status changed, user logged: ', user['displayName'])
-            //console.log(user)
-    
-            let displayName :string = u.displayName! //u['displayName']
-            let email = u.email!
-            let photoURL = u.photoURL!
-            let uid = u.uid
-            
-            utenteSng = new Utente(displayName/*,'psw Google',[]*/)
-                                .setEmail(email).setPhotoURL(photoURL).setUID(uid).setCurrentCatalog(0)
-    
-            getCataloghi_B(uid)
-                        .then(datas => utenteSng.setListaCataloghi(datas) )
-                        .catch(ex => console.log('getCataloghi error: ', ex) )
-        
-      }
-      else {
-        console.log('Auth status is: user un-logged')
-        //unsub_refCatalogs && unsub_refCatalogs()
-      }
-    }) 
-}
-
-
-export async function loadImagesFromCatalog_firebaseA(catalogID:number) : Promise<Immagine[]> {
-  console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', catalogID , "\n\n\n")
-
-  let out : Immagine[] = await Promise.resolve([])
-
-  return out
-}
-
 
 
 
@@ -269,6 +217,42 @@ export async function get_firebaseID_currentCatalogo(catalogID){
   
   return out
 }
+
+
+
+/**
+ *  Dall'id catalogo di vuejs, restituisce l'ID di firebase
+ */
+export async function get_firebaseID_currentCatalogo_B(catalogID){
+  const q = db.collection("cataloghi").where("id", "==", catalogID)
+  const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))
+  return out
+}
+
+/**
+ *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
+ */
+export async function loadImagesFromCatalog_firebaseA(catalogID_FS : number){
+  console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', catalogID_FS , "\n\n\n")
+
+      // Listo i nomi dei dicumenti nel catalogo scelto
+  //let a = await db.collection(`cataloghi/${catalogID_FS}/immagini`).get()
+  //a.docs.forEach(imgQuery => { console.log(imgQuery.id) })
+
+  let out : Immagine[] = []
+
+  let aa = await db.collection(`cataloghi/${catalogID_FS}/immagini/`).withConverter(immagineConverter)
+  const bb = await aa.get()
+  bb.docs.forEach(imgQuery => { /*console.log(imgQuery.data())*/ out.push(imgQuery.data()) })
+
+  //out.forEach(i => console.log(i.nomeFile))
+
+  return out
+}
+
+
+
+
 
 
 
@@ -367,5 +351,88 @@ export const addCatalogoB = ( catalogo : Catalogo, user_id : string )=>{
           ,{merge: true})
 
 
+}
+*/
+
+
+
+
+
+/**
+ *  Gestisce stato log in/out
+ *    - aggiorna Utente con dati di firebase
+ *    - quando slogga toglie le refs utente a firebase
+ */
+/*
+export async function onAuthStateChanged_luca(utenteSng : Utente){ 
+    console.log('onAuthStateChanged_luca() ', utenteSng)
+
+    const auth = firebase.auth()
+
+    auth.onAuthStateChanged( user =>{
+        //console.log('check user fs: ', user)
+        if( user ){
+            let u = user as firebase.User
+            console.log('Auth status changed, user logged: ', user['displayName'])
+            //console.log(user)
+    
+            let displayName :string = u.displayName! //u['displayName']
+            let email = u.email!
+            let photoURL = u.photoURL!
+            let uid = u.uid
+            
+            utenteSng = new Utente(displayName) // ,'psw Google',[]
+                                .setEmail(email).setPhotoURL(photoURL).setUID(uid).setCurrentCatalog(0)
+    
+            getCataloghi_B(uid)
+                        .then(datas => utenteSng.setListaCataloghi(datas) )
+                        .catch(ex => console.log('getCataloghi error: ', ex) )
+        
+      }
+      else {
+        console.log('Auth status is: user un-logged')
+        //unsub_refCatalogs && unsub_refCatalogs()
+      }
+    }) 
+}
+*/
+
+
+
+
+/**
+ *      Restituisce promessa di array di cataloghi per l'utente selezionato
+ *        !! attenzione: onSnaphot è reattivo al database firestore, TODO async push
+ */
+/*export async function getCataloghi_B(user_id: string) : Promise<Catalogo[]>{
+    console.log('\ngetCataloghi_B : ', user_id, " \n\n")
+    
+    let lc : Catalogo[] = []
+
+    let cataloghiRef = await db.collection('cataloghi').where('uid', '==', user_id).orderBy('createdAt')
+
+    unsubscribeToRefs = cataloghiRef
+
+    console.log('💉 getCataloghi_B() test async: cataloghiRef : ', cataloghiRef)
+
+    cataloghiRef.onSnapshot( querySnapshot =>{
+        querySnapshot.docs.forEach(doc => {
+            const datiCat =  doc.data()
+            //console.log('querySnapshot.docs : ', datiCat)
+
+            let c : Catalogo = new Catalogo(datiCat.proprietario, datiCat.titolo)
+            c.createdAt = datiCat.createdAt
+            c.secretkey = datiCat.secretKey
+            c.uid = datiCat.uid
+            c.id = datiCat.id
+
+            lc.push(c)
+            console.log('💉 getCataloghi_B() push: ', c.titolo)
+        })
+        console.log('💉 getCataloghi_B() complete push, tot: ', lc.length)
+    })
+    console.log('💉 getCataloghi_B() ENDS return tot: ',lc.length)
+
+    return lc
 }
 */

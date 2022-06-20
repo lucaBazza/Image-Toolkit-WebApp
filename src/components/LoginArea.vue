@@ -2,59 +2,49 @@
   <div class="loginForm">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
     <ul>
-      <h4>Cataloghi 
-        <!-- <button @click="addNewCatalogo">+</button> -->
-        
-      </h4>
-      <li v-for="cat in utente.listaCataloghi" :key="cat.id">
+      <h4>Cataloghi</h4>
+      <li v-for="cat in utente.listaCataloghi" :key="cat.id" @click="changeSelectedCatalog(cat.id)" :imageCount="cat.listaImmagini.length">
         <span v-if="utente.isCurrentCatalog(cat.id)">  👉  </span>
         <b>Titolo:</b> {{cat.titolo}}
       </li>
-      <span v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</span>
+      <em v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</em>
       <input type="text" @keyup.enter="addNewCatalogo"  placeholder="➕ Enter a new catalog"/>
     </ul>
     <button @click="signOut">🚪 Log out</button>
   </div>
 </template>
 
-<script lang="ts">
+<script  setup lang="ts">
 import { ref, reactive, defineComponent } from 'vue'
-import Utente from '@/types/Utente';
-import Catalogo from '@/types/Catalogo';
-
+import Utente from '@/types/Utente'
+import Catalogo from '@/types/Catalogo'
 import { useAuth } from '@/firebase'
-import { addCatalogo, addCatalogo2 } from '@/types/FirebaseModel';
-//import Immagine from '@/types/Immagine';
+import { addCatalogo2 } from '@/types/FirebaseModel'
 
-export default defineComponent({
-  name: "LoginArea",
-  props: {
-    utente: {
-      type: Utente,
-      require: true
-    }
-  },
-  setup(props){
-    console.log('LoginArea.setup()')
-    const { signOut } = useAuth()
+const props = defineProps({       utente: { type: Utente, require: true }   })
 
-    // TODO: controllare perchè props.utente può essere undefined
-    let utente: Utente = props.utente ? props.utente : new Utente('unkonw') //? props.utente : Utente.getInstance() //new Utente('user.name','',null);
-    /*const form = reactive({name:'',email: '', password: ''})*/
+const emits = defineEmits(['update_utente'])
 
-    const addNewCatalogo = (e)=>{
-        console.log('LoginArea.addNewCatalogo() \n', e.target.value)     
-        //addCatalogo(new Catalogo(utente.nome, e.target.value), utente.uid)
-        addCatalogo2(new Catalogo(utente.nome, e.target.value), utente.uid)
-    }
+console.log('LoginArea.setup()')
+const { signOut } = useAuth()
+let utente = props.utente ? ref(props.utente) : ref(new Utente('unkonw')) // TODO: controllare perchè props.utente può essere undefined
 
-    return{ addNewCatalogo, utente, signOut }
-  }
-})
+const addNewCatalogo = (e)=>{
+    console.log('LoginArea.addNewCatalogo() \n', e.target.value)
+    addCatalogo2(new Catalogo(utente.value.nome, e.target.value), utente.value.uid)
+}
+
+function changeSelectedCatalog(cid){
+  console.log('LoginArea.changeSelectedCatalog() \t new selected catalog: ', cid)
+  utente.value.setCurrentCatalog(cid)
+  emits('update_utente', cid)
+}
+
+//const imageCount = '199'
+
 </script>
 
 <style>
-
 .loginForm {
   display: block;
   color: var(--mainText);
@@ -67,12 +57,14 @@ export default defineComponent({
 }
 .loginForm > h2 { display: inline-block; margin-right: 1rem; }
 .loginForm > span{ border-bottom: 1px solid gray }
+.loginForm > ul { padding:0 }
 .loginForm > ul > input[type=text] {
   padding: 1.1rem;
   color: var(--mainText);
   border-radius: .3rem;
   border-style: groove;
   background-color: transparent;
+  margin: 0 auto;
   /*float:right;*/
 }
 /*.loginForm > input {
@@ -98,10 +90,68 @@ export default defineComponent({
 }
 
 .loginForm > ul > li { text-align: right; margin: 1rem 0; }
+.loginForm > ul > li::after { 
+  content: attr(imageCount) ' ';
+  padding: .3rem;
+  background-color: rgba(7,7,7, .4);
+  border-radius: 50%;
+  font-size: 60%;
+  bottom: 0.5rem;
+  left: 0.4rem;
+  position: relative;
+}
 .loginForm > ul > li:hover{ /*border-bottom: 1px gray solid*/ text-decoration: underline; } 
 .loginForm > ul > li:last-child{ margin-bottom: 3rem }
 .loginForm > ul > li > b { float: left }
+.loginForm > ul > li:hover { cursor: grab }
 </style>
+
+
+
+
+<!-- 
+<script lang="ts">
+import { ref, reactive, defineComponent } from 'vue'
+import Utente from '@/types/Utente'
+import Catalogo from '@/types/Catalogo'
+
+import { useAuth } from '@/firebase'
+import { addCatalogo2 } from '@/types/FirebaseModel'
+
+export default defineComponent({
+  name: "LoginArea",
+  props: {
+    utente: {
+      type: Utente,
+      require: true
+    }
+  },
+  setup(props){
+    console.log('LoginArea.setup()')
+    const { signOut } = useAuth()
+
+    // TODO: controllare perchè props.utente può essere undefined
+    let utente: Utente = props.utente ? props.utente : new Utente('unkonw') //? props.utente : Utente.getInstance() //new Utente('user.name','',null);
+    /*const form = reactive({name:'',email: '', password: ''})*/
+
+    const addNewCatalogo = (e)=>{
+        console.log('LoginArea.addNewCatalogo() \n', e.target.value)
+        addCatalogo2(new Catalogo(utente.nome, e.target.value), utente.uid)
+    }
+
+    function changeSelectedCatalog(e){
+      console.log('changeSelectedCatalog() ', e)
+      let newSelectedCatalog = 99
+      utente.setCurrentCatalog(newSelectedCatalog)
+    }
+
+    return{ addNewCatalogo, utente, signOut, changeSelectedCatalog }
+  }
+})
+</script>
+-->
+
+
 
 <!--  
 

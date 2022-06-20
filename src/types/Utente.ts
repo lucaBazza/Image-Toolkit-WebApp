@@ -42,7 +42,9 @@ export default class Utente{
     }
 
     setCurrentCatalog(index: number){
-        this.indexCatalogNow = index
+        let newIDexists = false
+        newIDexists = this.listaCataloghi.some( c => { return c.id === index })
+        newIDexists ? this.indexCatalogNow = index : console.log(`Utente.setCurrentCatalog() Error: id ${index} not exist in user catalog lists`)
         return this
     }
 
@@ -54,11 +56,14 @@ export default class Utente{
         return this.indexCatalogNow;
     }
 
+    getCatalog_by_cid(cid : string){
+        return this.listaCataloghi.filter(c => c.cid === cid).pop()
+    }
+
     isCurrentCatalog(catalogoId : number){
         //console.log(this.listaCataloghi)
         //console.log(`utente.ts isCurrentCatalog() \t ${catalogoId} === ${this.listaCataloghi[this.indexCatalogNow].getCurrentId()}`)
         //console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
-        
         //return catalogoId === this.listaCataloghi[this.indexCatalogNow].getCurrentId();
         return catalogoId === this.listaCataloghi[this.indexCatalogNow].id;
     }
@@ -78,6 +83,28 @@ export default class Utente{
         return this
     }
 
+    /**
+     *  setta le immagini indicate per il catalogo indicato ==> ! attenzione utilizza campo cid (firebase) e non id vue
+     *      - invocato da App.loadImages_ofCatalog()
+     */
+    setImages_by_cid(images: Immagine[], cid: string){
+        console.log('Utente.setImages_by_cid() cid: ', cid, images)
+
+        /*
+        let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0),
+                                      new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04514_ps.jpg?alt=media&token=002e505b-941d-4a10-a619-0d31a1e6a271',1),
+                                      new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04483_ps.jpg?alt=media&token=aa966cbd-b5ae-41a2-a217-15560b7eb862',2),
+                                      new Immagine('asdD.jpg',3), 
+                                      new Immagine('asdD.jpg',4), 
+                                      new Immagine('asdD.jpg',5),
+                                    ]
+        */
+   
+        let catalog = this.getCatalog_by_cid(cid)
+        catalog ? this.getCatalog_by_cid(cid)!.listaImmagini = images : console.log('utente.setImages_by_cid() Cant find cid: ',cid)
+        
+        return this
+    }
 }
 
 

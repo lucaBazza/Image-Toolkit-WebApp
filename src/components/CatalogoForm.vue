@@ -1,35 +1,33 @@
 <template>
   <div class="catalogDiv">
-    <img v-if="!catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <h3 v-if="cataRef.titolo">{{ cataRef.titolo }}</h3>
+    <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
+    <h3 v-if="cataRef.titolo">{{ cataRef.titolo }} <button @click="openSortingOptions"> ↕️ </button></h3> 
     <p v-if="catalogIsOffline">😭 Image catalog server is offline 😭</p>
     <ul v-else>
       <li v-for="img in cataRef.listaImmagini" :key="img.id">
         <ImageExifViewer :imageRf="img" />
       </li>
+      <em v-if=" ! cataRef.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </ul>
     <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, PropType, computed, ref } from "vue"
+import { defineComponent, ref } from "vue"
 import Settings from '@/types/Settings';
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
-import Immagine from '@/types/Immagine'
+//import Immagine from '@/types/Immagine'
 
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 export default defineComponent({
   name: "CatalogoForm",
   components: { ImageExifViewer },
-  // PROPS SONO SOLO IN LETTURA PER IL COMPONENTE
-  props: {
-    //urlServerImage: { required: true, type: String},
-    catalogoRef: { type: Catalogo, default: new Catalogo('','') }
-  },
+  props: {  catalogoRef: { type: Catalogo, default: new Catalogo('','') }   },
   setup(props){
     //console.log('CatalogoForm.setup() '/*,props.catalogoRef*/)
-    let cataRef = props.catalogoRef
+    //let cataRef = props.catalogoRef // TODO VA MESSO REF ???
+    let cataRef = ref(props.catalogoRef) // TODO VA MESSO REF ???
 
     let catalogIsReady = ref(false)
     let catalogIsOffline = ref(true)
@@ -37,14 +35,17 @@ export default defineComponent({
   },
   computed: {
     isServerOffline(){ return fetch( Settings.getInstance().urlImageServer )
-                                .then( res => { return res.status!==200 })
-                                .catch(() => { return false }) //.catch((err) => { return false })
+                                .then( res => { return res.status !== 200 })
+                                .catch( () => { return false })
     }
   },
   methods: {
     async deleteAllImages() {
       console.log("deleteAllImages()");
     },
+    openSortingOptions(){
+      console.log('openSortingOptions()')
+    }
   },
   /*
    *   mounted avviene dopo che datas sono stati caricati      
@@ -61,7 +62,7 @@ export default defineComponent({
     //let listUrlImgs = this.cataRef.listaImmagini.map( img => img.src );
     //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
     let listUrlImgs = this.cataRef.listaImmagini.map( img => img.realURL )
-    listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
+    //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() -img \t 🌅  ${x}`) )
 
 
         // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
@@ -91,22 +92,22 @@ export default defineComponent({
 </script>
 
 <style>
-/** style scooped */
-ul { padding: 0 }
-li { list-style-type: none }
-h2, p { color: var(--mainText) }
+.catalogDiv{ margin: 1rem 0 }
+.catalogDiv > ul { padding: 0 }
+.catalogDiv > ul > em  { color: var(--backText )}
+
 .catalogDiv > h3 {
   width: 50%;
   margin: 0 auto;
   border-bottom: 1px solid gray;
 }
+.catalogDiv > h3 > button { float: right; background: transparent; border: none; color:var(--mainText); }
 .isReadySpinner {
   width: 3rem;
   position: absolute;
   top: 0.5rem;
   left: 50%;
 }
-.catalogDiv{ margin: 4rem 0 }
 .catalogDiv > button {
   background: transparent;
   border: none;
@@ -120,7 +121,6 @@ h2, p { color: var(--mainText) }
   transform: scale(120%);
   transition: .1s;
 }
-
 .catalogDiv > p {
   background-color: var(--backgroundColor);
   text-align: center;

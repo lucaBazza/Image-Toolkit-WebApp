@@ -4,15 +4,17 @@
 */
 body{
     --varExample: #000;
-    --backgroundColor: #fff;
+    --backgroundColor: 239,239,239; /* #eee; */
     --background_mod: #ddd;
     --mainText: #000;
+    --backText: #222;
     --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
 }
 .darkMode{
-    --backgroundColor: #111;
+    --backgroundColor: 16,16,16; /* #111; */
     --background_mod: #333;
     --mainText: #fff;
+    --backText: #ddd;
     --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
 }
 
@@ -33,7 +35,8 @@ body{
 .headerImg { content: url("./DSC09538-ProPs.webp") }
 .darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
 
-h1, h2, h3{ color: var(--mainText) }
+h1, h2, h3, p{ color: var(--mainText) }
+ul { list-style-type: none }
 
 @keyframes gradient {
     0% { background-position: 0% 50% }
@@ -44,7 +47,9 @@ h1, h2, h3{ color: var(--mainText) }
 
 
 /*
+
     C U S T O M     I M A G E       E D I T O R
+
 */
 @media only screen and (orientation: landscape){
     .imgEditorModal{ 
@@ -56,16 +61,15 @@ h1, h2, h3{ color: var(--mainText) }
         margin: 1rem;
         margin-left: max(10%, 1rem);
     }
-    .imgEditorModal > ul{
-        width: max(30%, 400px );
-
-    }
+    .imgEditorModal > ul{ width: max(30%, 400px ) }
 }
 
 
 
 /*
+
     P R O D U C T I O N     M O D E     S T Y L E
+
 */
 .productionMode{ animation: action .5s infinite  alternate }
 .productionMode > h2{
@@ -89,7 +93,9 @@ h1, h2, h3{ color: var(--mainText) }
 
 
 /*
-M E D I A   Q U E R Y E S
+
+    M E D I A   Q U E R Y E S
+
 */
 @media screen and ( max-width: 650px ){           /* SMALL DEVICES */
     .mainViewer > img{ min-width:90% }
@@ -108,8 +114,9 @@ M E D I A   Q U E R Y E S
         margin: 1rem;
         width: auto;
     }
-    .loginForm > input{ margin: 1rem .2rem }
-
+    /*.loginForm > input{ margin: 1rem .2rem }*/
+    .loginForm > button { width: 95% }
+    .loginForm > ul > input[type=text] { width: 88% }
     .imgEditorModal{ height: 90vh; overflow: hidden; }
     .imgEditorModal > button { top: 1rem; right: 1rem; }
     .imgEditorModal > img {

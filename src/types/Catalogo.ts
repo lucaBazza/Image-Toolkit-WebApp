@@ -14,6 +14,9 @@ export default class Catalogo{
     id: number
     createdAt: Date
 
+    // TODO implementare cid:  catalog id cioè il valore preso da firebase
+    cid: string
+
     constructor(proprietario: string, titolo: string) {
         this.titolo = titolo
         this.proprietario = proprietario
@@ -24,6 +27,7 @@ export default class Catalogo{
         this.id = -1
         this.createdAt = new Date
         //console.log(`Catalogo costruito ${titolo} \t- id: ${Catalogo.id}`)
+        this.cid = ''
     }
 
     setListaImmagini(listaImmagini: Immagine[]) : Catalogo {
@@ -57,6 +61,15 @@ export default class Catalogo{
         this.uid = uid
         return this
     }
+
+    setCatalog_cid(cid: string){
+        this.cid = cid
+        return this
+    }
+
+    //toString(){
+    //    return 'Catalog: ' + this.titolo
+    //}
 }
 
 interface Catalogo_extended extends Catalogo {

@@ -11,6 +11,7 @@ export default class Immagine implements Iterator<number>{
     alt?: string
     catalogoID: number
     adjustmentID: number
+    createdAt: Date
 
     constructor(src, id) {
         this.nomeFile = this.checkFileName(src)
@@ -21,12 +22,12 @@ export default class Immagine implements Iterator<number>{
         this.exifDatas = this.requireFakeExifs()
         this.catalogoID = -1
         this.adjustmentID = -1
+        this.createdAt = new Date
     }
 
     isEmptyOrSpaces = (str)=>{ return str === null || str.match(/^ *$/) !== null }
 
     checkFileName = (str) => { 
-        console.log(str)
         try{ return new URL(str.replaceAll('%2F','/')).pathname.split('/').pop() as string  }
         catch(err){ return str }
         
