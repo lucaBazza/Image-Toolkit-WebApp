@@ -66,7 +66,9 @@ export default async function FetchUser(user, password, secretKey) : Promise<Ute
         // CREO UTENTE DA RESPONSE
       const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo /*, cat.secretKey*/ ))
       helpUser = new Utente(data.nome/*, data.password, helpListaCat*/ ).setEmail(data.email).setListaCataloghi(helpListaCat)
-      helpUser.setCurrentCatalog(data.indexCatalogNow)     
+      
+      // TODO: metodo obsoleto, non usare id ma Catalog ID di firebase
+      //helpUser.setCurrentCatalog(data.indexCatalogNow)     
 
       return helpUser
 }

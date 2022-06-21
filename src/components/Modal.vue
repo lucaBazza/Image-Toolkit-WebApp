@@ -2,7 +2,7 @@
   <div class="backdrop" @v-click-away="closeModal">
     <div class="modal" :class="{ sale: theme === 'sale' }">
       <!-- <button class="altoDxBtn" @click="closeModal">❌</button> -->
-      <span>Tutorial</span><button @click="closeModal">❌</button>
+      <span>Tutorial</span><button @click="closeModal">❌</button><br>
       <h1>Image toolkit App</h1>
       <p>Manage easly your images:</p>
       <ul>
@@ -54,17 +54,12 @@ export default defineComponent({
 }
 .modal {
   padding: 20px;
-  margin: 40vh auto;
+  margin: 25vh auto 0;
   border-radius: 1rem;
   overflow: visible;
 }
-.modal > p{
-  border-bottom: 1px solid rgba(8,8,8,.5);
-}
-.modal > span {
-  margin-top: 1.5rem;
-  font-size: 1.5rem;
-}
+.modal > p{ border-bottom: 1px solid rgba(8,8,8,.5) }
+.modal > span { margin-top: 1.5rem; font-size: 1.5rem }
 .modal > button {
   font-size: 1rem;
   background: transparent;
@@ -76,18 +71,13 @@ export default defineComponent({
 .modal > button:hover{ cursor: grab }  
 .modal > button:last-child{ margin: -2rem auto }  
 
-.modal.sale {
-  background: var(--background_mod);
-  color: var(--mainText);
-  width: min(90%,400px);
-}
-.modal.sale h1 {
-  color: var(--mainText);
-}
+.modal.sale { background: var(--background_mod);  width: max(40%,280px) }
 
-.modal > ul { 
-  margin-left:10%; 
-  text-align: left;
+.modal > ul { margin-left:10%; text-align: left; }
+.modal > ul > li{ list-style-type: disclosure-closed; padding: .5rem 0 }
+
+@media screen and ( max-width: 650px ){   
+  .modal { margin-top: 5vh }
+  .modal > ul > li{ padding: .2rem 0 }
 }
-.modal > ul > li{ list-style-type: disclosure-closed }
 </style>

@@ -9,11 +9,8 @@ export default class Catalogo{
     uid: string
     listaImmagini: Immagine[]
     secretkey: string
-    //static id: number = 0
-    //static id: number
     id: number
     createdAt: Date
-
     // TODO implementare cid:  catalog id cioè il valore preso da firebase
     cid: string
 
@@ -23,10 +20,8 @@ export default class Catalogo{
         this.uid = ''
         this.secretkey = ''
         this.listaImmagini = []
-        //Catalogo.id = ++Catalogo.id
         this.id = -1
         this.createdAt = new Date
-        //console.log(`Catalogo costruito ${titolo} \t- id: ${Catalogo.id}`)
         this.cid = ''
     }
 
@@ -35,22 +30,6 @@ export default class Catalogo{
         this.listaImmagini = listaImmagini
         return this
     }
-
-    /*public getTitolo(): string {
-        return this.titolo
-    }
-    public setTitolo(value: string) {
-        this.titolo = value
-    }  */     
-
-    /*
-    getCurrentId() : number{
-        return Catalogo.id
-    }
-    getUid(): string{
-        return this.uid;
-    }
-    */
     
     setCatalogID(id : number){
         this.id = id
@@ -67,9 +46,26 @@ export default class Catalogo{
         return this
     }
 
-    //toString(){
-    //    return 'Catalog: ' + this.titolo
-    //}
+    /*
+    toString(){
+        return 'Catalog: ' + this.titolo
+    }
+    public getTitolo(): string {
+        return this.titolo
+    }
+    public setTitolo(value: string) {
+        this.titolo = value
+    }  
+    */     
+
+    /*
+    getCurrentId() : number{
+        return Catalogo.id
+    }
+    getUid(): string{
+        return this.uid;
+    }
+    */
 }
 
 interface Catalogo_extended extends Catalogo {

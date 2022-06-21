@@ -6,15 +6,13 @@ import firebase from 'firebase/compat/app'
 import 'firebase/compat/storage'
 import { db } from '@/firebase'
 
-export default async function uploadImageCodeInspire(e, catalogID){
-    //let catalogID = "K15HaA6TdJNBAuaUwOSj"
+export default async function uploadImageCodeInspire(e, cid){
     //console.log(e.target.files, catalogID)
-
-    Array.from(e.target.files).forEach(file => uploadSingleFile_firestore(file, catalogID) )
+    Array.from(e.target.files).forEach(file => uploadSingleFile_firestore(file, cid) )
 }
 
 
-function uploadSingleFile_firestore(file, catalogID){
+function uploadSingleFile_firestore(file, cid){
     //console.log("uploadImageCodeInspire() ", file)
     var storageRef = firebase.storage().ref(`immagini/${file.name}`)
     let uploadTask = storageRef.put(file)
@@ -24,19 +22,10 @@ function uploadSingleFile_firestore(file, catalogID){
         },
         error => console.log('Upload error ❌ \n'+ error),
         () => uploadTask.snapshot.ref.getDownloadURL()
-                                        .then( downloadURL => /* { */ { updateCollection(file.name, downloadURL, catalogID) })
-                                                                //console.log(`Completed upload 🎉 \n File aviable at: ${downloadURL}`)
-                                                                //updateCollection(file.name, downloadURL, catalogID)
-                                                            //}) 
-                                        .catch( ex => console.log('uploadSingleFile_firestore() ',ex) )
-        
+                                        .then( downloadURL => updateCollection(file.name, downloadURL, cid) ) 
+                                        .catch( ex => console.log('uploadSingleFile_firestore() error: ', ex) )
     )
 }
-
-//function uploadDone(imgname,downloadURL, catalogID ){
-//    
-//    updateCollection(imgname, downloadURL, catalogID)
-//}
 
 
 /**
@@ -44,27 +33,29 @@ function uploadSingleFile_firestore(file, catalogID){
  *      -> viene inserito un documento nel catalogo selezionato con nome uguale all'immagine, all'intenro i dati
  *      -> vedere se tramite FS function è possibile triggerare l'inserimento automatico
  */
-function updateCollection(imgName, downloadURL, catalogID){
-    console.log(`updateCollection() Completed file upload 🎉 \n img: ${imgName} \t catId: ${catalogID} \n File aviable at : \n ${downloadURL}`)
-    //console.log('updateCollection() : ', imgName)
+function updateCollection(imgName, downloadURL, cid){
+    //console.log(`updateCollection() Completed file upload 🎉 \n img: ${imgName} \t cid: ${cid} \n File aviable at : \n ${downloadURL}`)
 
-    //let docID = 'i9gSEAz9EXb94OqdjwwY2bQMQ3w1'  // TODO caricare dinamicamente
+    const { serverTimestamp } = firebase.firestore.FieldValue
 
     let imgDatas = {
         nomefile: imgName,
         src: downloadURL,
+        realURL: downloadURL,
         exifs: '',
         alt: '',
-        catalogoID: catalogID,
-        adjustmentID: 'todo'
+        cid: cid,
+        adjustmentID: 'todo',
+        createdAt: serverTimestamp()
     }
 
     let messageRef = db
-        .collection("cataloghi").doc(catalogID)
+        .collection("cataloghi").doc(cid)
         .collection("immagini").doc(imgName)
-
-    messageRef.set(imgDatas).then( ()=> console.log('updateCollection() Document Added : ', imgName) )
-                .catch( ex => console.error('updateCollection() Error adding document: ', ex) )
+    
+    messageRef.set(imgDatas)
+                .then( ()=> console.log(`updateCollection() Completed file upload 🎉 \n\t img: ${imgName} \n\t cid: ${cid} \n\t File aviable at : \n ${downloadURL}`) )
+                 .catch( ex => console.error('updateCollection() Error adding document: ', ex) )
         
 }
 

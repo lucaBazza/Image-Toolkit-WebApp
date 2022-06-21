@@ -1,53 +1,53 @@
 <template>
   <div class="loginForm">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
-    <ul>
-      <h4>Cataloghi</h4>
-      <li v-for="cat in utente.listaCataloghi" :key="cat.id" @click="changeSelectedCatalog(cat.id)" :imageCount="cat.listaImmagini.length">
-        <span v-if="utente.isCurrentCatalog(cat.id)">  👉  </span>
+    <ul v-if="cataloghiLoaded">
+      <h4>Catalogs</h4>
+      <li v-for="cat in utente.listaCataloghi" :key="cat.cid" :imageCount="cat.listaImmagini.length"
+                   @click="change_catalog(cat.cid)" :class="props.utente.selected_cid === cat.cid && 'selezionato'">
         <b>Titolo:</b> {{cat.titolo}}
       </li>
-      <em v-if=" ! utente.listaCataloghi">Empty list: please add a new catalog!</em>
-      <input type="text" @keyup.enter="addNewCatalogo"  placeholder="➕ Enter a new catalog"/>
+      <em v-if=" ! utente.listaCataloghi.length">Empty list: please add a new catalog! </em>
+      <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog"/>
     </ul>
     <button @click="signOut">🚪 Log out</button>
   </div>
 </template>
 
-<script  setup lang="ts">
-import { ref, reactive, defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
 import Utente from '@/types/Utente'
 import Catalogo from '@/types/Catalogo'
 import { useAuth } from '@/firebase'
 import { addCatalogo2 } from '@/types/FirebaseModel'
 
-const props = defineProps({       utente: { type: Utente, require: true }   })
-
-const emits = defineEmits(['update_utente'])
+const props = defineProps({       utente: { type: Utente, required: true }   })
+const emits = defineEmits(['change_catalog','notificate', 'add_catalog'])
+const { signOut } = useAuth()
 
 console.log('LoginArea.setup()')
-const { signOut } = useAuth()
-let utente = props.utente ? ref(props.utente) : ref(new Utente('unkonw')) // TODO: controllare perchè props.utente può essere undefined
 
-const addNewCatalogo = (e)=>{
-    console.log('LoginArea.addNewCatalogo() \n', e.target.value)
-    addCatalogo2(new Catalogo(utente.value.nome, e.target.value), utente.value.uid)
+let cataloghiLoaded = ref(true) // occorre per 'forzare' il reload della lista utent
+const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true },0) }
+
+const addNewCatalogo = (e) =>{
+  if( e.target.value == '' ) return
+  let newCatalogo = new Catalogo(props.utente.nome, e.target.value)
+  e.target.value = ''
+  props.utente.listaCataloghi.push(newCatalogo)
+  addCatalogo2(newCatalogo, props.utente.uid)
+    .then( ()=>{ emits('add_catalog', newCatalogo) })
 }
 
-function changeSelectedCatalog(cid){
-  console.log('LoginArea.changeSelectedCatalog() \t new selected catalog: ', cid)
-  utente.value.setCurrentCatalog(cid)
-  emits('update_utente', cid)
+function change_catalog(cid){
+  emits('change_catalog', cid)
+  forceReloadCataloghi()
 }
-
-//const imageCount = '199'
-
 </script>
 
 <style>
 .loginForm {
   display: block;
-  color: var(--mainText);
   box-shadow: 10px 20px 30px black;
   border-radius: 0.5rem;
   width: min(50%, 650px);
@@ -64,32 +64,20 @@ function changeSelectedCatalog(cid){
   border-radius: .3rem;
   border-style: groove;
   background-color: transparent;
-  margin: 0 auto;
-  /*float:right;*/
+  margin: 1rem auto;
 }
-/*.loginForm > input {
-  margin: 1rem 4rem;
-  width: min(80%, 200px);
-  background-color: transparent;
-}
-
-.loginForm > input[type=checkbox] {
-  width: 1rem;
-  margin-right: 1rem;
-}*/
 .loginForm > button > img { width: 1.5rem; margin-right: .8rem; vertical-align:middle; }
 .loginForm > button {
   padding: 1rem;
   background: rgba(0, 0, 0, 0.2);
   color: var(--mainText);
   border-radius: .4em;
-
   display: inline-block;
   width: 40%;
   margin: .5rem;
 }
-
-.loginForm > ul > li { text-align: right; margin: 1rem 0; }
+.loginForm > ul > li { text-align: right; padding: .9rem 0 .4rem; margin: 1.5rem 0; border-radius: .5rem; }
+.loginForm > ul > .selezionato { background-color: rgba(var(--backgroundColor), .2) }
 .loginForm > ul > li::after { 
   content: attr(imageCount) ' ';
   padding: .3rem;
@@ -100,10 +88,11 @@ function changeSelectedCatalog(cid){
   left: 0.4rem;
   position: relative;
 }
-.loginForm > ul > li:hover{ /*border-bottom: 1px gray solid*/ text-decoration: underline; } 
+.loginForm > ul > li:hover{ text-decoration: underline; } 
 .loginForm > ul > li:last-child{ margin-bottom: 3rem }
 .loginForm > ul > li > b { float: left }
 .loginForm > ul > li:hover { cursor: grab }
+.loginForm > ul > em { color: var(--backText) }
 </style>
 
 
@@ -169,4 +158,21 @@ export default defineComponent({
 //else 
 //  utente = new Utente('','',[])    
 
+-->
+
+
+
+
+
+<!-- 
+.loginForm > input {
+  margin: 1rem 4rem;
+  width: min(80%, 200px);
+  background-color: transparent;
+}
+
+.loginForm > input[type=checkbox] {
+  width: 1rem;
+  margin-right: 1rem;
+}
 -->

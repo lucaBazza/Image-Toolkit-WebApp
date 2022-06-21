@@ -2,29 +2,10 @@ import firebase from 'firebase/compat/app';
 
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
+import Immagine from './Immagine'
 import { db } from '@/firebase'
 
 export let unsubscribeToRefs 
-
-export const addCatalogo = ( catalogo : Catalogo, user_id : string )=>{
-
-  console.log('\n addCatalogo() \n\n')
-
-   let cataloghiRef = db.collection('cataloghi')
-
-   const { serverTimestamp } = firebase.firestore.FieldValue
-
-   cataloghiRef.add({
-        titolo: catalogo.titolo,
-        proprietario: catalogo.proprietario,
-        uid: user_id,
-        // Lista immagini has one to many relationship with catalogId
-        secretKey: catalogo.secretkey,
-        id: catalogo.id,
-        createdAt: serverTimestamp()
-   })
-
-}
 
 /**
  *   Inserisce nella raccolta 'cataloghi' firebase un nuovo documento catalogo
@@ -32,24 +13,26 @@ export const addCatalogo = ( catalogo : Catalogo, user_id : string )=>{
  *    - NO inizializza una sotto-raccolta immagini
  *    - restituisce un speciale id : string che è l'identificativo firebase del documento
  *        + TODO: vedere se / come occorre usare/aggionrare tale id  nel client 
+ * 
+ *        + TODO: check preliminare se catalogo esiste già con stesso titolo
  */
 export const addCatalogo2 = async ( catalogo : Catalogo, user_id : string )=>{
 
   console.log('\n addCatalogo2() \n\n')
 
-   let cataloghiRef = db.collection('cataloghi')
+  let cataloghiRef = db.collection('cataloghi')
 
-   const { serverTimestamp } = firebase.firestore.FieldValue
+  const { serverTimestamp } = firebase.firestore.FieldValue
 
-   let resp = await cataloghiRef.add({
-        titolo: catalogo.titolo,
-        proprietario: catalogo.proprietario,
-        uid: user_id,
-        // Lista immagini has one to many relationship with catalogId
-        secretKey: catalogo.secretkey,
-        id: catalogo.id,
-        createdAt: serverTimestamp()
-   })
+  let resp = await cataloghiRef.add({
+      titolo: catalogo.titolo,
+      proprietario: catalogo.proprietario,
+      uid: user_id,
+      // Lista immagini has one to many relationship with catalogId
+      secretKey: catalogo.secretkey,
+      id: catalogo.id,
+      createdAt: serverTimestamp()
+  })
 
   console.log('ID firebase del documento aggiunto : ', resp.id)
 }
@@ -86,20 +69,17 @@ export const getCataloghi = async (user_id: string) : Promise<Catalogo[]> => {
 /**
  *  https://javascript.plainenglish.io/using-firestore-with-typescript-in-the-v9-sdk-cf36851bb099
  * 
- */
-
-import { getFirestore, CollectionReference, collection, DocumentData, QuerySnapshot } from 'firebase/firestore'
-import { FirebaseError } from '@firebase/util';
-import Immagine from './Immagine';
+*/
+/*
+import { getFirestore, CollectionReference, collection, DocumentData } from 'firebase/firestore'
+//import { FirebaseError } from '@firebase/util';
 // This is just a helper to add the type to the db responses
 const createCollection = <T = DocumentData>(collectionName: string) => {
     return collection(getFirestore(), collectionName) as CollectionReference<T>
 }
-
 // export all your collections
-export const cataloghiCollection = createCollection<Catalogo[]>('cataloghi')
-  
-
+export const cataloghiCollection = createCollection<Catalogo[]>('cataloghi') 
+*/
 
 
 
@@ -118,11 +98,12 @@ const catalogoConverter = {
         };
     },
     fromFirestore: (snapshot, options) => {
-        const data = snapshot.data(options);
+        const data = snapshot.data(options)
         let out = new Catalogo(data.proprietario, data.titolo).setCatalogUserID(data.uid)
         out.secretkey = data.secretKey
         out.id = data.id
         out.createdAt = data.createdAt
+        out.cid = snapshot.id
         return out
     }
 }
@@ -149,7 +130,7 @@ const immagineConverter = {
       out.nomeFile = data.nomefile
       out.realURL = data.src
       out.id = data.id
-      out.catalogoID = data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
+      out.catalogoID = data.cid //data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
       out.createdAt = data.createdAt
       out.adjustmentID = data.adjustmentID
     
@@ -167,22 +148,15 @@ const immagineConverter = {
  *          - I cataloghi caricati NON comprendono la lista delle immagini
  */
  export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
-  //console.log(' \n \n getCataloghi_C : ', user_id, " \n\n")
-  
   let lc : Catalogo[] = []
-
   const q = db.collection("cataloghi").withConverter(catalogoConverter).where("uid", "==", user_id)
   await q.get().then(querySnapshot => {
       if ( querySnapshot.empty )
         return Promise.reject('getCataloghi_C() Error, query found empty 😭 ')
-
-      lc = querySnapshot.docs.map(doc => { return doc.data() as Catalogo }) //console.log('💉 getCataloghi_B() MAP \t tot: ', lc.length , lc)
+      lc = querySnapshot.docs.map(doc => { return doc.data() as Catalogo })
   })
-
   unsubscribeToRefs = db.collection('cataloghi')
-  
   //console.log('💉 getCataloghi_B() ENDS return tot: ', lc.length)
-
   return lc.length > 0 ? Promise.resolve(lc) : Promise.reject('\t ✋ Snapshot catalogs is loading...')
 }
 
@@ -204,17 +178,8 @@ export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]
  *  ottiene l'idFirebase del catalogo matchando l'id
  */
 export async function get_firebaseID_currentCatalogo(catalogID){
-
   const q = db.collection("cataloghi").where("id", "==", catalogID)
-  const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))
-
-  /*
-  let out = "" //querySnapshot.docs[0].id
-  await q.get()
-        .then(querySnapshot => Promise.resolve(querySnapshot.docs[0].id) console.log('get_firebaseID_currentCatalogo() : ', , querySnapshot) )
-  */
-  //console.log('get_firebaseID_currentCatalogo() : ', out)
-  
+  const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))  
   return out
 }
 
@@ -232,18 +197,13 @@ export async function get_firebaseID_currentCatalogo_B(catalogID){
 /**
  *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
  */
-export async function loadImagesFromCatalog_firebaseA(catalogID_FS : number){
-  console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', catalogID_FS , "\n\n\n")
-
-      // Listo i nomi dei dicumenti nel catalogo scelto
-  //let a = await db.collection(`cataloghi/${catalogID_FS}/immagini`).get()
-  //a.docs.forEach(imgQuery => { console.log(imgQuery.id) })
+export async function loadImagesFromCatalog_firebaseA(catalogID_FS){
+  console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', catalogID_FS )
 
   let out : Immagine[] = []
-
   let aa = await db.collection(`cataloghi/${catalogID_FS}/immagini/`).withConverter(immagineConverter)
   const bb = await aa.get()
-  bb.docs.forEach(imgQuery => { /*console.log(imgQuery.data())*/ out.push(imgQuery.data()) })
+  bb.docs.forEach(imgQuery => { out.push(imgQuery.data()) })
 
   //out.forEach(i => console.log(i.nomeFile))
 
@@ -251,6 +211,12 @@ export async function loadImagesFromCatalog_firebaseA(catalogID_FS : number){
 }
 
 
+
+// Listo i nomi dei dicumenti nel catalogo scelto
+export async function getImageNames_fromCID(cid: string){
+  let a = await db.collection(`cataloghi/${cid}/immagini`).get()
+  return a.docs.map(imgQuery => { return imgQuery.id }) //a.docs.forEach(imgQuery => { console.log(imgQuery.id) })
+}
 
 
 
@@ -434,5 +400,29 @@ export async function onAuthStateChanged_luca(utenteSng : Utente){
     console.log('💉 getCataloghi_B() ENDS return tot: ',lc.length)
 
     return lc
+}
+*/
+
+
+
+/*
+export const addCatalogo = ( catalogo : Catalogo, user_id : string )=>{
+
+  console.log('\n addCatalogo() \n\n')
+
+   let cataloghiRef = db.collection('cataloghi')
+
+   const { serverTimestamp } = firebase.firestore.FieldValue
+
+   cataloghiRef.add({
+        titolo: catalogo.titolo,
+        proprietario: catalogo.proprietario,
+        uid: user_id,
+        // Lista immagini has one to many relationship with catalogId
+        secretKey: catalogo.secretkey,
+        id: catalogo.id,
+        createdAt: serverTimestamp()
+   })
+
 }
 */

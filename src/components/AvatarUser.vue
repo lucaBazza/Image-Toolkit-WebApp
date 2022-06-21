@@ -26,7 +26,7 @@ let photoURL = props.photoURL
   left: 0; 
   color: var(--mainText);
   border-radius: 0.5rem;
-  width: max(25%, 120px);
+  width: max(15%, 120px);
   padding: .5rem;
   margin: .5rem;
   box-shadow: 10px 20px 30px rgba(0,0,0,.4);

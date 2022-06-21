@@ -2,6 +2,13 @@
 *       DARK MODE
     attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
 */
+.darkMode{
+    --backgroundColor: 16,16,16; /* #111; */
+    --background_mod: #333;
+    --mainText: #fff;
+    --backText: #ddd;
+    --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
+}
 body{
     --varExample: #000;
     --backgroundColor: 239,239,239; /* #eee; */
@@ -10,32 +17,27 @@ body{
     --backText: #222;
     --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
 }
-.darkMode{
-    --backgroundColor: 16,16,16; /* #111; */
-    --background_mod: #333;
-    --mainText: #fff;
-    --backText: #ddd;
-    --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
-}
+
 
 
 /*
     B A S E     D E C L A R A T I O N S
 */
+* { 
+    color: var(--mainText);
+    font-family: 'Times New Roman', Times, serif;
+}
 body{
     background: var(--homeBackGradinet) no-repeat;
-    background-size: 2000% 2000%;
+    background-size: 8000% 8000%;
     animation: gradient 10s ease infinite;
-    -moz-animation: gradient 10s ease infinite;
-
-    color: var(--mainText);
-    min-width: 250px;
+    -moz-animation: gradient 10s ease infinite;    
 }
 
-.headerImg { content: url("./DSC09538-ProPs.webp") }
-.darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
+.headerImg { content: url("./DSC09538-ProPs_16x9.jpg") }
+.darkMode .headerImg{ content: url("./DSC09538-ProPs_16x9-darkMode.jpg") }
 
-h1, h2, h3, p{ color: var(--mainText) }
+/*h1, h2, h3, h4, h5, p{ color: var(--mainText) }*/
 ul { list-style-type: none }
 
 @keyframes gradient {
@@ -48,10 +50,12 @@ ul { list-style-type: none }
 
 /*
 
-    C U S T O M     I M A G E       E D I T O R
+    C U S T O M     I M A G E       E D I T O R     ||      L A N D S C A P E
 
 */
 @media only screen and (orientation: landscape){
+    .headerImg { content: url("./DSC09538-ProPs.webp") }
+    .darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
     .imgEditorModal{ 
         display: flex; 
         flex-flow: row  wrap; 
@@ -100,23 +104,23 @@ ul { list-style-type: none }
 @media screen and ( max-width: 650px ){           /* SMALL DEVICES */
     .mainViewer > img{ min-width:90% }
     .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
+    .controlBtns { top: .3rem }
+    .controlBtns > button { padding: 0.2rem  }
     .mainViewer{
         display: grid;
         min-width: 330px;
         height: auto;
         place-items: center;
     }
-    .catalogDiv > p {
-        width: max(85%, 200px);
-        margin-top: 2rem;
-    }
-    .loginForm{
-        margin: 1rem;
-        width: auto;
-    }
-    /*.loginForm > input{ margin: 1rem .2rem }*/
+    .headerImg{ height: 100vh }
+    #mainTitle{ margin: 4rem auto 1rem }
+    .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }
+    .catalogDiv > h3 { width: max(90%, 250px) }
+    .loginForm{ margin: 1rem; width: auto }
     .loginForm > button { width: 95% }
     .loginForm > ul > input[type=text] { width: 88% }
+    .loginForm > ul > li { text-align: center }
+    .loginForm > ul > li > b { display: none }
     .imgEditorModal{ height: 90vh; overflow: hidden; }
     .imgEditorModal > button { top: 1rem; right: 1rem; }
     .imgEditorModal > img {
@@ -126,13 +130,12 @@ ul { list-style-type: none }
     } 
     .imgEditorModal > ul { 
         width: max(95%, 300px );
-        
         overflow-y: auto;
         height: max( 50%, 500px);
     }
     .avatar{ 
         margin: .2rem; 
-        width: min(40%, 80px ); 
+        width: min(30%, 100px ); 
         overflow: hidden;
         box-shadow: 5px 10px 15px rgba(0,0,0,.3);
     }

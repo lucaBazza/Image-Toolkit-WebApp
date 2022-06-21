@@ -1,43 +1,36 @@
 <template>
   <div class="catalogDiv">
     <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <h3 v-if="cataRef.titolo">{{ cataRef.titolo }} <button @click="openSortingOptions"> ↕️ </button></h3> 
-    <p v-if="catalogIsOffline">😭 Image catalog server is offline 😭</p>
-    <ul v-else>
-      <li v-for="img in cataRef.listaImmagini" :key="img.id">
+    <h3 v-if="catalogoProp.titolo">{{ catalogoProp.titolo }} <button @click="openSortingOptions"> ↕️ </button></h3> 
+    <ul>
+      <span v-if=" ! catalogIsReady">Catalog not ready</span>
+      <li v-else v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
         <ImageExifViewer :imageRf="img" />
       </li>
-      <em v-if=" ! cataRef.listaImmagini.length">No images in this catalog, add from ☁️ </em>
+      <em v-if=" ! catalogoProp.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </ul>
     <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
 </template>
+
 <script lang="ts">
 import { defineComponent, ref } from "vue"
-import Settings from '@/types/Settings';
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
-//import Immagine from '@/types/Immagine'
+import Immagine from "@/types/Immagine"
 
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 export default defineComponent({
   name: "CatalogoForm",
   components: { ImageExifViewer },
-  props: {  catalogoRef: { type: Catalogo, default: new Catalogo('','') }   },
+  props: {  catalogoProp: { type: Catalogo, required: true /*default: new Catalogo('','')*/ }   },
   setup(props){
-    //console.log('CatalogoForm.setup() '/*,props.catalogoRef*/)
-    //let cataRef = props.catalogoRef // TODO VA MESSO REF ???
-    let cataRef = ref(props.catalogoRef) // TODO VA MESSO REF ???
-
+    //console.log('CatalogForm.setup() \t props: ',)
+    /*let cataRef = ref(props.catalogoProp) //props.catalogoRef*/
     let catalogIsReady = ref(false)
     let catalogIsOffline = ref(true)
-    return { cataRef, catalogIsReady, catalogIsOffline }
-  },
-  computed: {
-    isServerOffline(){ return fetch( Settings.getInstance().urlImageServer )
-                                .then( res => { return res.status !== 200 })
-                                .catch( () => { return false })
-    }
+    return { //cataRef,
+               catalogIsReady, catalogIsOffline }
   },
   methods: {
     async deleteAllImages() {
@@ -55,20 +48,23 @@ export default defineComponent({
   async mounted() {
     console.log("CatalogoForm.mounted()");
 
-    if (this.catalogIsReady) return;
+    //if (this.catalogIsReady) return;
     //if (this.catalogIsOffline) return;
 
         // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
     //let listUrlImgs = this.cataRef.listaImmagini.map( img => img.src );
     //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
-    let listUrlImgs = this.cataRef.listaImmagini.map( img => img.realURL )
+    
+    
+    let listUrlImgs = this.$props.catalogoProp.listaImmagini.map( img => img.realURL ) //this.cataRef.listaImmagini.map( img => img.realURL )
     //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() -img \t 🌅  ${x}`) )
 
 
         // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
-    
-    
-    this.cataRef.listaImmagini.forEach((img, i) => { img.src = listUrlImgs[i]; img.classStyle = ""; })
+    this.$props.catalogoProp.listaImmagini.forEach((img, i) => {
+        img.src = listUrlImgs[i]; 
+        img.classStyle = "";   //console.log(`img.src ${img.src} \t\t new img: ${listUrlImgs[i]}`)
+    })
     
 
 
@@ -85,23 +81,27 @@ export default defineComponent({
     });
     */
 
-    this.catalogIsReady = true;
-    this.catalogIsOffline = false;
+    this.catalogIsReady = true
+    //this.catalogIsOffline = false
   },
 })
 </script>
 
 <style>
-.catalogDiv{ margin: 1rem 0 }
+.catalogDiv{ margin: 3rem 0 }
 .catalogDiv > ul { padding: 0 }
-.catalogDiv > ul > em  { color: var(--backText )}
+.catalogDiv > ul > em  { 
+  margin: .5rem auto;
+  color: var(--backText)
+}
 
 .catalogDiv > h3 {
   width: 50%;
   margin: 0 auto;
   border-bottom: 1px solid gray;
 }
-.catalogDiv > h3 > button { float: right; background: transparent; border: none; color:var(--mainText); }
+.catalogDiv > h3 > button { float: right; background: transparent; border: none; }
+.catalogDiv > h3 > button:hover { cursor: grabbing }
 .isReadySpinner {
   width: 3rem;
   position: absolute;
@@ -112,9 +112,9 @@ export default defineComponent({
   background: transparent;
   border: none;
   font-size: 2rem;
-  margin: 2rem;
   opacity: 0.9;
   backdrop-filter: blur(2px);
+  margin-top: 50vh;
 }
 .catalogDiv > button:hover {
   cursor: grab;
@@ -323,6 +323,15 @@ export default defineComponent({
       return data;
     },
 
+
+
+
+  computed: {
+    isServerOffline(){ return fetch( Settings.getInstance().urlImageServer )
+                                .then( res => { return res.status !== 200 })
+                                .catch( () => { return false })
+    }
+  },
 
 
 -->

@@ -12,6 +12,7 @@
     "buildWebPack": "webpack src/main.ts -o public/bundle.js"
   },
   "dependencies": {
+    "@kyvg/vue3-notification": "^2.3.4",
     "@vue/test-utils": "^2.0.0",
     "@vueform/slider": "^2.0.10",
     "axios": "^0.27.2",

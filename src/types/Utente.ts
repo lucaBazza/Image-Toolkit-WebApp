@@ -12,7 +12,8 @@ export default class Utente{
     indexCatalogNow: number;
     photoURL: string;
     uid: string;
-    
+    selected_cid: string
+
     /**
      *      di default se l'utente ha più cataloghi vado a selezionare il primo
      */
@@ -21,10 +22,11 @@ export default class Utente{
         this.password = ''
         this.secretKey = ''         //MD5(nome+password)
         this.listaCataloghi = []
-        this.indexCatalogNow = 0
+        this.indexCatalogNow = -999
         this.email= ''
         this.photoURL= ''
         this.uid='-'
+        this.selected_cid = ''
     }
 
     setEmail(email: string){
@@ -41,31 +43,60 @@ export default class Utente{
         return this.listaCataloghi
     }
 
-    setCurrentCatalog(index: number){
+    /*setCurrentCatalog(index: number){
         let newIDexists = false
         newIDexists = this.listaCataloghi.some( c => { return c.id === index })
         newIDexists ? this.indexCatalogNow = index : console.log(`Utente.setCurrentCatalog() Error: id ${index} not exist in user catalog lists`)
         return this
+    }*/
+
+    getCurrentCatalog_cid(){
+        //console.log(`\n\nUtente.getCurrentCatalog_cid() \n selected cid: ${this.selected_cid} \t aviable: ${this.listaCataloghi.map(cc => cc.cid)}`)
+        let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
+        /*return out ? out :*/ if( ! out) console.log('Utente.getCurrentCatalog_cid() no aviable cid')
+        //console.log('\n\n getCurrentCatalog_cid()',out.titolo)
+        return out
     }
 
-    getCatalogoCurrent() : Catalogo{
-        return this.listaCataloghi[this.indexCatalogNow];
+    selectFirstAviableCatalog(){
+        //console.log('Utente.selectFirstAviableCatalog() ', this.listaCataloghi.map(c => c.cid) )
+        let firstAviableCat = this.listaCataloghi[0]
+        this.indexCatalogNow = firstAviableCat.id
+        this.selected_cid = firstAviableCat.cid
+        //console.log(`selectFirstAviableCatalog() ${this.indexCatalogNow} \t|\t ${this.selected_cid}`)
+        return this
     }
 
-    getIndexCatalogoCurrent(){
-        return this.indexCatalogNow;
+    /**
+     *   setta indexCatalogNow con l'indice del catalogo indicato da cid
+     *          NO UTILIZZA SEMPRE L'ID
+    */
+    setCurrentCatalog_cid(cid: string){
+        //console.log('\n 🍎 setCurrentCatalog_cid() cid: ', cid, '\n', this.listaCataloghi.map(x => x.cid))
+        let newIDexists = this.listaCataloghi.findIndex(c => c.cid === cid)
+        //console.log('setCurrentCatalog_cid() newIDexists: ', newIDexists)
+        if(newIDexists > -1) 
+            this.indexCatalogNow = newIDexists
+        else 
+            console.log(`Utente.setCurrentCatalog_cid() Error: id ${cid} not exist in user catalog lists`)
+
+        console.log('setCurrentCatalog_cid() . ',newIDexists)
+        return this
     }
 
     getCatalog_by_cid(cid : string){
-        return this.listaCataloghi.filter(c => c.cid === cid).pop()
+        return this.listaCataloghi.filter(c => c.cid === cid)[0]//.pop()
     }
 
-    isCurrentCatalog(catalogoId : number){
+    isCurrentCatalog(/*catalogoId : number*/ cid : string){
         //console.log(this.listaCataloghi)
         //console.log(`utente.ts isCurrentCatalog() \t ${catalogoId} === ${this.listaCataloghi[this.indexCatalogNow].getCurrentId()}`)
         //console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
         //return catalogoId === this.listaCataloghi[this.indexCatalogNow].getCurrentId();
-        return catalogoId === this.listaCataloghi[this.indexCatalogNow].id;
+        //return catalogoId === this.listaCataloghi[this.indexCatalogNow].id
+
+        console.log(`CID: ${cid} === current cid: ${this.getCurrentCatalog_cid().cid} \t is: ${cid === this.getCurrentCatalog_cid().cid}`)
+        return cid === this.getCurrentCatalog_cid().cid
     }
 
     setPhotoURL(url: string){
@@ -79,7 +110,7 @@ export default class Utente{
     }
 
     setListaImmagini_currentCatalog(li : Immagine[]){
-        this.getCatalogoCurrent().listaImmagini = li
+        this.getCurrentCatalog_cid().listaImmagini = li
         return this
     }
 
@@ -88,7 +119,7 @@ export default class Utente{
      *      - invocato da App.loadImages_ofCatalog()
      */
     setImages_by_cid(images: Immagine[], cid: string){
-        console.log('Utente.setImages_by_cid() cid: ', cid, images)
+        //console.log('Utente.setImages_by_cid() cid: ', cid, images)
 
         /*
         let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0),
@@ -106,6 +137,9 @@ export default class Utente{
         return this
     }
 }
+
+
+
 
 
 /*
@@ -145,5 +179,16 @@ constructor(params: Utente = {} as Utente){
     this.catalogoNow = catalogoNow
     this.listaCataloghi = listaCataloghi
     this.keepLogged = keepLogged
+}
+*/
+
+
+/*
+getCatalogoCurrent() : Catalogo{
+    return this.listaCataloghi[this.indexCatalogNow]
+}
+
+getIndexCatalogoCurrent(){
+    return this.indexCatalogNow
 }
 */

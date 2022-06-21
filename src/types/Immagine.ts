@@ -17,7 +17,7 @@ export default class Immagine implements Iterator<number>{
         this.nomeFile = this.checkFileName(src)
         this.src = require("./../assets/loading.gif") //this.isEmptyOrSpaces(src) ? require("./../assets/loading.gif") : src
         this.realURL = src
-        this.id = id;
+        this.id = id
         this.classStyle = 'loading'
         this.exifDatas = this.requireFakeExifs()
         this.catalogoID = -1
@@ -29,15 +29,11 @@ export default class Immagine implements Iterator<number>{
 
     checkFileName = (str) => { 
         try{ return new URL(str.replaceAll('%2F','/')).pathname.split('/').pop() as string  }
-        catch(err){ return str }
-        
+        catch(err){ return str }   
     }
 
     public next(): IteratorResult<number> {
-        return {
-            done: false,
-            value: this.id++
-        }
+        return { done: false, value: this.id++ }
     }
 
     getTitolo() {
@@ -63,24 +59,6 @@ export default class Immagine implements Iterator<number>{
         ];
     }
 
-    /*
-    getImagePlaceHolder() {
-        return [
-          {
-            name: "loading",
-            src: require("./../assets/loading.gif"),
-            class: "loading",
-            datas: [], //this.requireFakeExifs(),
-            id: 0,
-            done: false,
-            title: "Passo Sella",
-          },
-          //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
-          //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
-        ];
-    }
-    */
-
     setExifDatas(exifDatas: any[]){
         this.exifDatas = exifDatas
     }
@@ -96,3 +74,22 @@ export default class Immagine implements Iterator<number>{
 }
 
 //export default Immagine
+
+
+/*
+getImagePlaceHolder() {
+    return [
+        {
+        name: "loading",
+        src: require("./../assets/loading.gif"),
+        class: "loading",
+        datas: [], //this.requireFakeExifs(),
+        id: 0,
+        done: false,
+        title: "Passo Sella",
+        },
+        //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:1, done: false, title: 'Corvo' },
+        //{ name:'indef', src: require('./../assets/loading.gif'), class:'loading', datas:this.requireExifs(), id:2, done: false, title: 'Tenda' }
+    ];
+}
+*/
