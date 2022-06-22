@@ -1,28 +1,32 @@
 <template>
   <div class="mainViewer">
+    <!--   :class="{ sale: theme === 'sale' }   -->
     <img
         :src="src_real"
-        :class="image_ref.classStyle"
-        :id=" 'img_' + image_ref.id"
-        :alt="image_ref.alt"
+        :class= "isImgLoaded() ? '' : imageRf.classStyle" 
+        :id=" 'img_' + imageRf.id"
+        :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
     />
     <span>
-      {{ image_ref.nomeFile }}<button @click="reqEdit">🖊️</button><br />
-      <li v-for="ex in image_ref.exifDatas" :key="ex.label">
-        <b>{{ ex.label }}</b> {{ ex.val }}
-      </li>
+      {{ imageRf.nomeFile }}<button @click="reqEdit">🖊️</button><br/>
+      <ul>
+        <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
+          <b>{{ ex.label }}</b> {{ ex.val }}
+        </li>
+      </ul>
+      <button v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
     </span>
   </div>
   <ImageEditorModalVue 
       v-if="showImgEditModal" 
-      :imageProp="image_ref"
+      :imageProp="imageRf"
       @toggle-editor-fn="toggleEditorFn" />
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
 
@@ -31,40 +35,59 @@ import ImageEditorModalVue from './ImageEditorModal.vue'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 
-let image_ref = props.imageRf
-let src_real = ref(props.imageRf.src)
+let src_real = ref(props.imageRf.src) //ref('a')
 let showImgEditModal = ref(false)
+let showFixButton = ref(false)
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
   src_real.value = require("@/assets/noImg.jpg")
-  image_ref.classStyle = 'loading'
+  props.imageRf.classStyle = 'loadingError'
+  showFixButton.value = true
 }
 
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
+
+function swapRealImage(res){
+  console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
+  src_real.value = props.imageRf.realURL
+      // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
+  //setTimeout( () => { props.imageRf.classStyle = ''}, 50 * 1000) 
+}
 
 function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
 }
 
 function toggleEditorFn(){
-    console.log("ImageExifViewer.toggleEditorFn() ",image_ref.src)
-    if( isImgLoaded() )
-      showImgEditModal.value = ! showImgEditModal.value
-    else
-      console.log('No image loaded, cant edit')    
+    console.log("ImageExifViewer.toggleEditorFn() ", props.imageRf.nomeFile)
+    isImgLoaded() ? showImgEditModal.value = ! showImgEditModal.value : console.log('No image loaded, cant edit')
 }
+
+function fixLinkImage(){
+  console.log('fixLinkImage')
+}
+
+onMounted( async () => {
+  console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
+  
+  props.imageRf.classStyle = 'loading'
+
+  // ATTENZIONE FETCH non è detto che funzioni correttamente, la risposta dal server è false ???
+  await fetch(props.imageRf.realURL, { mode: 'no-cors'})
+      .then(res => swapRealImage(res) )
+      .catch(ex => console.log(ex.message))
+})
 </script>
-
-
 
 <style>
 .mainViewer{
   --lighWarmGradinet: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   /*--darkColdGradinet: linear-gradient(-45deg, #4E156C, #831838, #975038, #213892);*/
+  --mascheraCircolare: radial-gradient(black 0%, rgba(0, 0, 0, 0.2) 80%);
 }
 .mainViewer {
-  margin: 5%; /*margin-left: 5%; margin-top: 5%;*/
+  margin: 5%;
   width: 90%;
   min-width: 550px;
   max-width: 1200px;
@@ -76,20 +99,14 @@ function toggleEditorFn(){
   border-radius: 0.8rem;
   display: flex;
 }
-.darkMode .mainViewer{ 
-    box-shadow: inset 0px 0px 400px 110px rgba(0, 0, 0, .7);
-    color: var(--mainText)
-}
+.darkMode .mainViewer{ box-shadow: inset 0px 0px 400px 110px rgba(0, 0, 0, .7) }
 .mainViewer > img {
   flex: 50%;
   float: left;
   margin: 1rem;
   border-radius: 0.5rem;
   object-fit: cover;
-  max-width: max(
-    50%,
-    300px
-  ); /* set the max-width of img to whichever value is largest, 50% or 300px: */
+  max-width: max( 50%, 300px );
 }
 .mainViewer > img:hover {
   cursor: move;
@@ -108,26 +125,20 @@ function toggleEditorFn(){
   font-weight: bolder;
   margin: 2rem 0;
 }
-.mainViewer > span > li {
-  list-style-type: none;
-  text-align: left;
-}
 .mainViewer > span > button {
   background: transparent;
   border: none;
   cursor: crosshair;
 }
-
-.loading {
-  mix-blend-mode: multiply;
-  /*mask-image: linear-gradient(black, transparent);
-  mask-mode: luminance;*/
+.mainViewer > span > ul { padding-left: 0; }
+.mainViewer > span > ul > li {
+  list-style-type: none;
+  text-align: left;
+  padding: .2rem 0;
 }
-/*
-@keyframes gradient {
-  0% { background-position: 0% 50% }
-  50% { background-position: 100% 50% }
-  100% { background-position: 0% 50% }
+.loading, .loadingError { mix-blend-mode: multiply }
+.loading{
+  -webkit-mask-image: var(--mascheraCircolare);
+  mask-image: var(--mascheraCircolare);
 }
-*/
 </style>

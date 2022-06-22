@@ -2,7 +2,7 @@
     <div class="backdropModal">
         <div class="imgEditorModal"> <!-- @mouseleave="$emit('toggle-editor-fn')" -->
             <button @click="$emit('toggle-editor-fn')"> ❌ </button>
-            <img :src="image_ref.src" :style="getStyles()">
+            <img :src="imageProp.realURL" :style="getStyles()">
             <ul>
                 <li @click.shift="parameterReset(saturationValue.value)">
                     <h2>Saturation</h2>
@@ -49,20 +49,11 @@ import Slider from '@vueform/slider'
 export default defineComponent({
     name: 'ImageEditorModal',
     components: { Slider },
-    props: {
-        imageProp: { required: true, type: Immagine},
-    },
+    props: {    imageProp: { type: Immagine, required: true}    },
     emits: ['toggle-editor-fn'],
-    computed: {
-        //saturationVal() : string{
-        //    return Math.floor($data.valueSat / 100).toString();
-        //},
-        updatedStyleFilters() : string{
-            return ''
-        }
-    },
+
     setup(props){
-        const image_ref = props.imageProp;
+        const image_ref = props.imageProp
         
         let temperatureValue = ref({
             value: 0,
@@ -169,9 +160,11 @@ export default defineComponent({
 .imgEditorModal > ul{ 
     width: max(90%, 400px );
     margin: 0 auto;
+    padding-left: 0;
 }
 .imgEditorModal > ul > li{
     padding: 1rem;
+    margin: 0 auto;
 }
 .imgEditorModal > ul > li:last-child{ height: 20rem; }
 .imgEditorModal > ul > li > h2 { margin-bottom: .1rem; }

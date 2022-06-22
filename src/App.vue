@@ -49,12 +49,13 @@ import Catalogo from './types/Catalogo'
 
 // https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
 import { UploadMedia, UpdateMedia } from "vue-media-upload"
-
+ 
 import { useAuth } from '@/firebase'
 import firebase from 'firebase/compat/app'
 
-import { getCataloghi_C, get_firebaseID_currentCatalogo, get_firebaseID_currentCatalogo_B, loadImagesFromCatalog_firebaseA } from './types/FirebaseModel'
+import { getCataloghi_C, loadImagesFromCatalog_firebaseA } from './types/FirebaseModel'
 import uploadImageCodeInspire from '@/utilities/uploadImageCodeInspire'
+import Immagine from './types/Immagine'
 
 /**
  *    Roadmap
@@ -79,9 +80,8 @@ export default defineComponent({
   components: { Modal, CatalogoForm, LoginArea, AvatarUser, UploadMedia },
   created(){ document.title = "Zabba image 🛠️ " },
   setup(){
-    console.log(`app.setup()`)
-
-    let utenteSng = new Utente('')  //ref<Utente>( new Utente('') )
+    //console.log(`app.setup()`)
+    let utenteSng = new Utente('')
     let currentAppCatalog = ref(new Catalogo('',''))
     const settings = Settings.getInstance()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
@@ -121,16 +121,22 @@ export default defineComponent({
         let uid = u.uid
         return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
     },
+    /**
+     *  Ottiene lista cataloghi per utente corrente:
+     *    - dopo la login autentication
+     *    - imposta il primo catalogo disponibile
+     *    - carica tutti i cataloghi
+     *    - setta il catalogo corrente nella CatalogForm -inattiva
+     *    - segnale di loaded
+     */
     async loadUserCatalogsAsync(){
         console.log(' 🕰 App.loadUserCatalogsAsync() ')
-                      
         getCataloghi_C(this.utenteSng.uid)
             .then( res => { return this.utenteSng.setListaCataloghi(res).selectFirstAviableCatalog() })
             .then( res =>{ 
               //this.load_images_by_cid(res.selected_cid) // carica usando il cid del primo elemento della lista
               this.utenteSng.listaCataloghi.forEach(c =>  this.load_images_by_cid(c.cid))
-            })  
-
+            })
             .then( res => {
                     this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid()
 
@@ -140,8 +146,7 @@ export default defineComponent({
 
                     setTimeout(()=>this.loadingDone(),200) // TODO SVILUPPARE
             })
-
-            .catch( ex => this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area <br><br>${ex.message}`, type: 'warn', duration: 20000 }) )
+            .catch( ex => this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area`, type: 'warn', duration: 20000 }) )
     },
     async load_images_by_cid(cid : string){
       //console.log('\t 📚 App.load_images_by_cid() \t cid: ',cid)
@@ -171,7 +176,10 @@ export default defineComponent({
       console.log(`upload in cid: ${this.utenteSng.getCurrentCatalog_cid().cid} \t imgs: ${event.target.files}`)
       uploadImageCodeInspire(event, this.utenteSng.selected_cid)
 
-      setTimeout(()=>this.loadUserCatalogsAsync(),10*1000)  // TODO Implementare soluzione reale 
+      //setTimeout(()=>this.loadUserCatalogsAsync(),10*1000)  // TODO Implementare soluzione reale 
+
+      // preparo la visualizzazione delle n-immagini (poi se sono caricate e vanno mejo)
+      Array.from(event.target.files).forEach( (file/*, index*/) =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine(file, -9 /*- (index-1)*/ )  ) })
     },
     /**
      *    Cambia il catalogo selezionato usando il cid (aggiorna utente e catalogo aperto)
@@ -223,7 +231,10 @@ export default defineComponent({
 
 
     //setTimeout(() => { console.log('\n\n\nTESTING\n\n\n'); this.change_catalog(this.utenteSng.listaCataloghi[1].cid)   }, 2000) // TESTING 
-    //setTimeout(() => { console.log('\n\n\nTESTING\n\n\n'); this.change_catalog(this.utenteSng.listaCataloghi[2].cid)   }, 8000) // TESTING 
+    /*setTimeout(() => { 
+        console.log('\n\n\nTESTING\n\n\n'); //this.change_catalog(this.utenteSng.listaCataloghi[2].cid)   
+        this.currentAppCatalog.listaImmagini.push(new Immagine('loading...',-1))
+    }, 2000) // TESTING */
 
 
   }
@@ -233,19 +244,16 @@ export default defineComponent({
 <style>
 /** questo è globale */
 #app {
-  /*font-family: Avenir, Helvetica, Arial, sans-serif;*/
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  /*color: #2c3e50;*/
-  /*margin-top: 60px;*/
 }
 h1 {
   border-bottom: 1px solid #aaa;
   display: inline-block;
   padding-bottom: 10ox;
   padding: 1rem;
-  background: 10rem rgba(var(--backgroundColor), .4); /*background: 10rem rgba(0, 0, 0, 0.4); */
+  background: 10rem rgba(var(--backgroundColor), .4);
   border-radius: 0.5rem;
 }
 .headerImg {
@@ -258,7 +266,6 @@ h1 {
   object-fit: cover;
   filter: blur(2px);
   transform: scale(1.05);
-  /*mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1.0) 80%, transparent 100%);*/
 }
 /*.darkMode > .headerImg{ filter:invert(0.5) } */
 #mainTitle{ width: max(30%, 200px); margin: 0rem auto 1rem; }
@@ -266,7 +273,7 @@ h1 {
   margin-left: 10%;
   width: 80%;
   height: 100%;
-  margin-top: 5%; /*background: var(--backgroundColor);*/
+  margin-top: 5%;
 }
 
 .controlBtns {

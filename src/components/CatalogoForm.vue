@@ -13,6 +13,39 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, onMounted } from "vue"
+import ImageExifViewer from "@/components/ImageExifViewer.vue"
+import Catalogo from "@/types/Catalogo"
+import Immagine from "@/types/Immagine"
+
+const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
+let catalogIsReady = ref(false)
+let catalogIsOffline = ref(true)
+
+async function deleteAllImages() {
+  console.log("deleteAllImages()");
+}
+function openSortingOptions(){
+  console.log('openSortingOptions()')
+}
+
+onMounted(() => {
+  console.log("CatalogoForm.mounted()")
+
+  /*
+  let listUrlImgs = props.catalogoProp.listaImmagini.map( img => img.realURL )
+  props.catalogoProp.listaImmagini.forEach((img, i) => {
+    img.src = listUrlImgs[i]; 
+    img.classStyle = "";   //console.log(`img.src ${img.src} \t\t new img: ${listUrlImgs[i]}`)
+  })
+  */
+  catalogIsReady.value = true
+})
+
+</script>
+
+<!-- 
 <script lang="ts">
 import { defineComponent, ref } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
@@ -29,8 +62,7 @@ export default defineComponent({
     /*let cataRef = ref(props.catalogoProp) //props.catalogoRef*/
     let catalogIsReady = ref(false)
     let catalogIsOffline = ref(true)
-    return { //cataRef,
-               catalogIsReady, catalogIsOffline }
+    return {catalogIsReady, catalogIsOffline }
   },
   methods: {
     async deleteAllImages() {
@@ -47,7 +79,6 @@ export default defineComponent({
    */
   async mounted() {
     console.log("CatalogoForm.mounted()");
-
     //if (this.catalogIsReady) return;
     //if (this.catalogIsOffline) return;
 
@@ -85,7 +116,7 @@ export default defineComponent({
     //this.catalogIsOffline = false
   },
 })
-</script>
+</script> -->
 
 <style>
 .catalogDiv{ margin: 3rem 0 }

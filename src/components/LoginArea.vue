@@ -27,7 +27,7 @@ const { signOut } = useAuth()
 
 console.log('LoginArea.setup()')
 
-let cataloghiLoaded = ref(true) // occorre per 'forzare' il reload della lista utent
+let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
 const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true },0) }
 
 const addNewCatalogo = (e) =>{
