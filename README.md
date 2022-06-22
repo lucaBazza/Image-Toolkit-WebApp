@@ -34,7 +34,7 @@ npm run build
 ```
 
 ### Launch client in production mode
-```**console**
+```
     npm run build && serve -s dist
 ```
 

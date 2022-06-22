@@ -21,7 +21,6 @@ import Immagine from "@/types/Immagine"
 
 const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
 let catalogIsReady = ref(false)
-let catalogIsOffline = ref(true)
 
 async function deleteAllImages() {
   console.log("deleteAllImages()");
@@ -32,7 +31,6 @@ function openSortingOptions(){
 
 onMounted(() => {
   console.log("CatalogoForm.mounted()")
-
   /*
   let listUrlImgs = props.catalogoProp.listaImmagini.map( img => img.realURL )
   props.catalogoProp.listaImmagini.forEach((img, i) => {
@@ -44,79 +42,6 @@ onMounted(() => {
 })
 
 </script>
-
-<!-- 
-<script lang="ts">
-import { defineComponent, ref } from "vue"
-import ImageExifViewer from "@/components/ImageExifViewer.vue"
-import Catalogo from "@/types/Catalogo"
-import Immagine from "@/types/Immagine"
-
-// https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
-export default defineComponent({
-  name: "CatalogoForm",
-  components: { ImageExifViewer },
-  props: {  catalogoProp: { type: Catalogo, required: true /*default: new Catalogo('','')*/ }   },
-  setup(props){
-    //console.log('CatalogForm.setup() \t props: ',)
-    /*let cataRef = ref(props.catalogoProp) //props.catalogoRef*/
-    let catalogIsReady = ref(false)
-    let catalogIsOffline = ref(true)
-    return {catalogIsReady, catalogIsOffline }
-  },
-  methods: {
-    async deleteAllImages() {
-      console.log("deleteAllImages()");
-    },
-    openSortingOptions(){
-      console.log('openSortingOptions()')
-    }
-  },
-  /*
-   *   mounted avviene dopo che datas sono stati caricati      
-   *      - [ ha già il catalogo con le immagini,  ma non adjustments ] TODO con metatag ?
-   *      - trasforma i segnaposto loading nelle immagini reali oppure lascia errore
-   */
-  async mounted() {
-    console.log("CatalogoForm.mounted()");
-    //if (this.catalogIsReady) return;
-    //if (this.catalogIsOffline) return;
-
-        // SALVO LISTA IMMAGINI SRC PER AGGIUNGERLA DOPO IL PLACEHOLDER
-    //let listUrlImgs = this.cataRef.listaImmagini.map( img => img.src );
-    //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() \t 🌅  ${x}`) )
-    
-    
-    let listUrlImgs = this.$props.catalogoProp.listaImmagini.map( img => img.realURL ) //this.cataRef.listaImmagini.map( img => img.realURL )
-    //listUrlImgs.forEach( x => console.log(`CatalogoForm.mounted() -img \t 🌅  ${x}`) )
-
-
-        // RICHIEDO al server le immagini in base al tipo di url che ho nel catalogo
-    this.$props.catalogoProp.listaImmagini.forEach((img, i) => {
-        img.src = listUrlImgs[i]; 
-        img.classStyle = "";   //console.log(`img.src ${img.src} \t\t new img: ${listUrlImgs[i]}`)
-    })
-    
-
-
-    /*
-    this.cataRef.listaImmagini.forEach((img, i) => {
-      const useCompiledURL = false;
-      
-          // Metodo con server che invia indirizzo assoluto
-      //img.src = listUrlImgs[i];
-          // Metodo con server che invia solo nomefile relativo
-      img.src = useCompiledURL ? listUrlImgs[i] : `${Settings.getInstance().urlImageServer}/image?utente=${this.cataRef.proprietario}&richiestaImg=${listUrlImgs[i]}`
-
-      img.classStyle = "";
-    });
-    */
-
-    this.catalogIsReady = true
-    //this.catalogIsOffline = false
-  },
-})
-</script> -->
 
 <style>
 .catalogDiv{ margin: 3rem 0 }

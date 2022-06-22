@@ -1,17 +1,17 @@
 <template>
 
   <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
-  <button v-else @click="signIn" class="googleSignIn">
+  <button v-else @click="signIn" class="googleSignIn" :disabled="isProductionBuild">
       <img src='./assets/logoGoogle.svg'/>Sign In
   </button>
 
   <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
-  <div class="controlBtns">
+  <nav class="controlBtns">
       <button @click="toggleDarkModeBtn">🌓</button>
       <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
       <button @click="toggleCatalogMode" v-if="! isLoading" >📚</button>
       <button @click="toggleModalInfos">ℹ️</button>
-  </div>
+  </nav>
 
   <h1 id="mainTitle">Image Toolkit App</h1>
 
@@ -31,7 +31,7 @@
 
   <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog"/>
 
-  <div v-if=" ! settings.isDevelopMode" class="productionMode"><h2>Aviable soon</h2></div>
+  <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div>
 
   <notifications position="bottom center" />
 </template>
@@ -42,7 +42,7 @@ import { defineComponent, ref } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
-import Modal from "./components/Modal.vue"
+import Modal from "./components/Modal.vue" 
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
@@ -84,6 +84,7 @@ export default defineComponent({
     let utenteSng = new Utente('')
     let currentAppCatalog = ref(new Catalogo('',''))
     const settings = Settings.getInstance()
+    const isProductionBuild = ! Settings.getInstance().isDevelopMode()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
 
     let isLoading = ref(true)
@@ -104,16 +105,10 @@ export default defineComponent({
     return {  utenteSng, settings, isLoading,
               showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone,
-              currentAppCatalog,
+              currentAppCatalog, isProductionBuild,
               user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
-      // in produzione al momento visualizzo solo il pulsante 'aviable soon'
-    productionView(){
-      console.log('productionView()')
-      document.getElementsByClassName('catalogOwner')[0].setAttribute('hidden','');
-      document.getElementsByClassName('controlBtns')[0].setAttribute('hidden','');
-    },
     convertUser_Utente(u : firebase.User) : Utente{
         let displayName = u.displayName !
         let email = u.email !
@@ -208,9 +203,6 @@ export default defineComponent({
 
           // Avvio in dark mode
     document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
-
-          // Check se produzione nascondo implementazione
-    if( ! this.settings.isDevelopMode() ) this.productionView()
     
           // Carico utente > Firebase
     const auth = firebase.auth()
@@ -287,7 +279,7 @@ h1 {
   font-size: 1.7rem;
   cursor: grab;
 }
-
+/*
 .catalogOwner {
   position: absolute;
   padding: 0.7rem;
@@ -315,6 +307,7 @@ h1 {
   margin: 0 0 10rem 0;
   translate: transposeY(20px);
 }
+*/
 
 .googleSignIn{ 
   position: absolute; 

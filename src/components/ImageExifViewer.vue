@@ -1,9 +1,9 @@
 <template>
   <div class="mainViewer">
-    <!--   :class="{ sale: theme === 'sale' }   -->
+    <!--   :class="{ sale: theme === 'sale' }  -->
     <img
-        :src="src_real"
-        :class= "isImgLoaded() ? '' : imageRf.classStyle" 
+        :src="imageRf.realURL"
+        :class="imageRf.classStyle"
         :id=" 'img_' + imageRf.id"
         :alt="imageRf.alt"
         @error="imageLoadError"
@@ -35,7 +35,7 @@ import ImageEditorModalVue from './ImageEditorModal.vue'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 
-let src_real = ref(props.imageRf.src) //ref('a')
+let src_real = ref(props.imageRf.src)
 let showImgEditModal = ref(false)
 let showFixButton = ref(false)
 
@@ -49,8 +49,9 @@ function imageLoadError(e){
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
 
 function swapRealImage(res){
-  console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
+  //console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
   src_real.value = props.imageRf.realURL
+  props.imageRf.classStyle = 'imageLoaded'
       // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
   //setTimeout( () => { props.imageRf.classStyle = ''}, 50 * 1000) 
 }
@@ -64,19 +65,24 @@ function toggleEditorFn(){
     isImgLoaded() ? showImgEditModal.value = ! showImgEditModal.value : console.log('No image loaded, cant edit')
 }
 
+/**
+ *  Se l'immagine non è disponibile, proponi ricaricamento
+ *    - TODO: implementare anche caricamento immagine direttamente da qui    
+ */
 function fixLinkImage(){
   console.log('fixLinkImage')
 }
 
 onMounted( async () => {
-  console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
+  //console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
   
-  props.imageRf.classStyle = 'loading'
-
+  props.imageRf.classStyle = 'loadingBG'
+  
   // ATTENZIONE FETCH non è detto che funzioni correttamente, la risposta dal server è false ???
   await fetch(props.imageRf.realURL, { mode: 'no-cors'})
       .then(res => swapRealImage(res) )
       .catch(ex => console.log(ex.message))
+  
 })
 </script>
 
@@ -105,8 +111,8 @@ onMounted( async () => {
   float: left;
   margin: 1rem;
   border-radius: 0.5rem;
-  object-fit: cover;
   max-width: max( 50%, 300px );
+  /*object-fit: cover;*/
 }
 .mainViewer > img:hover {
   cursor: move;
@@ -136,6 +142,26 @@ onMounted( async () => {
   text-align: left;
   padding: .2rem 0;
 }
+/*
+*     http://css3.bradshawenterprises.com/cfimg/
+*/
+.loadingBG{ 
+  /*background-blend-mode: multiply;
+  background-image: url('./../assets/loading.gif');
+  background: url('./../assets/loading.gif');
+  background-blend-mode: multiply;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;*/
+  content: url('./../assets/loading.gif');
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  
+  mask-image: var(--mascheraCircolare);
+  -webkit-mask-image: var(--mascheraCircolare);
+}
+.imageLoaded{ object-fit: cover }
+
 .loading, .loadingError { mix-blend-mode: multiply }
 .loading{
   -webkit-mask-image: var(--mascheraCircolare);
