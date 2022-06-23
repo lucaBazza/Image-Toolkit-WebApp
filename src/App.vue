@@ -53,7 +53,7 @@ import { UploadMedia, UpdateMedia } from "vue-media-upload"
 import { useAuth } from '@/firebase'
 import firebase from 'firebase/compat/app'
 
-import { getCataloghi_C, loadImagesFromCatalog_firebaseA } from './types/FirebaseModel'
+import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings } from './types/FirebaseModel'
 import uploadImageCodeInspire from '@/utilities/uploadImageCodeInspire'
 import Immagine from './types/Immagine'
 
@@ -109,13 +109,13 @@ export default defineComponent({
               user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
-    convertUser_Utente(u : firebase.User) : Utente{
-        let displayName = u.displayName !
-        let email = u.email !
-        let photoURL = u.photoURL !
-        let uid = u.uid
-        return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
-    },
+    //convertUser_Utente(u : firebase.User) : Utente{
+    //    let displayName = u.displayName !
+    //    let email = u.email !
+    //    let photoURL = u.photoURL !
+    //    let uid = u.uid
+    //    return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
+    //},
     /**
      *  Ottiene lista cataloghi per utente corrente:
      *    - dopo la login autentication
@@ -126,7 +126,7 @@ export default defineComponent({
      */
     async loadUserCatalogsAsync(){
         console.log(' 🕰 App.loadUserCatalogsAsync() ')
-        getCataloghi_C(this.utenteSng.uid)
+        getCataloghi_C( this.user.uid /*this.utenteSng.uid*/)
             .then( res => { return this.utenteSng.setListaCataloghi(res).selectFirstAviableCatalog() })
             .then( res =>{ 
               //this.load_images_by_cid(res.selected_cid) // carica usando il cid del primo elemento della lista
@@ -209,8 +209,13 @@ export default defineComponent({
     auth.onAuthStateChanged( user =>{
       if( user ){
           console.log('Auth status changed, user logged: \t', user['displayName'])
-          this.utenteSng = this.convertUser_Utente(user as firebase.User)
-          this.loadUserCatalogsAsync()
+
+          //this.utenteSng = this.convertUser_Utente(user as firebase.User)
+          //this.loadUserCatalogsAsync()
+          loadUserSettings(user)
+            .then( u => this.utenteSng = u )
+            .then( () => this.loadUserCatalogsAsync() )
+            .catch(ex => console.log(ex))
       }
       else {
         console.log('Auth status is: user un-logged')

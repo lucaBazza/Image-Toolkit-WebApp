@@ -9,24 +9,34 @@ export default class Utente{
     password: string;
     secretKey: string;
     listaCataloghi: Catalogo[];
-    indexCatalogNow: number;
     photoURL: string;
-    uid: string;
     selected_cid: string
+    uid: string;
+    // parametri che salvo su firebase ( oltre a uid e selected catalog id )
+    subscription_date?: Date
+    lastLogin?: Date
+    allowNotifications? : boolean
+    active_plan?: string
+    watermark_src?: string
+    public_gallery?: string
 
     /**
      *      di default se l'utente ha più cataloghi vado a selezionare il primo
      */
     constructor(nome: string){
         this.nome = nome
-        this.password = ''
-        this.secretKey = ''         //MD5(nome+password)
-        this.listaCataloghi = []
-        this.indexCatalogNow = -999
         this.email= ''
+        this.password = ''
+        this.secretKey = ''
+        this.listaCataloghi = []
         this.photoURL= ''
-        this.uid='-'
         this.selected_cid = ''
+        this.uid='-'
+    }
+
+    setNome(nome: string){
+        this.nome = nome
+        return this
     }
 
     setEmail(email: string){
@@ -43,13 +53,6 @@ export default class Utente{
         return this.listaCataloghi
     }
 
-    /*setCurrentCatalog(index: number){
-        let newIDexists = false
-        newIDexists = this.listaCataloghi.some( c => { return c.id === index })
-        newIDexists ? this.indexCatalogNow = index : console.log(`Utente.setCurrentCatalog() Error: id ${index} not exist in user catalog lists`)
-        return this
-    }*/
-
     getCurrentCatalog_cid(){
         //console.log(`\n\nUtente.getCurrentCatalog_cid() \n selected cid: ${this.selected_cid} \t aviable: ${this.listaCataloghi.map(cc => cc.cid)}`)
         let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
@@ -61,26 +64,14 @@ export default class Utente{
     selectFirstAviableCatalog(){
         //console.log('Utente.selectFirstAviableCatalog() ', this.listaCataloghi.map(c => c.cid) )
         let firstAviableCat = this.listaCataloghi[0]
-        this.indexCatalogNow = firstAviableCat.id
+        //this.indexCatalogNow = firstAviableCat.id
         this.selected_cid = firstAviableCat.cid
         //console.log(`selectFirstAviableCatalog() ${this.indexCatalogNow} \t|\t ${this.selected_cid}`)
         return this
     }
 
-    /**
-     *   setta indexCatalogNow con l'indice del catalogo indicato da cid
-     *          NO UTILIZZA SEMPRE L'ID
-    */
-    setCurrentCatalog_cid(cid: string){
-        //console.log('\n 🍎 setCurrentCatalog_cid() cid: ', cid, '\n', this.listaCataloghi.map(x => x.cid))
-        let newIDexists = this.listaCataloghi.findIndex(c => c.cid === cid)
-        //console.log('setCurrentCatalog_cid() newIDexists: ', newIDexists)
-        if(newIDexists > -1) 
-            this.indexCatalogNow = newIDexists
-        else 
-            console.log(`Utente.setCurrentCatalog_cid() Error: id ${cid} not exist in user catalog lists`)
-
-        console.log('setCurrentCatalog_cid() . ',newIDexists)
+    setSelected_cid(cid: string){
+        this.selected_cid = cid
         return this
     }
 
@@ -88,13 +79,7 @@ export default class Utente{
         return this.listaCataloghi.filter(c => c.cid === cid)[0]//.pop()
     }
 
-    isCurrentCatalog(/*catalogoId : number*/ cid : string){
-        //console.log(this.listaCataloghi)
-        //console.log(`utente.ts isCurrentCatalog() \t ${catalogoId} === ${this.listaCataloghi[this.indexCatalogNow].getCurrentId()}`)
-        //console.log(`Utente.isCurrentCatalog() ${this.nome} \t esamino: ${catalogoId} == ${this.indexCatalogNow} (selezione utente)`)
-        //return catalogoId === this.listaCataloghi[this.indexCatalogNow].getCurrentId();
-        //return catalogoId === this.listaCataloghi[this.indexCatalogNow].id
-
+    isCurrentCatalog(cid : string){
         console.log(`CID: ${cid} === current cid: ${this.getCurrentCatalog_cid().cid} \t is: ${cid === this.getCurrentCatalog_cid().cid}`)
         return cid === this.getCurrentCatalog_cid().cid
     }
@@ -136,8 +121,56 @@ export default class Utente{
         
         return this
     }
+
+
+    /**
+     *  campi 🔥 utentiprefs
+     */
+    setSubscription_date(date : any){
+        this.subscription_date = date
+        return this
+    }
+    
+    setLastLogin(date : any){
+        this.lastLogin = date
+        return this
+    }
+
+    setAllowNotifications(allow: boolean){
+        this.allowNotifications = allow
+        return this
+    }
+
+    setActive_plan(plan :string){
+        this.active_plan = plan
+        return this
+    }
 }
 
+
+
+/**
+ *   setta indexCatalogNow con l'indice del catalogo indicato da cid
+ *          NO UTILIZZA SEMPRE L'ID
+*/
+/*setCurrentCatalog_cid(cid: string){
+    //console.log('\n 🍎 setCurrentCatalog_cid() cid: ', cid, '\n', this.listaCataloghi.map(x => x.cid))
+    let newIDexists = this.listaCataloghi.findIndex(c => c.cid === cid)
+    //console.log('setCurrentCatalog_cid() newIDexists: ', newIDexists)
+    if(newIDexists > -1) 
+        this.indexCatalogNow = newIDexists
+    else 
+        console.log(`Utente.setCurrentCatalog_cid() Error: id ${cid} not exist in user catalog lists`)
+
+    console.log('setCurrentCatalog_cid() . ',newIDexists)
+    return this
+}*/
+/*setCurrentCatalog(index: number){
+    let newIDexists = false
+    newIDexists = this.listaCataloghi.some( c => { return c.id === index })
+    newIDexists ? this.indexCatalogNow = index : console.log(`Utente.setCurrentCatalog() Error: id ${index} not exist in user catalog lists`)
+    return this
+}*/
 
 
 

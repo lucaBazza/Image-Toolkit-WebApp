@@ -83,6 +83,44 @@ export const cataloghiCollection = createCollection<Catalogo[]>('cataloghi')
 
 
 
+// Firestore data converter per immagine
+const utenteConverter = {
+  toFirestore: (utente) => {
+    const alsoEmpty = (v)=>{ return v ? v : ''}
+    //console.log('utenteConverter() - user toFirestore() ')
+    //console.log(utente)
+      return {
+          uid: utente.uid,
+          subscription_date: alsoEmpty(utente.subscription_date),
+          lastLogin: alsoEmpty(utente.lastLogin),
+          allowNotifications: alsoEmpty(utente.allowNotifications),
+          active_plan: alsoEmpty(utente.active_plan),
+          watermark_src: alsoEmpty(utente.watermark_src),
+          public_gallery: alsoEmpty(utente.public_gallery)
+      }
+  },
+  fromFirestore: (snapshot, options) => {
+      //console.log('FirebaseModel.immagineConverter() ', snapshot)
+      const data = snapshot.data(options)
+      ///console.log('utenteConverter() - user fromFirestore() ')
+      let out = new Utente('')
+      out.nome = data.nomefile
+      out.email = data.email
+      out.password  = data.password
+      out.secretKey  = data.secretKey
+      out.photoURL = data.photoURL
+      out.selected_cid  = data.selected_cid
+      out.uid = data.uid
+      // dati salvati da userspace
+      out.subscription_date = data.subscription_date
+      out.lastLogin = data.lastLogin
+      out.allowNotifications = data.allowNotifications
+      out.active_plan = data.active_plan
+      out.watermark_src = data.watermark_src
+      out.public_gallery = data.public_gallery
+      return out
+  }
+}
 
 
 // Firestore data converter per il catalogo
@@ -116,7 +154,6 @@ const immagineConverter = {
           src: immagine.src,
           realURL: immagine.realURL,
           id: immagine.id,
-          //classStyle: '',
           alt: immagine.alt,
           catalogoID: immagine.catalogoID,
           adjustmentID: immagine.adjustmentID
@@ -125,19 +162,49 @@ const immagineConverter = {
   fromFirestore: (snapshot, options) => {
       //console.log('FirebaseModel.immagineConverter() ', snapshot)
       const data = snapshot.data(options)
-      let out = new Immagine(''/*data.src*/, -1)
-
+      let out = new Immagine('', -1)
       out.nomeFile = data.nomefile
       out.realURL = data.src
       out.id = data.id
       out.catalogoID = data.cid //data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
       out.createdAt = data.createdAt
       out.adjustmentID = data.adjustmentID
-    
       return out
   }
 }
 
+
+/**
+ *  Carica dati extra utente, oppure crea nuovo account
+ *  implementare -> https://www.youtube.com/watch?v=wvRVfyPKOA0
+ */
+import { doc, setDoc } from "firebase/firestore"
+const USER_COL = "utentiprefs"
+export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
+  const displayName = u.displayName !  
+  console.log('loadUserSettings() \t ', displayName)
+  const loadFromFirebase = async () => {
+    const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
+    if(docSnapshot.exists){
+      console.log('\tUser exist \tload: ', displayName)
+      return docSnapshot.data()
+    }
+    else{
+      const ref = doc(db, USER_COL, u.uid).withConverter(utenteConverter)
+      const newUtente = new Utente(displayName).setUID(u.uid)
+                                                  .setSubscription_date(firebase.firestore.FieldValue.serverTimestamp())
+                                                  .setLastLogin(firebase.firestore.FieldValue.serverTimestamp())
+                                                  .setActive_plan('freemium')
+                                                  .setAllowNotifications(false)
+      await setDoc(ref,newUtente )
+      console.log('\tCreate new userprefs for: ', displayName)
+      return newUtente
+    }
+  }
+  let res = await loadFromFirebase()
+
+  return (res as Utente).setNome(displayName).setEmail( u.email !).setPhotoURL( u.photoURL !)
+}
 
 
 /**
@@ -167,8 +234,8 @@ export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]
   /*console.log(utente.listaCataloghi)
   console.log(utente.listaCataloghi.length)
   utente.listaCataloghi.forEach(cat => console.log(cat)) */
-  utente.listaCataloghi[utente.indexCatalogNow].listaImmagini = immagini 
-
+  //utente.listaCataloghi[utente.indexCatalogNow].listaImmagini = immagini 
+  utente.getCurrentCatalog_cid().listaImmagini = immagini
   return utente
 }
 
