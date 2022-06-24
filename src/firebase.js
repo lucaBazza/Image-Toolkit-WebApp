@@ -1,7 +1,12 @@
+/** 
+ *    FILE GENERALE FIREBASE   
+ * 
+*/
+
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+let firebaseConfig = {
   apiKey: "AIzaSyDbPN5NRUzz7Vx3aDTd_CO1PkqRNVD5EZg",
   authDomain: "image-toolkit-app.firebaseapp.com",
   projectId: "image-toolkit-app",
@@ -9,29 +14,65 @@ const firebaseConfig = {
   messagingSenderId: "1085638783123",
   appId: "1:1085638783123:web:1766dcac980664b73b5d66",
   measurementId: "G-KL2DRYDLE8"
-}; 
-
-  // Initialize Firebase
-//const app = initializeApp(firebaseConfig);
-//const analytics = getAnalytics(app);
+} 
 
 
-/** 
- *    LUCA
-*/
+// IMPORTS firebase v9  TODO: import analytics
+import firebase from 'firebase/compat/app'
+import 'firebase/compat/auth'
+import 'firebase/compat/firestore'
 
-// v9 compat packages are API compatible with v8 code
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
-
-//import { QuerySnapshot } from '@firebase/firestore-types';
-
-import {ref, onUnmounted, computed} from 'vue'
-import Catalogo from './types/Catalogo';
 
 const firebaseApp = firebase.initializeApp(firebaseConfig)
 export const db = firebaseApp.firestore()
+export const storage = getStorage()
+export const auth = firebase.auth()
+
+
+/**
+ *    Emulator
+ */
+import { connectFirestoreEmulator } from "firebase/firestore"
+import { getStorage, connectStorageEmulator } from "firebase/storage"
+import { connectAuthEmulator } from "firebase/auth";
+const isEmulator = ()=>{ return  location.hostname === 'localhost' || location.hostname === '192.168.1.78' }
+if(isEmulator){
+  const addr = 'localhost'
+  connectFirestoreEmulator(db, addr, 8081)
+  connectStorageEmulator(storage, addr, 9199)
+  connectAuthEmulator(auth, `http://${addr}:9099`,{ disableWarnings: true })
+  console.log("%c" + "Firebase Emulator Mode", "color: #7289DA; -webkit-text-stroke: 2px black; font-size: 48px; font-weight: bold;");
+}
+
+
+/**
+ *    { ... }  useAuth()  destrutturare
+ *    from firechat example
+ */
+import {ref, onUnmounted, computed} from 'vue'
+export function useAuth(){
+  const user = ref(null)
+
+  const unsubscribe = auth.onAuthStateChanged(_user => (user.value = _user))
+
+  onUnmounted(unsubscribe)
+
+  const isLogin = computed( ()=> user.value !== null )
+
+  const signIn = async () =>{
+      const googleProvider = new firebase.auth.GoogleAuthProvider()
+      await auth.signInWithPopup(googleProvider)
+  }
+  const signOut = () => auth.signOut()
+
+  return { user, isLogin, signIn, signOut }
+}
+
+
+
+
+
+/*
 const userCollection = db.collection('users')
 
 export const createUser = user => {
@@ -59,30 +100,9 @@ export const useLoadUsers = ()=>{
   onUnmounted(close)
   return users
 }
+*/
 
 
-/**
- *  Firechat
- */
-
- const auth = firebase.auth()
- export function useAuth(){
-     const user = ref(null)
-     
-     const unsubscribe = auth.onAuthStateChanged(_user => (user.value = _user))
-
-     onUnmounted(unsubscribe)
-
-     const isLogin = computed( ()=> user.value !== null )
- 
-     const signIn = async () =>{
-         const googleProvider = new firebase.auth.GoogleAuthProvider()
-         await auth.signInWithPopup(googleProvider)
-     }
-     const signOut = () => auth.signOut()
- 
-     return { user, isLogin, signIn, signOut }
-} 
 
 /**
  *  Gestisce stato log in/out

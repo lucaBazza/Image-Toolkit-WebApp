@@ -7,7 +7,7 @@
       <ul>
         <li attr="google account">Log In</li>
         <li attr="from the user area">Create catalogs</li>
-        <li attr="unlimited, with the cloud function">Upload your photos</li>
+        <li attr="based on your plan, with the cloud function">Upload your photos</li>
         <li attr="check the sort button">Organize / make diffs</li>
         <li attr="gps, copyright, exifs">Update your metadatas</li>
         <li attr="stylize you photo with our adjustment tools">Edit</li>

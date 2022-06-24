@@ -33,6 +33,7 @@ function uploadSingleFile_firestore(file, cid){
  *      -> viene inserito un documento nel catalogo selezionato con nome uguale all'immagine, all'intenro i dati
  *      -> vedere se tramite FS function è possibile triggerare l'inserimento automatico
  */
+import { CATALOGHI_COL } from './../types/FirebaseModel'
 function updateCollection(imgName, downloadURL, cid){
     //console.log(`updateCollection() Completed file upload 🎉 \n img: ${imgName} \t cid: ${cid} \n File aviable at : \n ${downloadURL}`)
 
@@ -50,7 +51,7 @@ function updateCollection(imgName, downloadURL, cid){
     }
 
     let messageRef = db
-        .collection("cataloghi").doc(cid)
+        .collection(CATALOGHI_COL).doc(cid)
         .collection("immagini").doc(imgName)
     
     messageRef.set(imgDatas)

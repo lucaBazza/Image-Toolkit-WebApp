@@ -5,9 +5,9 @@
       <h4>Catalogs</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.cid" :imageCount="cat.listaImmagini.length"
                    @click="change_catalog(cat.cid)" :class="props.utente.selected_cid === cat.cid && 'selezionato'">
-        <b>Titolo:</b> {{cat.titolo}}
+        <b>Title:</b> {{cat.titolo}}
       </li>
-      <em v-if=" ! utente.listaCataloghi.length">Empty list: please add a new catalog! </em>
+      <em v-if=" ! utente.listaCataloghi.length">Empty list: please add a new catalog! <br></em>
       <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog"/>
     </ul>
     <button @click="signOut">🚪 Log out</button>
@@ -28,7 +28,7 @@ const { signOut } = useAuth()
 console.log('LoginArea.setup()')
 
 let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
-const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true },0) }
+const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true },200) }
 
 const addNewCatalogo = (e) =>{
   if( e.target.value == '' ) return
@@ -40,8 +40,8 @@ const addNewCatalogo = (e) =>{
 }
 
 function change_catalog(cid){
-  emits('change_catalog', cid)
   forceReloadCataloghi()
+  emits('change_catalog', cid)
 }
 </script>
 

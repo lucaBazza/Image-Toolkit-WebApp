@@ -12,58 +12,54 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
 
 .
 
-### Launch server
-```console
-    cd server && npm run devserver
-```
-
 
 ### Project setup
 ```
-npm install
+    npm install  ||   npm ci
 ```
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+    npm run serve
 ```
 
 ### Compiles and minifies for production
 ```
-npm run build
+    npm run build
 ```
 
-### Launch client in production mode
+### Build and serve locally in production mode
 ```
     npm run build && serve -s dist
 ```
 
 ### Lints and fixes files
 ```
-npm run lint
+    npm run lint
 ```
 
 ### Testing
 ```
-npm run test
+    npm run test
 ```
 
 ### Firebase deploy
 ```
-firebase deploy
+    firebase deploy
+
+    firebase emulators:export seed
+    firebase emulators:start --import seed
 ```
 
-.
+
 
 .
 
 ---
+## TODOs
+Dockerization (frontend + firebase emulator)
+
+---
 
 ## Note varie
-Aggiungere un pacchetto: prima aggiungerlo in package.json > dependences, poi:
-```console
-    npm install npm-install-missing
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+...

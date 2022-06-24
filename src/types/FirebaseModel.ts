@@ -1,9 +1,9 @@
 import firebase from 'firebase/compat/app';
+import { db } from '@/firebase'
 
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
-import { db } from '@/firebase'
 
 export let unsubscribeToRefs 
 
@@ -59,50 +59,35 @@ export const getCataloghi = async (user_id: string) : Promise<Catalogo[]> => {
                                         return new Catalogo(doc.proprietario,doc.titolo)
                                     })
                                 })
-                                //.then( return cat)
 
     console.log(`getCataloghi() - firestore cats `, cat)
 
     return cat
 }
 
-/**
- *  https://javascript.plainenglish.io/using-firestore-with-typescript-in-the-v9-sdk-cf36851bb099
- * 
-*/
-/*
-import { getFirestore, CollectionReference, collection, DocumentData } from 'firebase/firestore'
-//import { FirebaseError } from '@firebase/util';
-// This is just a helper to add the type to the db responses
-const createCollection = <T = DocumentData>(collectionName: string) => {
-    return collection(getFirestore(), collectionName) as CollectionReference<T>
-}
-// export all your collections
-export const cataloghiCollection = createCollection<Catalogo[]>('cataloghi') 
-*/
-
 
 
 // Firestore data converter per immagine
 const utenteConverter = {
   toFirestore: (utente) => {
-    const alsoEmpty = (v)=>{ return v ? v : ''}
+    const alsoEmpty = (v:any)=>{ return v ? v : ''}
     //console.log('utenteConverter() - user toFirestore() ')
-    //console.log(utente)
       return {
           uid: utente.uid,
+          selected_cid: alsoEmpty(utente.selected_cid),
           subscription_date: alsoEmpty(utente.subscription_date),
           lastLogin: alsoEmpty(utente.lastLogin),
           allowNotifications: alsoEmpty(utente.allowNotifications),
           active_plan: alsoEmpty(utente.active_plan),
           watermark_src: alsoEmpty(utente.watermark_src),
-          public_gallery: alsoEmpty(utente.public_gallery)
+          public_gallery: alsoEmpty(utente.public_gallery),
+          lastIp: alsoEmpty(utente.lastIp),
+          location: alsoEmpty(utente.location)
       }
   },
   fromFirestore: (snapshot, options) => {
       //console.log('FirebaseModel.immagineConverter() ', snapshot)
       const data = snapshot.data(options)
-      ///console.log('utenteConverter() - user fromFirestore() ')
       let out = new Utente('')
       out.nome = data.nomefile
       out.email = data.email
@@ -118,6 +103,8 @@ const utenteConverter = {
       out.active_plan = data.active_plan
       out.watermark_src = data.watermark_src
       out.public_gallery = data.public_gallery
+      out.lastIp = data.lastIp
+      out.location = data.location
       return out
   }
 }
@@ -178,15 +165,16 @@ const immagineConverter = {
  *  Carica dati extra utente, oppure crea nuovo account
  *  implementare -> https://www.youtube.com/watch?v=wvRVfyPKOA0
  */
-import { doc, setDoc } from "firebase/firestore"
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 const USER_COL = "utentiprefs"
 export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
   const displayName = u.displayName !  
-  console.log('loadUserSettings() \t ', displayName)
+  //console.log('loadUserSettings()')
   const loadFromFirebase = async () => {
     const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
     if(docSnapshot.exists){
       console.log('\tUser found: ', displayName)
+      updateUser((docSnapshot.data() as Utente).setLastLogin(serverTimestamp()))
       return docSnapshot.data()
     }
     else{
@@ -194,9 +182,9 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
       const newUtente = new Utente(displayName).setUID(u.uid)
                                                   .setSubscription_date(firebase.firestore.FieldValue.serverTimestamp())
                                                   .setLastLogin(firebase.firestore.FieldValue.serverTimestamp())
-                                                  .setActive_plan('freemium')
+                                                  .setActive_plan('free')
                                                   .setAllowNotifications(false)
-      await setDoc(ref,newUtente )
+      await setDoc(ref, newUtente)
       console.log('\tCreate new userprefs for: ', displayName)
       return newUtente
     }
@@ -214,15 +202,17 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
  *          - Uso q.get()  le risorse vengono caricate one-shot-time !
  *          - I cataloghi caricati NON comprendono la lista delle immagini
  */
- export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
+export const CATALOGHI_COL = "cataloghi"
+export const IMMAGINI_COL = "immagini"
+export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
   let lc : Catalogo[] = []
-  const q = db.collection("cataloghi").withConverter(catalogoConverter).where("uid", "==", user_id)
+  const q = db.collection(CATALOGHI_COL).withConverter(catalogoConverter).where("uid", "==", user_id)
   await q.get().then(querySnapshot => {
       if ( querySnapshot.empty )
         return Promise.reject('getCataloghi_C() Error, query found empty 😭 ')
       lc = querySnapshot.docs.map(doc => { return doc.data() as Catalogo })
   })
-  unsubscribeToRefs = db.collection('cataloghi')
+  unsubscribeToRefs = db.collection(CATALOGHI_COL)
   //console.log('💉 getCataloghi_B() ENDS return tot: ', lc.length)
   return lc.length > 0 ? Promise.resolve(lc) : Promise.reject('\t ✋ Snapshot catalogs is loading...')
 }
@@ -245,7 +235,7 @@ export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]
  *  ottiene l'idFirebase del catalogo matchando l'id
  */
 export async function get_firebaseID_currentCatalogo(catalogID){
-  const q = db.collection("cataloghi").where("id", "==", catalogID)
+  const q = db.collection(CATALOGHI_COL).where("id", "==", catalogID)
   const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))  
   return out
 }
@@ -256,7 +246,7 @@ export async function get_firebaseID_currentCatalogo(catalogID){
  *  Dall'id catalogo di vuejs, restituisce l'ID di firebase
  */
 export async function get_firebaseID_currentCatalogo_B(catalogID){
-  const q = db.collection("cataloghi").where("id", "==", catalogID)
+  const q = db.collection(CATALOGHI_COL).where("id", "==", catalogID)
   const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))
   return out
 }
@@ -264,28 +254,25 @@ export async function get_firebaseID_currentCatalogo_B(catalogID){
 /**
  *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
  */
-export async function loadImagesFromCatalog_firebaseA(catalogID_FS){
-  console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', catalogID_FS )
-
-  let out : Immagine[] = []
-  let aa = await db.collection(`cataloghi/${catalogID_FS}/immagini/`).withConverter(immagineConverter)
-  const bb = await aa.get()
-  bb.docs.forEach(imgQuery => { out.push(imgQuery.data()) })
-
-  //out.forEach(i => console.log(i.nomeFile))
-
-  return out
+export async function loadImagesFromCatalog_firebaseA(cid){
+  //console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
+  let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
+  return res.docs.map(imgQuery => imgQuery.data())
 }
 
 
 
 // Listo i nomi dei dicumenti nel catalogo scelto
 export async function getImageNames_fromCID(cid: string){
-  let a = await db.collection(`cataloghi/${cid}/immagini`).get()
+  let a = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}`).get()
   return a.docs.map(imgQuery => { return imgQuery.id }) //a.docs.forEach(imgQuery => { console.log(imgQuery.id) })
 }
 
 
+
+export async function updateUser(utente: Utente){
+  await db.collection(USER_COL).doc(utente.uid).update( utenteConverter.toFirestore(utente) ).catch((ex: any)=>console.log(ex))
+}
 
 
 

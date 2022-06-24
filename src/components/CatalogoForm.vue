@@ -1,7 +1,10 @@
 <template>
   <div class="catalogDiv">
     <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <h3 v-if="catalogoProp.titolo">{{ catalogoProp.titolo }} <button @click="openSortingOptions"> ↕️ </button></h3> 
+    <h3 v-if="catalogoProp.titolo">{{ catalogoProp.titolo }} 
+      <button @click="downloadAlbum" alt="download album"> ⬇ </button>
+      <button @click="openSortingOptions" alt="sort images"> ↕️ </button>
+    </h3> 
     <ul>
       <span v-if=" ! catalogIsReady">Catalog not ready</span>
       <li v-else v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
@@ -17,7 +20,7 @@
 import { ref, onMounted } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
-import Immagine from "@/types/Immagine"
+//import Immagine from "@/types/Immagine"
 
 const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
 let catalogIsReady = ref(false)
@@ -27,6 +30,9 @@ async function deleteAllImages() {
 }
 function openSortingOptions(){
   console.log('openSortingOptions()')
+}
+function downloadAlbum(){
+  console.log('downloadAlbum()')
 }
 
 onMounted(() => {
@@ -46,18 +52,16 @@ onMounted(() => {
 <style>
 .catalogDiv{ margin: 3rem 0 }
 .catalogDiv > ul { padding: 0 }
-.catalogDiv > ul > em  { 
-  margin: .5rem auto;
-  color: var(--backText)
-}
-
+.catalogDiv > ul > em  { margin: .5rem auto; color: var(--backText) }
 .catalogDiv > h3 {
   width: 50%;
   margin: 0 auto;
   border-bottom: 1px solid gray;
 }
-.catalogDiv > h3 > button { float: right; background: transparent; border: none; }
+.catalogDiv > h3 > button { float: right; background: transparent; border: none; padding: 0 .5rem 0; }
 .catalogDiv > h3 > button:hover { cursor: grabbing }
+.catalogDiv > h3 > button:after { content: attr(alt); position: absolute; z-index: 1; margin-top: -1rem; margin-left: -2rem; visibility: hidden; }
+.catalogDiv > h3 > button:hover + :after {visibility:initial }
 .isReadySpinner {
   width: 3rem;
   position: absolute;
@@ -67,10 +71,9 @@ onMounted(() => {
 .catalogDiv > button {
   background: transparent;
   border: none;
-  font-size: 2rem;
+  font-size: 3rem;
   opacity: 0.9;
   backdrop-filter: blur(2px);
-  margin-top: 50vh;
 }
 .catalogDiv > button:hover {
   cursor: grab;

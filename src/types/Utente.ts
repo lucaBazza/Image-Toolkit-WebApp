@@ -1,6 +1,8 @@
-import MD5 from "@/utilities/MD5.js";
-import Catalogo from "./Catalogo";
-import Immagine from "./Immagine";
+//import MD5 from "@/utilities/MD5.js"
+import Catalogo from "./Catalogo"
+import Immagine from "./Immagine"
+
+export type user_plan = 'free'|'photography'|'direction'|'full';
 
 export default class Utente{
 
@@ -16,9 +18,11 @@ export default class Utente{
     subscription_date?: Date
     lastLogin?: Date
     allowNotifications? : boolean
-    active_plan?: string
+    active_plan?: user_plan /*string*/
     watermark_src?: string
     public_gallery?: string
+    lastIp?: string
+    location?: string
 
     /**
      *      di default se l'utente ha più cataloghi vado a selezionare il primo
@@ -141,7 +145,7 @@ export default class Utente{
         return this
     }
 
-    setActive_plan(plan :string){
+    setActive_plan(plan :user_plan){
         this.active_plan = plan
         return this
     }

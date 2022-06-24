@@ -109,18 +109,13 @@ ul { list-style-type: none }
 
 */
 @media screen and ( max-width: 650px ){           /* SMALL DEVICES */
+    .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
     .mainViewer > img{ min-width:90% }
     .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
+    .headerImg{ height: 100vh }
+    #mainTitle{ width: 85%; margin: 4rem auto 1rem }
     .controlBtns { top: .3rem }
     .controlBtns > button { padding: 0.2rem  }
-    .mainViewer{
-        display: grid;
-        min-width: 330px;
-        height: auto;
-        place-items: center;
-    }
-    .headerImg{ height: 100vh }
-    #mainTitle{ margin: 4rem auto 1rem }
     .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }
     .catalogDiv > h3 { width: max(90%, 250px) }
     .loginForm{ margin: 1rem; width: auto }
@@ -135,24 +130,14 @@ ul { list-style-type: none }
     .imgEditorModal > ul > li { width: 90% }
     .avatar{ margin: .2rem; width: min(30%, 100px); overflow: hidden; box-shadow: 5px 10px 15px rgba(0,0,0,.3) }
     .modal { margin-top: 5vh }
-    /*.modal > ul > li{ padding: .2rem 0 }*/
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */
-    .catalogDiv > ul{
-        display: flex;
-        flex-flow: row  wrap;
-        width: 96%;
-        margin: 0 auto;
-    }
+    .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto }
     .catalogDiv > ul > li{ flex: 1 1 0px }
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES / 4K */
     .mainViewer{ min-width: 750px }
-
-    .imgEditorModal{
-        width: 50%;
-        margin: 5% auto;
-    }
+    .imgEditorModal{ width: 50%; margin: 5% auto }
 }
