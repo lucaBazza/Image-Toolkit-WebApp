@@ -17,6 +17,7 @@ body{
     --mainText: #000;
     --backText: #222;
     --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
+    --mascheraCircolare: radial-gradient(black 0%, rgba(0, 0, 0, 0.2) 80%);
 }
 
 

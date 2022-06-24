@@ -17,7 +17,7 @@
 
   <LoginArea v-if="showLogInArea" :utente="utenteSng" @change_catalog="change_catalog" @notificate="notificate" @add_catalog="add_catalog"/>
 
-  <Modal v-if="showModalInfos" theme="sale" @updateCloseMain="postCloseLoggin" />
+  <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
   <!-- 
   <upload-media
       v-if="showUploadMode"
@@ -27,6 +27,8 @@
       v-bind:class="{ 'upload-media': '' }"
   />
   -->
+  <DropAnImageVue v-if="showUploadMode"/>
+
   <input v-if="showUploadMode" type="file" @change="uploadImageInput" class="uploadImageCodeInspire" accept="image/*" multiple/>
 
   <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog"/>
@@ -43,6 +45,7 @@ import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
 import Modal from "./components/Modal.vue" 
+import DropAnImageVue from './components/DropAnImage.vue'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
@@ -77,7 +80,7 @@ import Immagine from './types/Immagine'
 
 export default defineComponent({
   name: "App",
-  components: { Modal, CatalogoForm, LoginArea, AvatarUser, UploadMedia },
+  components: { Modal, CatalogoForm, LoginArea, AvatarUser, UploadMedia, DropAnImageVue },
   created(){ document.title = "Zabba image 🛠️ " },
   setup(){
     //console.log(`app.setup()`)
@@ -109,13 +112,6 @@ export default defineComponent({
               user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
-    //convertUser_Utente(u : firebase.User) : Utente{
-    //    let displayName = u.displayName !
-    //    let email = u.email !
-    //    let photoURL = u.photoURL !
-    //    let uid = u.uid
-    //    return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
-    //},
     /**
      *  Ottiene lista cataloghi per utente corrente:
      *    - dopo la login autentication
@@ -223,6 +219,7 @@ export default defineComponent({
         this.utenteSng = new Utente('')
         this.showLogInArea = false
         this.showCatalogo = false
+        this.isLoading = true
       }
     })
 
@@ -245,14 +242,6 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
 }
-h1 {
-  border-bottom: 1px solid #aaa;
-  display: inline-block;
-  padding-bottom: 10ox;
-  padding: 1rem;
-  background: 10rem rgba(var(--backgroundColor), .4);
-  border-radius: 0.5rem;
-}
 .headerImg {
   z-index: -1;
   position: fixed;
@@ -264,8 +253,16 @@ h1 {
   filter: blur(2px);
   transform: scale(1.05);
 }
-/*.darkMode > .headerImg{ filter:invert(0.5) } */
-#mainTitle{ width: max(30%, 200px); margin: 0rem auto 1rem; }
+#mainTitle{ 
+  border-bottom: 1px solid #aaa;
+  display: inline-block;
+  padding-bottom: 10ox;
+  padding: 1rem;
+  background: 10rem rgba(var(--backgroundColor), .4);
+  border-radius: 0.5rem;
+  width: max(30%, 200px); 
+  margin: 0rem auto 1rem; 
+}
 .upload-media {
   margin-left: 10%;
   width: 80%;
@@ -284,35 +281,6 @@ h1 {
   font-size: 1.7rem;
   cursor: grab;
 }
-/*
-.catalogOwner {
-  position: absolute;
-  padding: 0.7rem;
-  margin: 0;
-  top: 0.4rem;
-  left: 0.4rem;
-  border-radius: 0.3rem;
-  background-color: rgba(255, 255, 255, 0.3);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  text-align: right;
-  vertical-align: middle;
-}
-.catalogOwner:hover {
-  font-size: 150%;
-  transition: 0.4s;
-  cursor: cell;
-}
-.catalogOwner > img { 
-  width: 1.7rem;
-  border-radius: 100%;
-  margin-right: .5rem;
-}
-.catalogOwner > span {
-  margin: 0 0 10rem 0;
-  translate: transposeY(20px);
-}
-*/
 
 .googleSignIn{ 
   position: absolute; 
@@ -342,19 +310,19 @@ h1 {
 
 
 
-    // Create Fake datas
-    //let _listaCataloghi = getUserFromServer('Luca', 'Yhsdg654@as','ASKJ23487');
-    
-    /*
-    const utenteSng = ref(new Utente('Luca', 'Yhsdg654@as', new Array<Catalogo>(
-                                new Catalogo('Luca','Go to the mountas',0), new Catalogo('Luca','Schiazzi di mondi',1), new Catalogo('Luca','Androgenia del mare',2)) ));
-    utenteSng.value.setEmail('luca@xyz.com')
-    //utenteSng.value.setKeepLogin(true)
-    utenteSng.value.getCatalogoCurrent().titolo = 'Amici della natura'
-    utenteSng.value.getCatalogoCurrent().setListaImmagini([
-    */
-      new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)
-    ]);
+// Create Fake datas
+//let _listaCataloghi = getUserFromServer('Luca', 'Yhsdg654@as','ASKJ23487');
+
+/*
+const utenteSng = ref(new Utente('Luca', 'Yhsdg654@as', new Array<Catalogo>(
+                            new Catalogo('Luca','Go to the mountas',0), new Catalogo('Luca','Schiazzi di mondi',1), new Catalogo('Luca','Androgenia del mare',2)) ));
+utenteSng.value.setEmail('luca@xyz.com')
+//utenteSng.value.setKeepLogin(true)
+utenteSng.value.getCatalogoCurrent().titolo = 'Amici della natura'
+utenteSng.value.getCatalogoCurrent().setListaImmagini([
+*/
+  new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)
+]);
 
 
 
@@ -487,6 +455,53 @@ async loadUserDatasAsync(){
 
 
 },*/
+
+
+
+
+
+
+convertUser_Utente(u : firebase.User) : Utente{
+    let displayName = u.displayName !
+    let email = u.email !
+    let photoURL = u.photoURL !
+    let uid = u.uid
+    return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
+}
+
+
+
+
+
+/*
+.catalogOwner {
+  position: absolute;
+  padding: 0.7rem;
+  margin: 0;
+  top: 0.4rem;
+  left: 0.4rem;
+  border-radius: 0.3rem;
+  background-color: rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  text-align: right;
+  vertical-align: middle;
+}
+.catalogOwner:hover {
+  font-size: 150%;
+  transition: 0.4s;
+  cursor: cell;
+}
+.catalogOwner > img { 
+  width: 1.7rem;
+  border-radius: 100%;
+  margin-right: .5rem;
+}
+.catalogOwner > span {
+  margin: 0 0 10rem 0;
+  translate: transposeY(20px);
+}
+*/
 
 
 

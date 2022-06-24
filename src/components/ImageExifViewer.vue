@@ -90,7 +90,6 @@ onMounted( async () => {
 .mainViewer{
   --lighWarmGradinet: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   /*--darkColdGradinet: linear-gradient(-45deg, #4E156C, #831838, #975038, #213892);*/
-  --mascheraCircolare: radial-gradient(black 0%, rgba(0, 0, 0, 0.2) 80%);
 }
 .mainViewer {
   margin: 5%;
@@ -112,7 +111,6 @@ onMounted( async () => {
   margin: 1rem;
   border-radius: 0.5rem;
   max-width: max( 50%, 300px );
-  /*object-fit: cover;*/
 }
 .mainViewer > img:hover {
   cursor: move;

@@ -186,7 +186,7 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
   const loadFromFirebase = async () => {
     const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
     if(docSnapshot.exists){
-      console.log('\tUser exist \tload: ', displayName)
+      console.log('\tUser found: ', displayName)
       return docSnapshot.data()
     }
     else{
