@@ -20,7 +20,6 @@
 import { ref, onMounted } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
-//import Immagine from "@/types/Immagine"
 
 const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
 let catalogIsReady = ref(false)

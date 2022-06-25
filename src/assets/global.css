@@ -110,7 +110,7 @@ ul { list-style-type: none }
 */
 @media screen and ( max-width: 650px ){           /* SMALL DEVICES */
     .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
-    .mainViewer > img{ min-width:90% }
+    .mainViewer > img:first-child{ min-width:90% }
     .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
     .headerImg{ height: 100vh }
     #mainTitle{ width: 85%; margin: 4rem auto 1rem }
@@ -118,6 +118,7 @@ ul { list-style-type: none }
     .controlBtns > button { padding: 0.2rem  }
     .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }
     .catalogDiv > h3 { width: max(90%, 250px) }
+    .dropzone{ width: 95% }
     .loginForm{ margin: 1rem; width: auto }
     .loginForm > button { width: 95% }
     .loginForm > ul > input[type=text] { width: 88% }
@@ -128,7 +129,7 @@ ul { list-style-type: none }
     .imgEditorModal > img { width: 90%; margin-top: 1rem; margin-bottom: 1rem }
     .imgEditorModal > ul { width: max(95%, 300px ); overflow-y: auto; height: max( 50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
-    .avatar{ margin: .2rem; width: min(30%, 100px); overflow: hidden; box-shadow: 5px 10px 15px rgba(0,0,0,.3) }
+    .avatar{ margin: .2rem; padding-right:0 ; width: min(30%, 120px); overflow: hidden; box-shadow: 5px 10px 15px rgba(0,0,0,.3) }
     .modal { margin-top: 5vh }
 }
 

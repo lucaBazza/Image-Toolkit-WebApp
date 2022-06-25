@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   props: ["theme"],
@@ -46,6 +46,7 @@ export default defineComponent({
   height: 100%;
 }
 .modal {
+  color: var(--mainText);
   padding: 20px;
   margin: 15vh auto;
   border-radius: 1rem;

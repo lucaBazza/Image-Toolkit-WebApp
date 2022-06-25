@@ -30,7 +30,7 @@ export const auth = firebase.auth()
 
 
 /**
- *    Emulator
+ *    Emulator    https://stackoverflow.com/questions/58260877/access-firebase-emulator-from-local-network
  */
 import { connectFirestoreEmulator } from "firebase/firestore"
 import { getStorage, connectStorageEmulator } from "firebase/storage"

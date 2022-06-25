@@ -57,20 +57,27 @@ export default class Utente{
         return this.listaCataloghi
     }
 
+    /**
+     *  restituiscce il cid selezionato:
+     *      -se non settato, lo setta come primo catalogo disponibile
+     */
     getCurrentCatalog_cid(){
-        //console.log(`\n\nUtente.getCurrentCatalog_cid() \n selected cid: ${this.selected_cid} \t aviable: ${this.listaCataloghi.map(cc => cc.cid)}`)
         let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
-        /*return out ? out :*/ if( ! out) console.log('Utente.getCurrentCatalog_cid() no aviable cid')
-        //console.log('\n\n getCurrentCatalog_cid()',out.titolo)
+        if( ! out) {
+            if( this.listaCataloghi.length > 0){
+                this.selectFirstAviableCatalog()
+                out = this.getCatalog_by_cid(this.selected_cid)
+            }
+            else throw new Error(`No catalogs aviable for ${this.nome}`)
+        }
         return out
     }
 
     selectFirstAviableCatalog(){
         //console.log('Utente.selectFirstAviableCatalog() ', this.listaCataloghi.map(c => c.cid) )
+        if( 1 > this.listaCataloghi.length){ console.log('selectFirstAviableCatalog() \t no catalogs aviable'); return this; }
         let firstAviableCat = this.listaCataloghi[0]
-        //this.indexCatalogNow = firstAviableCat.id
         this.selected_cid = firstAviableCat.cid
-        //console.log(`selectFirstAviableCatalog() ${this.indexCatalogNow} \t|\t ${this.selected_cid}`)
         return this
     }
 
@@ -108,21 +115,7 @@ export default class Utente{
      *      - invocato da App.loadImages_ofCatalog()
      */
     setImages_by_cid(images: Immagine[], cid: string){
-        //console.log('Utente.setImages_by_cid() cid: ', cid, images)
-
-        /*
-        let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0),
-                                      new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04514_ps.jpg?alt=media&token=002e505b-941d-4a10-a619-0d31a1e6a271',1),
-                                      new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04483_ps.jpg?alt=media&token=aa966cbd-b5ae-41a2-a217-15560b7eb862',2),
-                                      new Immagine('asdD.jpg',3), 
-                                      new Immagine('asdD.jpg',4), 
-                                      new Immagine('asdD.jpg',5),
-                                    ]
-        */
-   
-        let catalog = this.getCatalog_by_cid(cid)
-        catalog ? this.getCatalog_by_cid(cid)!.listaImmagini = images : console.log('utente.setImages_by_cid() Cant find cid: ',cid)
-        
+        this.getCatalog_by_cid(cid) ? this.getCatalog_by_cid(cid).listaImmagini = images : console.log('utente.setImages_by_cid() Cant find cid: ',cid)
         return this
     }
 
@@ -149,8 +142,38 @@ export default class Utente{
         this.active_plan = plan
         return this
     }
+
+    setLastIp(ip: string){
+        this.lastIp = ip
+        return this
+    }
+
+    setLocation(loc: string){
+        this.location = loc
+        return this
+    }
+
+
+    /** 
+     *  UTILS
+     */
+    getCataloghi_NON_sel(): Catalogo[]{
+        if( 2 > this.listaCataloghi.length) return []
+        return this.listaCataloghi.filter(c => c.cid != this.selected_cid)
+    }
 }
 
+
+
+/*
+let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0),
+    new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04514_ps.jpg?alt=media&token=002e505b-941d-4a10-a619-0d31a1e6a271',1),
+    new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04483_ps.jpg?alt=media&token=aa966cbd-b5ae-41a2-a217-15560b7eb862',2),
+    new Immagine('asdD.jpg',3), 
+    new Immagine('asdD.jpg',4), 
+    new Immagine('asdD.jpg',5),
+]
+*/
 
 
 /**

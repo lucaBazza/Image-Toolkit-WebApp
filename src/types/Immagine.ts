@@ -1,5 +1,6 @@
 
 //interface Immagine{ }
+//import { throwStatement } from "@babel/types"
 
 export default class Immagine implements Iterator<number>{
     nomeFile: string
@@ -9,19 +10,22 @@ export default class Immagine implements Iterator<number>{
     id: number
     classStyle: string
     alt?: string
-    catalogoID: number
-    adjustmentID: number
+    catalogoID: string
+    adjustmentID: string
     createdAt: Date
+    width?: number
+    height?: number
+    size?: number
 
-    constructor(src, id) {
+    constructor(src) {
         this.nomeFile = this.checkFileName(src)
-        this.src = require("./../assets/loading.gif") //this.isEmptyOrSpaces(src) ? require("./../assets/loading.gif") : src
+        this.src = src ? src : require("./../assets/loading.gif")
         this.realURL = src
-        this.id = id
+        this.id = -1
         this.classStyle = 'loading'
         this.exifDatas = this.requireFakeExifs()
-        this.catalogoID = -1
-        this.adjustmentID = -1
+        this.catalogoID = ''
+        this.adjustmentID = ''
         this.createdAt = new Date
     }
 
@@ -32,6 +36,7 @@ export default class Immagine implements Iterator<number>{
         catch(err){ return str }   
     }
 
+    // TODO: usare il firebase image ID per fare l'iterator
     public next(): IteratorResult<number> {
         return { done: false, value: this.id++ }
     }
@@ -45,7 +50,7 @@ export default class Immagine implements Iterator<number>{
     }
     
     requireFakeExifs() {
-        const randomVal = (min :number, max:number) :number=>{ return Math.floor(Math.random() * max)+min }
+        const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
         return [
           { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
           { label: "ImageHeight", val: randomVal(5000,400) },
@@ -57,6 +62,11 @@ export default class Immagine implements Iterator<number>{
           { label: "classificazione", val: this.getStelline(randomVal(0,5)) },
           { label: "note", val: "..." },
         ];
+    }
+
+    setCatalogID(cid:string){
+        this.catalogoID = cid
+        return this
     }
 
     setExifDatas(exifDatas: any[]){
@@ -71,9 +81,17 @@ export default class Immagine implements Iterator<number>{
         this.nomeFile = nomeFile
         return this
     }
-}
 
-//export default Immagine
+    setClassStyle(classe: string){
+        this.classStyle = classe
+        return this
+    }
+
+    setRealURL(realURL: string){
+        this.realURL = realURL
+        return this
+    }
+}
 
 
 /*

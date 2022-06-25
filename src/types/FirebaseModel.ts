@@ -1,83 +1,30 @@
 import firebase from 'firebase/compat/app';
 import { db } from '@/firebase'
+import { doc, setDoc, serverTimestamp, query } from "firebase/firestore"
 
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
 
 export let unsubscribeToRefs 
+export const USER_COL = "utentiprefs"
+export const CATALOGHI_COL = "cataloghi"
+export const IMMAGINI_COL = "immagini"
 
 /**
- *   Inserisce nella raccolta 'cataloghi' firebase un nuovo documento catalogo
- *    - imoprta i campi della classe catalogo
- *    - NO inizializza una sotto-raccolta immagini
- *    - restituisce un speciale id : string che è l'identificativo firebase del documento
- *        + TODO: vedere se / come occorre usare/aggionrare tale id  nel client 
- * 
- *        + TODO: check preliminare se catalogo esiste già con stesso titolo
+ *    C L A S S   C O N V E R T E R
  */
-export const addCatalogo2 = async ( catalogo : Catalogo, user_id : string )=>{
 
-  console.log('\n addCatalogo2() \n\n')
-
-  let cataloghiRef = db.collection('cataloghi')
-
-  const { serverTimestamp } = firebase.firestore.FieldValue
-
-  let resp = await cataloghiRef.add({
-      titolo: catalogo.titolo,
-      proprietario: catalogo.proprietario,
-      uid: user_id,
-      // Lista immagini has one to many relationship with catalogId
-      secretKey: catalogo.secretkey,
-      id: catalogo.id,
-      createdAt: serverTimestamp()
-  })
-
-  console.log('ID firebase del documento aggiunto : ', resp.id)
-}
-
-
-/**
- *      Carica da firestore la lista cataloghi e in un simil-DAO per convertirlo in oggetto Catalogo[]
- *      Ritorna array vuoto se non presente (non la genera in quanto viene fatto nell'add)
- *          // TODO muovere come metodo statico nella classe catalogo?
- */
-export const getCataloghi = async (user_id: string) : Promise<Catalogo[]> => {
-    console.log('getCataloghi() \t for uid: ' + user_id)
-
-    let cataloghiRef = db.collection('cataloghi')
-    
-    let cat : Catalogo[] = []
-
-    unsubscribeToRefs = await cataloghiRef
-                                .where('uid', '==', user_id)
-                                .orderBy('createdAt')
-                                .onSnapshot(querySnapshot => {
-                                    cat = querySnapshot.docs.map(doc =>{
-                                        console.log('catalogo 🌄 \t',doc.data())
-                                        return new Catalogo(doc.proprietario,doc.titolo)
-                                    })
-                                })
-
-    console.log(`getCataloghi() - firestore cats `, cat)
-
-    return cat
-}
-
-
-
-// Firestore data converter per immagine
+const alsoEmpty = (v:any)=>{ return v ? v : ''}
 const utenteConverter = {
   toFirestore: (utente) => {
-    const alsoEmpty = (v:any)=>{ return v ? v : ''}
     //console.log('utenteConverter() - user toFirestore() ')
       return {
           uid: utente.uid,
           selected_cid: alsoEmpty(utente.selected_cid),
           subscription_date: alsoEmpty(utente.subscription_date),
           lastLogin: alsoEmpty(utente.lastLogin),
-          allowNotifications: alsoEmpty(utente.allowNotifications),
+          allowNotifications: utente.allowNotifications?'true':'false',
           active_plan: alsoEmpty(utente.active_plan),
           watermark_src: alsoEmpty(utente.watermark_src),
           public_gallery: alsoEmpty(utente.public_gallery),
@@ -109,8 +56,6 @@ const utenteConverter = {
   }
 }
 
-
-// Firestore data converter per il catalogo
 const catalogoConverter = {
     toFirestore: (catalogo) => {
         return {
@@ -133,31 +78,63 @@ const catalogoConverter = {
     }
 }
 
-// Firestore data converter per immagine
 const immagineConverter = {
   toFirestore: (immagine) => {
       return {
           nomeFile: immagine.nomeFile,
-          src: immagine.src,
+          src: immagine.src.length > 2048 ? '' : immagine.src,
           realURL: immagine.realURL,
           id: immagine.id,
-          alt: immagine.alt,
+          alt: alsoEmpty(immagine.alt),
           catalogoID: immagine.catalogoID,
-          adjustmentID: immagine.adjustmentID
+          adjustmentID: immagine.adjustmentID,
+          width: immagine.width,
+          height: immagine.height,
+          size: immagine.size
       }
   },
   fromFirestore: (snapshot, options) => {
       //console.log('FirebaseModel.immagineConverter() ', snapshot)
       const data = snapshot.data(options)
-      let out = new Immagine('', -1)
-      out.nomeFile = data.nomefile
-      out.realURL = data.src
+      let out = new Immagine('')
+      out.nomeFile = data.nomeFile
+      out.src = data.src
+      out.realURL = data.realURL
       out.id = data.id
-      out.catalogoID = data.cid //data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
+      out.catalogoID = data.catalogoID //data.nomefile // TODO occorre usare il nome dello snapshot? (dovrebbe combaciare dal caricamento)
       out.createdAt = data.createdAt
       out.adjustmentID = data.adjustmentID
+      out.size = data.size
+      out.width = data.width
+      out.height = data.height
       return out
   }
+}
+
+
+/**
+ *   Inserisce nella raccolta 'cataloghi' firebase un nuovo documento catalogo
+ *    - imoprta i campi della classe catalogo
+ *    - NO inizializza una sotto-raccolta immagini
+ *    - restituisce un speciale id : string che è l'identificativo firebase del documento
+ *        + TODO: vedere se / come occorre usare/aggionrare tale id  nel client 
+ *        + TODO: usare catalogConverter
+ *        + TODO: check preliminare se catalogo esiste già con stesso titolo
+ */
+export async function addCatalogo2( catalogo : Catalogo, user_id : string ){
+  console.log('\n addCatalogo2() \n\n')
+
+  let cataloghiRef = db.collection(CATALOGHI_COL)
+
+  let resp = await cataloghiRef.add({
+      titolo: catalogo.titolo,
+      proprietario: catalogo.proprietario,
+      uid: user_id,
+      secretKey: catalogo.secretkey,
+      id: catalogo.id,
+      createdAt: serverTimestamp()
+  })
+  console.log('ID firebase del documento aggiunto : ', resp.id)
 }
 
 
@@ -165,25 +142,31 @@ const immagineConverter = {
  *  Carica dati extra utente, oppure crea nuovo account
  *  implementare -> https://www.youtube.com/watch?v=wvRVfyPKOA0
  */
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
-const USER_COL = "utentiprefs"
 export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
-  const displayName = u.displayName !  
+  const displayName = u.displayName !
+  const localization = await getLocalizationInfos()
   //console.log('loadUserSettings()')
   const loadFromFirebase = async () => {
     const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
     if(docSnapshot.exists){
-      console.log('\tUser found: ', displayName)
-      updateUser((docSnapshot.data() as Utente).setLastLogin(serverTimestamp()))
+      //console.log('\tUser found: ', displayName)
+      updateUser((docSnapshot.data() as Utente)
+        .setLastLogin(serverTimestamp())                                                  
+        .setLastIp(localization.lastIp)
+        .setLocation(localization.location))
       return docSnapshot.data()
     }
     else{
       const ref = doc(db, USER_COL, u.uid).withConverter(utenteConverter)
+      
       const newUtente = new Utente(displayName).setUID(u.uid)
                                                   .setSubscription_date(firebase.firestore.FieldValue.serverTimestamp())
                                                   .setLastLogin(firebase.firestore.FieldValue.serverTimestamp())
                                                   .setActive_plan('free')
                                                   .setAllowNotifications(false)
+                                                  .setLastIp(localization.lastIp)
+                                                  .setLocation(localization.location)
+                                                  
       await setDoc(ref, newUtente)
       console.log('\tCreate new userprefs for: ', displayName)
       return newUtente
@@ -202,8 +185,6 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
  *          - Uso q.get()  le risorse vengono caricate one-shot-time !
  *          - I cataloghi caricati NON comprendono la lista delle immagini
  */
-export const CATALOGHI_COL = "cataloghi"
-export const IMMAGINI_COL = "immagini"
 export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
   let lc : Catalogo[] = []
   const q = db.collection(CATALOGHI_COL).withConverter(catalogoConverter).where("uid", "==", user_id)
@@ -218,19 +199,6 @@ export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
 }
 
 
-
-export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]) : Utente{
-  console.log('Utente.setImagesForCurrentCatalog(), ', immagini, utente)
-  /*console.log(utente.listaCataloghi)
-  console.log(utente.listaCataloghi.length)
-  utente.listaCataloghi.forEach(cat => console.log(cat)) */
-  //utente.listaCataloghi[utente.indexCatalogNow].listaImmagini = immagini 
-  utente.getCurrentCatalog_cid().listaImmagini = immagini
-  return utente
-}
-
-
-
 /**
  *  ottiene l'idFirebase del catalogo matchando l'id
  */
@@ -239,7 +207,6 @@ export async function get_firebaseID_currentCatalogo(catalogID){
   const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))  
   return out
 }
-
 
 
 /**
@@ -251,6 +218,7 @@ export async function get_firebaseID_currentCatalogo_B(catalogID){
   return out
 }
 
+
 /**
  *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
  */
@@ -261,21 +229,69 @@ export async function loadImagesFromCatalog_firebaseA(cid){
 }
 
 
-
 // Listo i nomi dei dicumenti nel catalogo scelto
 export async function getImageNames_fromCID(cid: string){
   let a = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}`).get()
   return a.docs.map(imgQuery => { return imgQuery.id }) //a.docs.forEach(imgQuery => { console.log(imgQuery.id) })
 }
 
-
-
+//
 export async function updateUser(utente: Utente){
   await db.collection(USER_COL).doc(utente.uid).update( utenteConverter.toFirestore(utente) ).catch((ex: any)=>console.log(ex))
 }
 
+/**
+ *  ritorna object {location, lastIp}
+ */
+export async function getLocalizationInfos(){
+  const ip_apiReq = `http://ip-api.com/json/?fields=country,city,query` // status,message,countryCode,region,regionName,timezone,isp,org,as,zip,lat,lon
+  const res = await fetch(ip_apiReq).then(res => res.json()).catch(ex=>console.log(ex))
+  return {location: `${res.country} | ${res.city}` , lastIp: `${res.query}`}
+}
 
 
+/**
+ * 
+*/
+export async function addImageToCatalog(img : Immagine){
+  console.log('addImageToCatalog: ', img.nomeFile)
+  console.log(img)
+
+  let messageRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(img.nomeFile)
+
+  messageRef.set(img)
+            .then( ()=> console.log(`updateCollection() Completed file upload 🎉 \n\t img: ${img.nomeFile} \n\t cid: ${img.catalogoID} \n\t File aviable at : \n ${img.realURL}`) )
+            .catch( ex => console.error('updateCollection() Error adding document: ', ex) )
+
+}
+
+
+/**
+ *      Carica da firestore la lista cataloghi e in un simil-DAO per convertirlo in oggetto Catalogo[]
+ *      Ritorna array vuoto se non presente (non la genera in quanto viene fatto nell'add)
+ *          // TODO muovere come metodo statico nella classe catalogo?
+ */
+/*export const getCataloghi = async (user_id: string) : Promise<Catalogo[]> => {
+    console.log('getCataloghi() \t for uid: ' + user_id)
+
+    let cataloghiRef = db.collection('cataloghi')
+    
+    let cat : Catalogo[] = []
+
+    unsubscribeToRefs = await cataloghiRef
+                                .where('uid', '==', user_id)
+                                .orderBy('createdAt')
+                                .onSnapshot(querySnapshot => {
+                                    cat = querySnapshot.docs.map(doc =>{
+                                        console.log('catalogo 🌄 \t',doc.data())
+                                        return new Catalogo(doc.proprietario,doc.titolo)
+                                    })
+                                })
+
+    console.log(`getCataloghi() - firestore cats `, cat)
+
+    return cat
+}*/
 
 
 
@@ -480,3 +496,16 @@ export const addCatalogo = ( catalogo : Catalogo, user_id : string )=>{
 
 }
 */
+
+
+/* 
+// move to class utente
+export function setImagesForCurrentCatalog(utente: Utente, immagini : Immagine[]) : Utente{
+  //console.log(utente.listaCataloghi)
+  //console.log(utente.listaCataloghi.length)
+  //utente.listaCataloghi.forEach(cat => console.log(cat))
+  //utente.listaCataloghi[utente.indexCatalogNow].listaImmagini = immagini 
+  utente.getCurrentCatalog_cid().listaImmagini = immagini
+  return utente
+} */
+

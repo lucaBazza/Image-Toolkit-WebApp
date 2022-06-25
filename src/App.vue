@@ -18,18 +18,10 @@
   <LoginArea v-if="showLogInArea" :utente="utenteSng" @change_catalog="change_catalog" @notificate="notificate" @add_catalog="add_catalog"/>
 
   <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
-  <!-- 
-  <upload-media
-      v-if="showUploadMode"
-      class="upload-media"
-      :server="settings.urlImageServer+'/formidable'"
-      error=""
-      v-bind:class="{ 'upload-media': '' }"
-  />
-  -->
-  <DropAnImageVue v-if="showUploadMode"/>
 
-  <input v-if="showUploadMode" type="file" @change="uploadImageInput" class="uploadImageCodeInspire" accept="image/*" multiple/>
+  <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
+  <!-- <DropAnImageVue v-if="showUploadMode"/> -->
+  <!-- <input v-if="showUploadMode" type="file" @change="uploadImageInput" class="uploadImageCodeInspire" accept="image/*" multiple/> -->
 
   <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog"/>
 
@@ -46,19 +38,15 @@ import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
 import Modal from "./components/Modal.vue" 
 import DropAnImageVue from './components/DropAnImage.vue'
+import TheDropzone from './components/TheDropzone.vue'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Catalogo from './types/Catalogo'
-
-// https://vuejsexamples.com/vue-3-component-for-multiple-images-upload-with-preview/
-import { UploadMedia, UpdateMedia } from "vue-media-upload"
+import Immagine from './types/Immagine'
  
 import { useAuth, auth } from '@/firebase'
-import firebase from 'firebase/compat/app'
-
+import { uploadImageCodeInspire, uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
 import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser } from './types/FirebaseModel'
-import uploadImageCodeInspire from '@/utilities/uploadImageCodeInspire'
-import Immagine from './types/Immagine'
 
 /**
  *    Roadmap
@@ -80,8 +68,8 @@ import Immagine from './types/Immagine'
 
 export default defineComponent({
   name: "App",
-  components: { Modal, CatalogoForm, LoginArea, AvatarUser, UploadMedia, DropAnImageVue },
-  created(){ document.title = "Zabba image 🛠️ " },
+  components: { Modal, CatalogoForm, LoginArea, AvatarUser, /*UploadMedia,*/ DropAnImageVue, TheDropzone },
+  //created(){ document.title = "Zabba image 🛠️ " },
   setup(){
     //console.log(`app.setup()`)
     let utenteSng = new Utente('')
@@ -90,7 +78,7 @@ export default defineComponent({
     const isProductionBuild = ! Settings.getInstance().isDevelopMode()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
 
-    let isLoading = ref(true)
+    let isLoading = ref(true)       // caricamento del catalogo aperto
     let showModalInfos = ref(false)
     let showUploadMode = ref(false)
     let showCatalogo = ref(true)
@@ -121,28 +109,61 @@ export default defineComponent({
      *    - segnale di loaded
      */
     async loadUserCatalogsAsync(){
-        console.log(' 🕰 App.loadUserCatalogsAsync() ')
+        console.log('🕰 App.loadUserCatalogsAsync() ')
+        /*
         getCataloghi_C( this.user.uid )
-            .then( res => { return this.utenteSng.setListaCataloghi(res) })
+            .then( res => this.utenteSng.setListaCataloghi(res) )
             .then( ()=> this.utenteSng.listaCataloghi.forEach(c => this.load_images_by_cid(c.cid)) )
-            .then( ()=> this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid() )   // la prima run può dare errore => quando add 1 catalogo inserire record
+            .then( ()=> this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid() )
             .then( ()=> setTimeout(()=>this.loadingDone(), 200) )  // TODO SVILUPPARE  -> bug: a volte arriva prima del caricamento delle immagini, quindi non fa l'aggionamento del ref
             .catch( ()=> this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area`, type: 'warn', duration: 10000 }) )
+        */
+       const cataloghi = await getCataloghi_C( this.user.uid ).catch( ()=> this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area`, type: 'warn', duration: 10000 }) )  // TODO: mostrare immagine-messaggio fisso in background
+       if( cataloghi ){
+        this.utenteSng.setListaCataloghi(cataloghi)
+        if( ! this.utenteSng.selected_cid )
+          { console.log('❌ utente senza cid nei cataloghi, assegno il primo disponibile'); this.utenteSng.selectFirstAviableCatalog() }
+        
+          // aggiorno firebase (?qui?)
+        updateUser(this.utenteSng)
+
+          // carico immagini catalogo selezionato
+        this.load_images_by_cid(this.utenteSng.selected_cid)
+              .then( ()=> { 
+                            this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid()
+                            this.loadingDone()
+                            this.utenteSng.getCataloghi_NON_sel().forEach(c => this.load_images_by_cid(c.cid) )
+                          })  
+       }
     },
     async load_images_by_cid(cid : string){
-      //console.log('\t 📚 App.load_images_by_cid() \t cid: ',cid)
-
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
       this.utenteSng.setImages_by_cid(listaImgs, cid)
-
       console.log('\t 📚 Loaded catalog \t ', this.utenteSng.getCatalog_by_cid(cid).titolo)
       return this.utenteSng
     },
     notificate(notify){ this.$notify(notify) },
     add_catalog(catalog : Catalogo){
         this.utenteSng.listaCataloghi.push(catalog)
+        this.utenteSng.setSelected_cid(catalog.cid)
         this.loadUserCatalogsAsync()
         this.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
+    },
+    async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSize: {width, height}){
+      console.log(`App.requestImageUpload() \t ${file.name} - ${Math.floor(file.size / 1000)}KB \t ${imageSize.width}x${imageSize.height}
+                          \n\t ${imgBase64.substring(0,30)}`)
+
+      let i = new Immagine(imgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest').setCatalogID(this.utenteSng.selected_cid)
+      i.width = imageSize.width
+      i.height = imageSize.height
+      i.size = file.size
+      
+      this.currentAppCatalog.listaImmagini.push(i)
+
+      console.log(i)
+
+      uploadSingleFile_firestore(file, i.catalogoID, i)
+
     },
     /**
      *  catalogID specifica il nome del catalogo FS (quindi se custm genera una nuova entry)
@@ -160,7 +181,7 @@ export default defineComponent({
       //setTimeout(()=>this.loadUserCatalogsAsync(),10*1000)  // TODO Implementare soluzione reale 
 
       // preparo la visualizzazione delle n-immagini (poi se sono caricate e vanno mejo)
-      Array.from(event.target.files).forEach( file =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine('', -999 )/* .setNomeFile(file['name']) */  ) })
+      Array.from(event.target.files).forEach( file =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine('')/* .setNomeFile(file['name']) */  ) })
     },
     /**
      *    Cambia il catalogo selezionato usando il cid (aggiorna utente e catalogo aperto)
@@ -174,7 +195,6 @@ export default defineComponent({
         console.log(`Catalogo: ${cid} non ha immagini caricate, provvedo a scaricarle`)
         let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
         this.utenteSng.setImages_by_cid(listaImgs,cid)
-        console.log(`Ok caricate, verifica # ${this.utenteSng.listaCataloghi.length}`)
       }
 
       this.currentAppCatalog = this.utenteSng.getCatalog_by_cid(cid)
@@ -195,7 +215,7 @@ export default defineComponent({
           loadUserSettings(user)
             .then( u => this.utenteSng = u )
             .then( () => this.loadUserCatalogsAsync() )
-            .catch(ex => console.log(ex))
+            .catch( ex => console.log(ex))
       }
       else {
         console.log('Auth status is: user un-logged')
@@ -206,6 +226,7 @@ export default defineComponent({
         this.isLoading = true
       }
     })
+
   }
 })
 </script>
@@ -235,7 +256,11 @@ export default defineComponent({
   background: 10rem rgba(var(--backgroundColor), .4);
   border-radius: 0.5rem;
   width: max(30%, 200px); 
-  margin: 0rem auto 1rem; 
+  margin: 0rem auto 1rem;
+  /*font-size: 1.5rem;
+  text-transform: uppercase;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;*/
 }
 .upload-media {
   margin-left: 10%;
@@ -276,6 +301,8 @@ export default defineComponent({
   border-radius: .8rem;
 }
 </style>
+
+
 
 
 

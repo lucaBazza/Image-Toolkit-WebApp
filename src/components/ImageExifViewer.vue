@@ -9,6 +9,8 @@
         @error="imageLoadError"
         @click="toggleEditorFn"
     />
+    <img v-if=" ! isImgLoaded()" class="overlaySpinner" src="@/assets/loading-io-spinner.gif"/>
+    
     <span>
       {{ imageRf.nomeFile }}<button @click="reqEdit">🖊️</button><br/>
       <ul>
@@ -51,9 +53,15 @@ function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif"
 function swapRealImage(res){
   //console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
   src_real.value = props.imageRf.realURL
-  props.imageRf.classStyle = 'imageLoaded'
-      // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
-  //setTimeout( () => { props.imageRf.classStyle = ''}, 50 * 1000) 
+  
+  props.imageRf.classStyle = 'imageLoaded'  // TODO: controllare
+
+  //if( ! props.imageRf.classStyle )
+  //  props.imageRf.classStyle = 'imageLoaded'
+
+  //props.imageRf.classStyle = 'imgUploadRequest'
+
+  // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
 }
 
 function reqEdit() {
@@ -74,7 +82,7 @@ function fixLinkImage(){
 }
 
 onMounted( async () => {
-  //console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
+  // console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
   
   props.imageRf.classStyle = 'loadingBG'
   
@@ -105,14 +113,14 @@ onMounted( async () => {
   display: flex;
 }
 .darkMode .mainViewer{ box-shadow: inset 0px 0px 400px 110px rgba(0, 0, 0, .7) }
-.mainViewer > img {
+.mainViewer > img:first-child {
   flex: 50%;
   float: left;
   margin: 1rem;
   border-radius: 0.5rem;
   max-width: max( 50%, 300px );
 }
-.mainViewer > img:hover {
+.mainViewer > img:first-child:hover {
   cursor: move;
   margin: 0.4rem;
   transition: 0.2s;
@@ -164,5 +172,30 @@ onMounted( async () => {
 .loading{
   -webkit-mask-image: var(--mascheraCircolare);
   mask-image: var(--mascheraCircolare);
+}
+
+.imgUploadRequest{ opacity: .4; z-index: 0; }
+/*.imgUploadRequest::after{ 
+  content: ''; 
+  background-image: url('./../assets/loading-io-spinner.gif');
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  transform: skew(15deg);
+  width: 75%; 
+  height: 100%;
+}*/
+
+.overlaySpinner{
+/*   width: 4rem;
+  height: 4rem;
+  position: absolute;
+  margin: 0 auto; */
+  width: 50%;
+  position: initial;
+  margin: 0 auto;
+  transform: translateY(-350px);
 }
 </style>
