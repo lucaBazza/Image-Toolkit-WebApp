@@ -57,9 +57,35 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
 
 ---
 ## TODOs
-Dockerization (frontend + firebase emulator)
+Dockerization (frontend + firebase emulator + raspbarry porting)
+
 
 ---
 
 ## Note varie
-...
+
+
+PWA > Apple Icon Scaling using ffmpeg
+```js
+ffmpeg -i logoToolkit-512px.png  -vf scale=60:-1 apple-touch-icon-60x60.png
+ffmpeg -i logoToolkit-512px.png  -vf scale=76:-1 apple-touch-icon-76x76.png
+ffmpeg -i logoToolkit-512px.png  -vf scale=120:-1 apple-touch-icon-120x120.png
+ffmpeg -i logoToolkit-512px.png  -vf scale=152:-1 apple-touch-icon-152x152.png
+ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon-180x180.png
+ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon.png
+```
+
+.
+
+
+> cool gallery for show images
+
+https://codepen.io/suez/pen/wMMgXp 
+
+> wow menu bar
+
+https://codepen.io/uiswarup/pen/qBObQKG
+
+> sweet menu bar
+
+https://codepen.io/gzkdev/details/VwKqjGm

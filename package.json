@@ -10,7 +10,8 @@
     "lint": "vue-cli-service lint",
     "deploy": "firebase deploy --debug --token \"$FIREBASE_TOKEN\" --only hosting",
     "buildWebPack": "webpack src/main.ts -o public/bundle.js",
-    "firebase_emu": "firebase emulators:start --only functions,firestore,auth,storage --import ./firebase-export --export-on-exit ./firebase-export"
+    "firebase_emu": "firebase emulators:start --only functions,firestore,auth,storage --import ./firebase-export --export-on-exit ./firebase-export",
+    "clearProj": "rm -r distr && npm cache clean --force"
   },
   "dependencies": {
     "@kyvg/vue3-notification": "^2.3.4",
