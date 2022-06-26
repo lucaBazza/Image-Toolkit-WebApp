@@ -45,6 +45,10 @@ export default class Immagine implements Iterator<number>{
         return "Hello" + this.src;
     }
 
+    getNomeFile(){
+        return this.nomeFile
+    }
+
     getDescrizione() {
         return this.alt ? this.alt : 'descrizione non prensente';
     }

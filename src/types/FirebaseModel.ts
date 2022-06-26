@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import { db } from '@/firebase'
-import { doc, setDoc, serverTimestamp, query } from "firebase/firestore"
+import { doc, getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField, deleteDoc } from "firebase/firestore"
 
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
@@ -122,10 +122,8 @@ const immagineConverter = {
  *        + TODO: check preliminare se catalogo esiste già con stesso titolo
  */
 export async function addCatalogo2( catalogo : Catalogo, user_id : string ){
-  console.log('\n addCatalogo2() \n\n')
-
+  //console.log('\n addCatalogo2() \n\n')
   let cataloghiRef = db.collection(CATALOGHI_COL)
-
   let resp = await cataloghiRef.add({
       titolo: catalogo.titolo,
       proprietario: catalogo.proprietario,
@@ -134,7 +132,8 @@ export async function addCatalogo2( catalogo : Catalogo, user_id : string ){
       id: catalogo.id,
       createdAt: serverTimestamp()
   })
-  console.log('ID firebase del documento aggiunto : ', resp.id)
+  console.log('\n addCatalogo2() \n\n ID firebase del documento aggiunto : ', resp.id, '\n\n')
+  return Promise.resolve(resp.id)
 }
 
 
@@ -179,8 +178,7 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
 
 
 /**
- *      Restituisce promessa di array di cataloghi per l'utente selezionato
- *        vers. C : 
+ *      Restituisce promessa di array di cataloghi per l'utente selezionato          - version C
  *          - Promise viene soddisfatta solo quando l'array catalogo è riempito
  *          - Uso q.get()  le risorse vengono caricate one-shot-time !
  *          - I cataloghi caricati NON comprendono la lista delle immagini
@@ -210,12 +208,26 @@ export async function get_firebaseID_currentCatalogo(catalogID){
 
 
 /**
- *  Dall'id catalogo di vuejs, restituisce l'ID di firebase
+ *  Dall'id catalogo di vuejs, restituisce l'ID di firebase             D O P P I O N E ? ?
  */
 export async function get_firebaseID_currentCatalogo_B(catalogID){
   const q = db.collection(CATALOGHI_COL).where("id", "==", catalogID)
   const out = await q.get().then( qs => qs.docs[0].id ).catch(ex => console.log(ex))
   return out
+}
+
+/**
+ *   carica un catalogo da firebase
+ */
+export async function getCatalog_fs( cid : string) : Promise<Catalogo>{
+  console.log('getCatalog_fs() : ' , cid)
+  const ref = doc(db, CATALOGHI_COL, cid).withConverter(catalogoConverter)
+  const docSnap = await getDoc(ref);
+  if (docSnap.exists()) {
+    const cat = docSnap.data()
+    return Promise.resolve(cat)
+  }
+  else return Promise.reject(`User has no catalog ${cid}`)
 }
 
 
@@ -226,6 +238,12 @@ export async function loadImagesFromCatalog_firebaseA(cid){
   //console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
   let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
   return res.docs.map(imgQuery => imgQuery.data())
+}
+
+// Listo i nomi dei dicumenti nel catalogo scelto
+export async function getCatalogNames_fromUID(uid: string) : Promise<string[]>{
+  let a = await db.collection(CATALOGHI_COL).where('uid','==',uid).get()
+  return a.docs.map( q => { return q.id })
 }
 
 
@@ -251,18 +269,62 @@ export async function getLocalizationInfos(){
 
 
 /**
- * 
+ *  TODO togliere il img.nomeFile e usare l'id autogenerato di fs?
+ *    > se viene caricato un file con lo stesso nome non viene fatto il merge
 */
 export async function addImageToCatalog(img : Immagine){
-  console.log('addImageToCatalog: ', img.nomeFile)
-  console.log(img)
+  let imgRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(img.nomeFile)
 
-  let messageRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(img.nomeFile)
-
-  messageRef.set(img)
-            .then( ()=> console.log(`updateCollection() Completed file upload 🎉 \n\t img: ${img.nomeFile} \n\t cid: ${img.catalogoID} \n\t File aviable at : \n ${img.realURL}`) )
+  imgRef.set(img)
+            //.then( ()=> console.log(`updateCollection() Completed file upload 🎉 \n\t img: ${img.nomeFile} \n\t cid: ${img.catalogoID} \n\t File aviable at : \n ${img.realURL}`) )
             .catch( ex => console.error('updateCollection() Error adding document: ', ex) )
 
+}
+
+
+/**
+ * https://www.youtube.com/watch?v=s1frrNxq4js
+ */
+export async function deleteCatalog(cid: string){
+  const docRef = doc(db,CATALOGHI_COL, cid)
+  return deleteDoc(docRef).then( ()=> Promise.resolve('callback delete catalog, update form')).catch(ex => Promise.reject(ex))
+}
+
+
+export async function deleteImage(nomeDocImg: string, cid: string){
+  console.log('Delete image: ', nomeDocImg, " | ", cid)
+  //const imgRef = db.collection(`${CATALOGHI_COL}/${cid}/${nomeDocImg}`)
+  //await updateDoc(imgRef, deleteField() )
+
+  // netnina firebase9 #5
+  const docRef = doc(db,CATALOGHI_COL,cid)
+
+  const exist = await existImageInsideCatalog(nomeDocImg, cid)
+  console.log(exist)
+
+  //const imgRef = db.collection(CATALOGHI_COL).doc(cid).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(nomeDocImg)
+  
+  //await deleteDoc(imgRef)
+  // await deleteDoc(doc(db, CATALOGHI_COL, cid, nomeDocImg));
+}
+
+
+/**
+ *  Return true false
+ */
+export async function existImageInsideCatalog(nomeDocImg: string, cid: string) {
+  const errorlogReturn = (log: string) => { console.log(log); return false }
+  const docSnapshot = await db.collection(CATALOGHI_COL).withConverter(catalogoConverter).doc(cid).get()
+  if(docSnapshot.exists){
+    console.log( docSnapshot.data() as Catalogo )
+  }
+  else return errorlogReturn(`existImageInsideCatalog() - catalog ${cid} not found`)
+}
+
+
+export async function existCatalogForUtente(uid: string, cid: string) : Promise<boolean>{    
+  let cats = await getCatalogNames_fromUID(uid)
+  return cats.filter( c => c === cid ).length > 0
 }
 
 

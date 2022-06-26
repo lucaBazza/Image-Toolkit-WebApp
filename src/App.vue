@@ -23,7 +23,7 @@
   <!-- <DropAnImageVue v-if="showUploadMode"/> -->
   <!-- <input v-if="showUploadMode" type="file" @change="uploadImageInput" class="uploadImageCodeInspire" accept="image/*" multiple/> -->
 
-  <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog"/>
+  <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog" @deleteCatalog="deleteCatalog"/>
 
   <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div>
 
@@ -36,8 +36,7 @@ import { defineComponent, ref } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
-import Modal from "./components/Modal.vue" 
-import DropAnImageVue from './components/DropAnImage.vue'
+import Modal from "./components/Modal.vue"
 import TheDropzone from './components/TheDropzone.vue'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
@@ -46,8 +45,8 @@ import Immagine from './types/Immagine'
  
 import { useAuth, auth } from '@/firebase'
 import { uploadImageCodeInspire, uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
-import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser } from './types/FirebaseModel'
-
+import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser, deleteCatalog, getCatalog_fs, existCatalogForUtente } from './types/FirebaseModel'
+import { add_catalog_logic, delete_catalog_logic, change_catalog_logic } from '@/types/App.controller'
 /**
  *    Roadmap
  *  . connettersi al database firestore
@@ -68,13 +67,12 @@ import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, upda
 
 export default defineComponent({
   name: "App",
-  components: { Modal, CatalogoForm, LoginArea, AvatarUser, /*UploadMedia,*/ DropAnImageVue, TheDropzone },
-  //created(){ document.title = "Zabba image 🛠️ " },
+  components: { Modal, CatalogoForm, LoginArea, AvatarUser, TheDropzone },
   setup(){
     //console.log(`app.setup()`)
     let utenteSng = new Utente('')
     let currentAppCatalog = ref(new Catalogo('',''))
-    const settings = Settings.getInstance()
+    // const settings = Settings.getInstance()
     const isProductionBuild = ! Settings.getInstance().isDevelopMode()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
 
@@ -93,7 +91,7 @@ export default defineComponent({
     const loadingDone = ()=>{ console.log("loading user data done 😊"); isLoading.value = false }
     const signIn_utente = ()=>{ signIn() }
 
-    return {  utenteSng, settings, isLoading,
+    return {  utenteSng, /* settings, */ isLoading,
               showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone,
               currentAppCatalog, isProductionBuild,
@@ -110,48 +108,45 @@ export default defineComponent({
      */
     async loadUserCatalogsAsync(){
         console.log('🕰 App.loadUserCatalogsAsync() ')
-        /*
-        getCataloghi_C( this.user.uid )
-            .then( res => this.utenteSng.setListaCataloghi(res) )
-            .then( ()=> this.utenteSng.listaCataloghi.forEach(c => this.load_images_by_cid(c.cid)) )
-            .then( ()=> this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid() )
-            .then( ()=> setTimeout(()=>this.loadingDone(), 200) )  // TODO SVILUPPARE  -> bug: a volte arriva prima del caricamento delle immagini, quindi non fa l'aggionamento del ref
-            .catch( ()=> this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area`, type: 'warn', duration: 10000 }) )
-        */
+
        const cataloghi = await getCataloghi_C( this.user.uid ).catch( ()=> this.notificate({ title: "No catalog found", text: `Please insert a new catalog in user area`, type: 'warn', duration: 10000 }) )  // TODO: mostrare immagine-messaggio fisso in background
        if( cataloghi ){
         this.utenteSng.setListaCataloghi(cataloghi)
         if( ! this.utenteSng.selected_cid )
           { console.log('❌ utente senza cid nei cataloghi, assegno il primo disponibile'); this.utenteSng.selectFirstAviableCatalog() }
+
+        if( ! await existCatalogForUtente(this.utenteSng.uid, this.utenteSng.selected_cid) )
+          { console.log(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${this.utenteSng.uid} \t req: ${this.utenteSng.selected_cid}`); this.utenteSng.selectFirstAviableCatalog() }
         
           // aggiorno firebase (?qui?)
         updateUser(this.utenteSng)
 
           // carico immagini catalogo selezionato
         this.load_images_by_cid(this.utenteSng.selected_cid)
-              .then( ()=> { 
-                            this.currentAppCatalog = this.utenteSng.getCurrentCatalog_cid()
+              .then( (current_catalog)=> { 
+                            this.currentAppCatalog = current_catalog
                             this.loadingDone()
-                            this.utenteSng.getCataloghi_NON_sel().forEach(c => this.load_images_by_cid(c.cid) )
-                          })  
+                            return this.utenteSng.getCataloghi_NON_sel()
+                          })
+              .then( otherCatalgs => otherCatalgs.forEach(c => this.load_images_by_cid(c.cid)) )
        }
+       else console.log('App.loadUserCatalogsAsync() - no catalogs CHECK - togliere se uguale a getCataloghi_C().catch')
     },
     async load_images_by_cid(cid : string){
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
       this.utenteSng.setImages_by_cid(listaImgs, cid)
       console.log('\t 📚 Loaded catalog \t ', this.utenteSng.getCatalog_by_cid(cid).titolo)
-      return this.utenteSng
+      return this.utenteSng.getCurrentCatalog_cid()
     },
     notificate(notify){ this.$notify(notify) },
-    add_catalog(catalog : Catalogo){
-        this.utenteSng.listaCataloghi.push(catalog)
-        this.utenteSng.setSelected_cid(catalog.cid)
-        this.loadUserCatalogsAsync()
-        this.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
+    async add_catalog(cid : string){
+        add_catalog_logic(this, cid)
+    },
+    deleteCatalog(cid){ 
+      delete_catalog_logic(this, cid)
     },
     async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSize: {width, height}){
-      console.log(`App.requestImageUpload() \t ${file.name} - ${Math.floor(file.size / 1000)}KB \t ${imageSize.width}x${imageSize.height}
-                          \n\t ${imgBase64.substring(0,30)}`)
+      // console.log(`App.requestImageUpload() \t ${file.name} - ${Math.floor(file.size / 1000)}KB \t ${imageSize.width}x${imageSize.height} \n\t ${imgBase64.substring(0,30)}`)
 
       let i = new Immagine(imgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest').setCatalogID(this.utenteSng.selected_cid)
       i.width = imageSize.width
@@ -159,8 +154,6 @@ export default defineComponent({
       i.size = file.size
       
       this.currentAppCatalog.listaImmagini.push(i)
-
-      console.log(i)
 
       uploadSingleFile_firestore(file, i.catalogoID, i)
 
@@ -183,23 +176,9 @@ export default defineComponent({
       // preparo la visualizzazione delle n-immagini (poi se sono caricate e vanno mejo)
       Array.from(event.target.files).forEach( file =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine('')/* .setNomeFile(file['name']) */  ) })
     },
-    /**
-     *    Cambia il catalogo selezionato usando il cid (aggiorna utente e catalogo aperto)
-     */
+
     async change_catalog(cid : string){
-      console.log('App.change_catalog() \t cid:', cid)
-
-      updateUser(this.utenteSng.setSelected_cid(cid))  // aggiorna il cid sul server
-
-      if( ! this.utenteSng.getCatalog_by_cid(cid).listaImmagini.length){
-        console.log(`Catalogo: ${cid} non ha immagini caricate, provvedo a scaricarle`)
-        let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
-        this.utenteSng.setImages_by_cid(listaImgs,cid)
-      }
-
-      this.currentAppCatalog = this.utenteSng.getCatalog_by_cid(cid)
-      
-      console.log('App.change_catalog() \t titolo: ', this.currentAppCatalog.titolo)
+      change_catalog_logic(this, cid)
     }
   },
   async mounted() {
@@ -226,7 +205,7 @@ export default defineComponent({
         this.isLoading = true
       }
     })
-
+    
   }
 })
 </script>

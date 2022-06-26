@@ -28,18 +28,23 @@ const { signOut } = useAuth()
 console.log('LoginArea.setup()')
 
 let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
-const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true },200) }
+const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true }, 500) }
 
+/**
+ *  - creo un catalogo localmente e cancello l'input text
+ *  - aggiorno la gui TODO controllare props push non va
+ *  - aggiorno catalogo su firebase, se va bene aggiorno il componente padre
+ */
 const addNewCatalogo = (e) =>{
   if( e.target.value == '' ) return
   let newCatalogo = new Catalogo(props.utente.nome, e.target.value)
   e.target.value = ''
-  props.utente.listaCataloghi.push(newCatalogo)
+  //props.utente.listaCataloghi.push(newCatalogo)
   addCatalogo2(newCatalogo, props.utente.uid)
-    .then( ()=>{ emits('add_catalog', newCatalogo) })
+    .then( res_cid => emits('add_catalog', res_cid) )
 }
 
-function change_catalog(cid){
+function change_catalog(cid){ 
   forceReloadCataloghi()
   emits('change_catalog', cid)
 }

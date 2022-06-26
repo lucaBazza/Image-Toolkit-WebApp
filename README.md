@@ -10,8 +10,6 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
 
 .
 
-.
-
 
 ### Project setup
 ```
@@ -56,13 +54,16 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
 .
 
 ---
-## TODOs
+# TODOs
 Dockerization (frontend + firebase emulator + raspbarry porting)
 
+.
+
+.
 
 ---
 
-## Note varie
+# Note varie
 
 
 PWA > Apple Icon Scaling using ffmpeg
@@ -89,3 +90,29 @@ https://codepen.io/uiswarup/pen/qBObQKG
 > sweet menu bar
 
 https://codepen.io/gzkdev/details/VwKqjGm
+
+.
+
+.
+
+
+# check addizionali firebase
+
+> firebase function modules
+```
+cd functions && npm install
+```
+
+> configurazione emulatore
+```
+firebase login
+firebase init emulators ( function, firestore, auth, storage)
+firebase serve -o 0.0.0.0  (on local-network)
+```
+
+> java JDK (using homebrew*)
+```
+brew install java11
+sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
+java -version
+```

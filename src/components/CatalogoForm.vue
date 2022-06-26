@@ -22,10 +22,14 @@ import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
 
 const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
+const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
 let catalogIsReady = ref(false)
 
 async function deleteAllImages() {
-  console.log("deleteAllImages()");
+  if (confirm("Are u sure to delete this catalog?") == true)
+    emit('deleteCatalog', props.catalogoProp.cid)
+  else 
+    console.log( "Catalog protected from destruction 🛡️ ")
 }
 function openSortingOptions(){
   console.log('openSortingOptions()')
@@ -51,7 +55,7 @@ onMounted(() => {
 <style>
 .catalogDiv{ margin: 3rem 0 }
 .catalogDiv > ul { padding: 0 }
-.catalogDiv > ul > em  { margin: .5rem auto; color: var(--backText) }
+.catalogDiv > ul > em  { margin: .5rem auto; color: var(--backText); display: block; margin-bottom: 50vh; }
 .catalogDiv > h3 {
   width: 50%;
   margin: 0 auto;
