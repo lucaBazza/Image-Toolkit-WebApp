@@ -1,13 +1,15 @@
 <template>
-    <div class="dropzone" 
+    <input type="file" @change="drop" ref="imgBackgroundUpload_ref" hidden accept="image/*" multiple /> 
+    <div class="dropzone"
         @dragover.prevent="dragOver" 
         @dragleave.prevent="dragLeave"
-        @drop.prevent="drop($event)">
+        @drop.prevent="drop($event)"
+        @click="clickUpload">
     </div>
 </template>
 
 <script setup lang="ts">
-import {  ref } from 'vue'
+import { ref } from 'vue'
 
 /**
  *      ROADMAP
@@ -25,15 +27,14 @@ import {  ref } from 'vue'
 
 const emit = defineEmits<{(e: 'requestImageUpload', file: HTMLInputElement, imgBase64: string, imageSizes: object): void}>()
 let isDragging = ref(false)
-let imageSources = ref(new Array<string>())
+let imgBackgroundUpload_ref = ref(null)
 
-async function drop(e){
-    let files = [...e.dataTransfer.files]
+async function drop(e){    
+    let files = e.dataTransfer ? [...e.dataTransfer.files] : [...e.srcElement.files]
     let images = files.filter(file => file.type.indexOf('image/') >= 0)
     let promises = images.map(file => getBase64(file))
 
     let sourcesBase64 = await Promise.all(promises)
-    imageSources.value = sourcesBase64.map(x=>x)
 
     let imageSizes = await Promise.all(sourcesBase64.map(i => { return imageSize(i) as object }))
 
@@ -48,7 +49,6 @@ function getBase64(file) : Promise<string>{
         reader.readAsDataURL(file)
     })
 }
-
 function imageSize(imgBase64){
     const img = document.createElement("img");
     const promise = new Promise((resolve, reject) => {
@@ -70,6 +70,10 @@ function dragOver(){
 function dragLeave(){
     isDragging.value = false
 }
+function clickUpload(){
+    imgBackgroundUpload_ref.value && (imgBackgroundUpload_ref.value as HTMLInputElement).click()    
+}
+
 </script>
 
 <style>
