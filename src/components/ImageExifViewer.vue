@@ -12,7 +12,15 @@
     <img v-if=" ! isImgLoaded()" class="overlaySpinner" src="@/assets/loading-io-spinner.gif"/>
     
     <span>
-      {{ imageRf.nomeFile }}<button @click="reqEdit">🖊️</button><br/>
+      {{ imageRf.nomeFile }}
+        
+        <div class="cntimgSettingsBtns">
+          <button id="imgSettings"> &nbsp; </button>
+          <button class="imgSettingsBtns" attr="rename"> 📋 </button>
+          <button class="imgSettingsBtns" attr="delete" @click="deleteImg"> 🗑️ </button>
+          <button class="imgSettingsBtns" attr="edit" @click="reqEdit">🖊️</button>
+        </div>
+
       <ul>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
@@ -31,6 +39,7 @@
 import { ref, onMounted } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
+import { deleteImage } from '@/types/FirebaseModel'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
@@ -66,6 +75,11 @@ function swapRealImage(res){
 
 function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
+}
+
+function deleteImg(){
+  deleteImage(props.imageRf.getNomeFile(), props.imageRf.catalogoID)
+  // emit('deleteImageComp', props.imageRf.getNomeFile())
 }
 
 function toggleEditorFn(){
@@ -198,4 +212,19 @@ onMounted( async () => {
   margin: 0 auto;
   transform: translateY(-350px);
 }
+
+/* #imgSettings{ */
+.cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; /* background-color: rgba(0, 0, 0, .2); */ }
+.cntimgSettingsBtns > button:first-child{
+  background-image: url('@/assets/3-vertical-dots.svg');
+  background-repeat: no-repeat;
+  margin-left: 0.4rem;
+}
+.cntimgSettingsBtns > button:first-child:hover{ cursor: grab }
+.cntimgSettingsBtns > button:not(:first-child){ opacity: 0;}
+
+.cntimgSettingsBtns:hover .imgSettingsBtns{ opacity: 1; transition: .3s; }
+/* #imgSettings:hover ~ .imgSettingsBtns{ opacity: 1; transition: .3s; } */
+
+.cntimgSettingsBtns > button { background: transparent; border: none; margin-top: .7rem; }
 </style>

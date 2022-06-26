@@ -85,7 +85,7 @@ ul { list-style-type: none }
 .productionMode{ animation: action .5s infinite  alternate }
 .productionMode > h2{
   border: 2px solid gray;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(var(--backgroundColor),.3);
   border-radius: 1rem;
   padding: 1rem;
   width: max(50%,300px);
