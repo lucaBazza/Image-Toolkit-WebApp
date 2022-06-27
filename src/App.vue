@@ -1,5 +1,4 @@
 <template>
-
   <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
   <button v-else @click="signIn" class="googleSignIn" :disabled="isProductionBuild">
       <img src='./assets/logoGoogle.svg'/>Sign In
@@ -20,8 +19,6 @@
   <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
 
   <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
-  <!-- <DropAnImageVue v-if="showUploadMode"/> -->
-  <!-- <input v-if="showUploadMode" type="file" @change="uploadImageInput" class="uploadImageCodeInspire" accept="image/*" multiple/> -->
 
   <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog" @deleteCatalog="deleteCatalog"/>
 
@@ -45,34 +42,26 @@ import Immagine from './types/Immagine'
  
 import { useAuth, auth } from '@/firebase'
 import { uploadImageCodeInspire, uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
-import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser, deleteCatalog, getCatalog_fs, existCatalogForUtente } from './types/FirebaseModel'
+import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser, existCatalogForUtente } from './types/FirebaseModel'
 import { add_catalog_logic, delete_catalog_logic, change_catalog_logic } from '@/types/App.controller'
 /**
  *    Roadmap
- *  . connettersi al database firestore
- *  . registrare/loggare utente ( mail o google account )
- *  . prendere credenziali
- *  . visualizzarle asyncronamente sulla app
- *  . caricare la lista catalogo corrrentemente selezionata
  *  . per ogni catalogo, caricare la sotto-lista exifDatas e adjustments  TODO check it
- *  . caricato un catalogo, creare una secretKey per scaricare le foto
+ *  x caricato un catalogo, creare una secretKey per scaricare le foto
  *  . scaricare le foto
  *      - prima con get tradizionale
- *      - poi con post header ( secret key + user )
+ *      - poi con post header ( secret key + user )     https://www.youtube.com/watch?v=Htt8AKeF1Kw&t=283s 
  * 
- *      https://www.youtube.com/watch?v=Htt8AKeF1Kw&t=283s 
- * 
- *  . quando carica un catalogo, impostare random come sfondo una delle immagini ?
+ *  . TODO quando carica un catalogo, impostare random come sfondo una delle immagini ?
+ *  . TODO registrazione by mail
 */
 
 export default defineComponent({
   name: "App",
   components: { Modal, CatalogoForm, LoginArea, AvatarUser, TheDropzone },
   setup(){
-    //console.log(`app.setup()`)
     let utenteSng = new Utente('')
     let currentAppCatalog = ref(new Catalogo('',''))
-    // const settings = Settings.getInstance()
     const isProductionBuild = ! Settings.getInstance().isDevelopMode()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
 
@@ -91,7 +80,7 @@ export default defineComponent({
     const loadingDone = ()=>{ console.log("loading user data done 😊"); isLoading.value = false }
     const signIn_utente = ()=>{ signIn() }
 
-    return {  utenteSng, /* settings, */ isLoading,
+    return {  utenteSng, isLoading,
               showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
               toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone,
               currentAppCatalog, isProductionBuild,
@@ -130,7 +119,6 @@ export default defineComponent({
                           })
               .then( otherCatalgs => otherCatalgs.forEach(c => this.load_images_by_cid(c.cid)) )
        }
-       else console.log('App.loadUserCatalogsAsync() - no catalogs CHECK - togliere se uguale a getCataloghi_C().catch')
     },
     async load_images_by_cid(cid : string){
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
@@ -145,38 +133,14 @@ export default defineComponent({
     deleteCatalog(cid){ 
       delete_catalog_logic(this, cid)
     },
-    async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSize: {width, height}){
-      // console.log(`App.requestImageUpload() \t ${file.name} - ${Math.floor(file.size / 1000)}KB \t ${imageSize.width}x${imageSize.height} \n\t ${imgBase64.substring(0,30)}`)
-
+    async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSizes: object /* {width, height} */){
       let i = new Immagine(imgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest').setCatalogID(this.utenteSng.selected_cid)
-      i.width = imageSize.width
-      i.height = imageSize.height
+      i.width = imageSizes['width']
+      i.height = imageSizes['height']
       i.size = file.size
-      
       this.currentAppCatalog.listaImmagini.push(i)
-
       uploadSingleFile_firestore(file, i.catalogoID, i)
-
     },
-    /**
-     *  catalogID specifica il nome del catalogo FS (quindi se custm genera una nuova entry)
-     *    - ottiene l'id universale di firebase per il catalogo dove fare l'upload
-     *    - se trovato, avvia l'upload delle immagini una dopo l'altra
-     *    ->  TODO: dopo l'update, chiudi il file uploader e visualizza il catalogo aggiornato
-     */
-    async uploadImageInput(event){
-      //get_firebaseID_currentCatalogo( this.utenteSng.getIndexCatalogoCurrent() )
-      //  .then( x => uploadImageCodeInspire(event,x) )
-      
-      console.log(`upload in cid: ${this.utenteSng.getCurrentCatalog_cid().cid} \t imgs: ${event.target.files}`)
-      uploadImageCodeInspire(event, this.utenteSng.selected_cid)
-
-      //setTimeout(()=>this.loadUserCatalogsAsync(),10*1000)  // TODO Implementare soluzione reale 
-
-      // preparo la visualizzazione delle n-immagini (poi se sono caricate e vanno mejo)
-      Array.from(event.target.files).forEach( file =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine('')/* .setNomeFile(file['name']) */  ) })
-    },
-
     async change_catalog(cid : string){
       change_catalog_logic(this, cid)
     }
@@ -282,208 +246,20 @@ export default defineComponent({
 </style>
 
 
+<!--
 
-
-
-
-<!-- 
-
-
-
-// Create Fake datas
-//let _listaCataloghi = getUserFromServer('Luca', 'Yhsdg654@as','ASKJ23487');
-
-/*
-const utenteSng = ref(new Utente('Luca', 'Yhsdg654@as', new Array<Catalogo>(
-                            new Catalogo('Luca','Go to the mountas',0), new Catalogo('Luca','Schiazzi di mondi',1), new Catalogo('Luca','Androgenia del mare',2)) ));
-utenteSng.value.setEmail('luca@xyz.com')
-//utenteSng.value.setKeepLogin(true)
-utenteSng.value.getCatalogoCurrent().titolo = 'Amici della natura'
-utenteSng.value.getCatalogoCurrent().setListaImmagini([
+/**
+*  catalogID specifica il nome del catalogo FS (quindi se custm genera una nuova entry)
+*    - ottiene l'id universale di firebase per il catalogo dove fare l'upload
+*    - se trovato, avvia l'upload delle immagini una dopo l'altra
+*    ->  TODO: dopo l'update, chiudi il file uploader e visualizza il catalogo aggiornato
 */
-  new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)
-]);
+async uploadImageInput(event){      
+  console.log(`upload in cid: ${this.utenteSng.getCurrentCatalog_cid().cid} \t imgs: ${event.target.files}`)
+  uploadImageCodeInspire(event, this.utenteSng.selected_cid)
 
-
-
-
-
-
-ON USER STATE CHANGE TRUE
-
-          
-  getCataloghi_B(this.utenteSng.uid)
-    .then(datas => { 
-      this.utenteSng.setListaCataloghi(datas) 
-      loadImagesFromCatalog_firebaseA( this.utenteSng.getIndexCatalogoCurrent() )
-        .then( resImgs => { 
-          console.log(this.utenteSng.listaCataloghi.length)
-
-          resImgs = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
-          //setImagesForCurrentCatalog(this.utenteSng, resImgs )
-        })
-    
-    })
-    .catch(ex => console.log('getCataloghi error: ', ex) )
-    /*.then( ()=> {
-      let catalogID = this.utenteSng.getIndexCatalogoCurrent()
-      console.log('getCataloghi_B() -> then() II  \n\n ' , this.utenteSng)
-
-      loadImagesFromCatalog_firebaseA(catalogID)
-        //.then( resImgs => resImgs && this.utenteSng.getCatalogoCurrent().setListaImmagini(resImgs)  )
-        .then( resImgs => { 
-            let testImgs : Immagine[] = [ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]
-            if(resImgs){
-              console.log(this.utenteSng.listaCataloghi)
-              //console.log('utente sng current cat: ', this.utenteSng.getCatalogoCurrent())
-              //this.utenteSng.getCatalogoCurrent().setListaImmagini([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
-              //this.utenteSng.setImagesForCurrentCatalog([ new Immagine('img.jpg',0), new Immagine('asd.jpg',1), new Immagine('imgC.jpg',2), new Immagine('asdD.jpg',3)]) 
-              setImagesForCurrentCatalog(this.utenteSng,testImgs )
-            }
-            else 
-              console.log('no imgs')  
-        })
-        .then( () => this.loadingDone() )
-        .catch( ex =>  console.log('getCataloghi getImages error: ', ex) )
-            }) 
-            
-
-
-
-
-      LOAD ASYNC DATAS
-
-getCataloghi_B(this.utenteSng.uid)
-  .then( datas => {
-    console.log("\n 💀 getCataloghi_B() POST cataloghi caricati: ", datas.length , "\n\n")
-    let ut : Utente = this.utenteSng.setListaCataloghi(datas as Catalogo[])
-    return ut
-  })
-  .then( resUtente => console.log(resUtente, 
-                      resUtente.listaCataloghi.length, 
-                      this.utenteSng.listaCataloghi.length,
-                      resUtente.getListaCataloghi().length 
-                    ) 
-  )
-  .catch(ex => console.log(ex) )
-
-
-
-
-
-
-async loadUserDatasAsync(){
-    console.log(' 🕰 App.loadUserDatasAsync() ')
-                  
-    getCataloghi_C(this.utenteSng.uid)
-        .then( res => { return this.utenteSng.setListaCataloghi(res) })
-        .then( () =>{ 
-            // metodo con lista immagini caricate da firestore per il catalogo corrente 
-              //   - TODO : fare per i primi N cataloghi
-          console.log('getCataloghi_C() II ')
-          let firebase_catalogID = get_firebaseID_currentCatalogo_B(this.utenteSng.getIndexCatalogoCurrent)
-          console.log('firebase_catalogID: ', firebase_catalogID)
-
-          //testImgs = loadImagesFromCatalog_firebaseA(firebase_catalogID)
-
-              // metodo con immagini caricate fake
-          //this.utenteSng = res.setListaImmagini_currentCatalog(testImgs)
-
-      
-          this.currentAppCatalog = this.utenteSng.getCatalogoCurrent()
-
-
-          console.log(`\n✅   getCataloghi_C()
-                              \n\t\t cataloghi: ${this.utenteSng.listaCataloghi.length}
-                              \n\t\t current images:  ${this.utenteSng.getCatalogoCurrent().listaImmagini.length}\n\n`)
-          this.loadingDone()
-
-          //console.log(this.utenteSng.listaCataloghi)
-
-          // < = = = = =   TESTING : dopo 4 secondi, cambio catalogo da app, a cascata deve aggiornare CatalogForm, ImageExifViewer, Login Area
-          //setTimeout( ()=>{ console.log('update cat'); this.update_utente(3) }, 2000 )
-                //setTimeout(()=>{ this.currentAppCatalog.titolo = 'titolo aggiornato'; console.log('titolo agg')} ,1000)
-
-          
-        })
-        .catch( () => this.notificate({ title: "No catalog found", text: "Please insert a new catalog in user area", type: 'warn' }) )
+  // preparo la visualizzazione delle n-immagini (poi se sono caricate e vanno mejo)
+  Array.from(event.target.files).forEach( file =>{ console.log(file); this.currentAppCatalog.listaImmagini.push(new Immagine('') ) })
 },
 
-
-
-/*async loadImages_ofCatalog(id : number){
-  console.log(` 🕰 App.loadImages_ofCatalog() \t id: ${id}, selected: ${this.utenteSng.indexCatalogNow}`)
-  let firebase_catalogID = await get_firebaseID_currentCatalogo_B(id)
-  //console.log('firebase_catalogID: ', firebase_catalogID)
-
-  // finchè non viene implementato il caricamento del campo cid (fs) da catalogo TODO
-  // lo carico da qui
-  this.utenteSng.getListaCataloghi()[id].setCatalog_cid(firebase_catalogID)
-
-  let listaImgs = await loadImagesFromCatalog_firebaseA(firebase_catalogID)
-  //console.log( 'load images:  ', listaImgs)
-  this.utenteSng.setImages_by_cid(listaImgs, firebase_catalogID)
-  ///console.log('\n\n END load images: ', this.utenteSng.listaCataloghi.map(c=>c.listaImmagini), "\n\n")
-
-  this.currentAppCatalog = this.utenteSng.getCatalogoCurrent()
-  this.loadingDone()
-
-
-
-  //setTimeout(() => {  this.change_catalog(this.utenteSng.listaCataloghi[1].cid)   }, 2000) // TESTING 
-
-
-
-},*/
-
-
-
-
-
-
-convertUser_Utente(u : firebase.User) : Utente{
-    let displayName = u.displayName !
-    let email = u.email !
-    let photoURL = u.photoURL !
-    let uid = u.uid
-    return new Utente(displayName).setEmail(email).setPhotoURL(photoURL).setUID(uid)    
-}
-
-
-
-
-
-/*
-.catalogOwner {
-  position: absolute;
-  padding: 0.7rem;
-  margin: 0;
-  top: 0.4rem;
-  left: 0.4rem;
-  border-radius: 0.3rem;
-  background-color: rgba(255, 255, 255, 0.3);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  text-align: right;
-  vertical-align: middle;
-}
-.catalogOwner:hover {
-  font-size: 150%;
-  transition: 0.4s;
-  cursor: cell;
-}
-.catalogOwner > img { 
-  width: 1.7rem;
-  border-radius: 100%;
-  margin-right: .5rem;
-}
-.catalogOwner > span {
-  margin: 0 0 10rem 0;
-  translate: transposeY(20px);
-}
-*/
-
-
-
-
---> 
+-->

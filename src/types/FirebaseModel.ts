@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField, de
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
+import getLocalizationInfos from '@/utilities/Ip-localization-api'
 
 export let unsubscribeToRefs 
 export const USER_COL = "utentiprefs"
@@ -261,11 +262,11 @@ export async function updateUser(utente: Utente){
 /**
  *  ritorna object {location, lastIp}
  */
-export async function getLocalizationInfos(){
+/* export async function getLocalizationInfos(){
   const ip_apiReq = `http://ip-api.com/json/?fields=country,city,query` // status,message,countryCode,region,regionName,timezone,isp,org,as,zip,lat,lon
   const res = await fetch(ip_apiReq).then(res => res.json()).catch(ex=>console.log(ex))
   return {location: `${res.country} | ${res.city}` , lastIp: `${res.query}`}
-}
+} */
 
 
 /**
@@ -291,21 +292,27 @@ export async function deleteCatalog(cid: string){
 }
 
 
-export async function deleteImage(nomeDocImg: string, cid: string){
+export async function deleteImage(nomeDocImg: string, cid: string) : Promise<boolean>{
   console.log('Delete image: ', nomeDocImg, " | ", cid)
   //const imgRef = db.collection(`${CATALOGHI_COL}/${cid}/${nomeDocImg}`)
   //await updateDoc(imgRef, deleteField() )
 
-  // netnina firebase9 #5
-  const docRef = doc(db,CATALOGHI_COL,cid)
-
+  
   const exist = await existImageInsideCatalog(nomeDocImg, cid)
   console.log(exist)
+  
+  if(exist){
+    // netnina firebase9 #5
+    const docRef = doc(db,CATALOGHI_COL,cid)
+    
+  }
+  else return Promise.reject('cid not found')
 
   //const imgRef = db.collection(CATALOGHI_COL).doc(cid).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(nomeDocImg)
   
   //await deleteDoc(imgRef)
   // await deleteDoc(doc(db, CATALOGHI_COL, cid, nomeDocImg));
+  return Promise.reject('rejected, last return')
 }
 
 

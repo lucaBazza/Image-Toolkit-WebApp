@@ -1,6 +1,5 @@
 <template>
   <div class="mainViewer">
-    <!--   :class="{ sale: theme === 'sale' }  -->
     <img
         :src="imageRf.realURL"
         :class="imageRf.classStyle"
@@ -12,7 +11,7 @@
     <img v-if=" ! isImgLoaded()" class="overlaySpinner" src="@/assets/loading-io-spinner.gif"/>
     
     <span>
-      {{ imageRf.nomeFile }}
+      {{ hideExtension(imageRf.nomeFile) }}
         
         <div class="cntimgSettingsBtns">
           <button id="imgSettings"> &nbsp; </button>
@@ -93,6 +92,10 @@ function toggleEditorFn(){
  */
 function fixLinkImage(){
   console.log('fixLinkImage')
+}
+
+function hideExtension(str: string){
+  return str.replace(/\.[^/.]+$/, "")
 }
 
 onMounted( async () => {

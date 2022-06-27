@@ -29,6 +29,10 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
 ### Build and serve locally in production mode
 ```
     npm run build && serve -s dist
+
+    or
+
+    firebase serve -o 0.0.0.0
 ```
 
 ### Lints and fixes files
