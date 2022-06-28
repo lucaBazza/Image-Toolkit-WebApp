@@ -21,22 +21,23 @@ let firebaseConfig = {
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/auth'
 import 'firebase/compat/firestore'
-
+import { getApp } from "firebase/app"
 
 const firebaseApp = firebase.initializeApp(firebaseConfig)
 export const db = firebaseApp.firestore()
 export const storage = getStorage()
 export const auth = firebase.auth()
+export const functions = getFunctions(getApp())
 
 
-const EMULATOR_ENABLED = true
-
+const EMULATOR_ENABLED = process.env.NODE_ENV === 'development'
 
 /**
  *    Emulator    https://stackoverflow.com/questions/58260877/access-firebase-emulator-from-local-network
  */
  import { connectFirestoreEmulator } from "firebase/firestore"
 import { getStorage, connectStorageEmulator } from "firebase/storage"
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions"
 import { connectAuthEmulator } from "firebase/auth"
 const isEmulator = ()=>{ return location.hostname === 'localhost' || location.hostname === '192.168.1.78' }
 if( EMULATOR_ENABLED && isEmulator ){
@@ -44,6 +45,7 @@ if( EMULATOR_ENABLED && isEmulator ){
   connectFirestoreEmulator(db, addr, 8081)
   connectStorageEmulator(storage, addr, 9199)
   connectAuthEmulator(auth, `http://${addr}:9099`,{ disableWarnings: true })
+  connectFunctionsEmulator(functions, addr, 5001)
   console.log("%c" + "Firebase Emulator Mode", "color: #7289DA; -webkit-text-stroke: 2px black; font-size: 48px; font-weight: bold;");
 }
 
@@ -54,6 +56,7 @@ if( EMULATOR_ENABLED && isEmulator ){
  *    from firechat example
  */
 import {ref, onUnmounted, computed} from 'vue'
+import Settings from './types/Settings'
 export function useAuth(){
   const user = ref(null)
 

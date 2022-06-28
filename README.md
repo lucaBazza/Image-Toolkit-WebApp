@@ -68,6 +68,10 @@ usare dependecy injection per passare immagine aperta + adjustments da App.vue a
 
 usare funzionalità real time database con snapshot per utente + adjustments
 
+.
+
+Reset firebase storage rules for security
+
 
 ---
 
@@ -85,6 +89,14 @@ ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon.png
 
 .
 
+fix porte rimaste aperte
+```
+    //Find Pid
+sudo lsof -i :3000
+    //kill
+kill -9 <pid>
+
+```
 .
 
 > cool gallery for show images
