@@ -112,7 +112,7 @@ ul { list-style-type: none }
     #mainTitle{ width: 85%; margin: 4rem auto 1rem }
     .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
     .mainViewer > img:first-child{ min-width:90% }
-    .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
+    .mainViewer > span{  width: 85%; margin: 1rem 0 2rem }
     .controlBtns { top: .3rem }
     .controlBtns > button { padding: 0.2rem  }
     .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }

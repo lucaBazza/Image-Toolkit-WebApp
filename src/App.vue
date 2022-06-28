@@ -27,7 +27,6 @@
   <notifications position="bottom center" />
 </template>
 
-
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
@@ -108,8 +107,6 @@ export default defineComponent({
         if( ! await existCatalogForUtente(this.utenteSng.uid, this.utenteSng.selected_cid) )
           { console.log(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${this.utenteSng.uid} \t req: ${this.utenteSng.selected_cid}`); this.utenteSng.selectFirstAviableCatalog() }
         
-          // aggiorno firebase (?qui?)
-        updateUser(this.utenteSng)
 
           // carico immagini catalogo selezionato
         this.load_images_by_cid(this.utenteSng.selected_cid)
@@ -201,10 +198,7 @@ export default defineComponent({
   border-radius: 0.5rem;
   width: max(30%, 200px); 
   margin: 0rem auto 1rem;
-  /*font-size: 1.5rem;
-  text-transform: uppercase;
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;*/
+  /*font-size: 1.5rem;  text-transform: uppercase; -webkit-text-fill-color: transparent; -webkit-background-clip: text;*/
 }
 .upload-media {
   margin-left: 10%;
@@ -228,11 +222,12 @@ export default defineComponent({
 .googleSignIn{ 
   position: absolute; 
   top: 0; left: 0; 
-  background: rgba(2,2,2, .3); 
+  background: rgba(var(--backgroundColor), .5);
   border-radius: .5rem; 
   border: none; 
   margin: .3rem; 
   width: min(40%, 120px);
+  box-shadow: 5px 5px 10px #0005;
 }
 .googleSignIn > img{ width: 1.7rem; margin-right: .3rem; padding: .5rem; vertical-align: middle; }
 

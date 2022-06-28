@@ -9,7 +9,7 @@ import Immagine from './Immagine'
 const alsoEmpty = (v:any)=>{ return v ? v : ''}
 export const utenteConverter = {
     toFirestore: (utente) => {
-        //console.log('utenteConverter() - user toFirestore() ')
+        //console.log('utenteConverter() - user toFirestore() ', utente)
         return {
             uid: utente.uid,
             selected_cid: alsoEmpty(utente.selected_cid),
@@ -33,7 +33,7 @@ export const utenteConverter = {
         out.secretKey  = data.secretKey
         out.photoURL = data.photoURL
         out.selected_cid  = data.selected_cid
-        out.uid = data.uid
+        out.uid = data.uid  // -> ! ! ! campo doppio di snapshot.id ! ! !
         // dati salvati da userspace
         out.subscription_date = data.subscription_date
         out.lastLogin = data.lastLogin

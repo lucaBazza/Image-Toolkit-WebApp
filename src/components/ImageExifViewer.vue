@@ -17,6 +17,7 @@
         <button class="imgSettingsBtns" attr="rename"> 📋 </button>
         <button class="imgSettingsBtns" attr="delete" @click="deleteImg"> 🗑️ </button>
         <button class="imgSettingsBtns" attr="edit" @click="reqEdit">🖊️</button>
+        <button class="imgSettingsBtns" attr="reset adj" @click="resetAdj"> 🔄 </button>
         <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
       </div>
       <ul>
@@ -37,8 +38,6 @@ import { ref, onMounted } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
 import { deleteImage } from '@/types/Firebase_immagini'
-import { isType } from '@babel/types';
-import { put } from '@/utilities/GetPostPut';
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
@@ -80,6 +79,8 @@ function swapRealImage(res){
 function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
 }
+
+function resetAdj(){ console.log("ImageExifViewer.resetAdj() ") }
 
 async function deleteImg(){
   //deleteImage(props.imageRf.getNomeFile(), props.imageRf.catalogoID)
@@ -205,13 +206,13 @@ onMounted( async () => {
   background-position: center;
   background-repeat: no-repeat;*/
   content: url('./../assets/loading.gif');
-  obiject-fit: contain;
+  object-fit: contain;
   mix-blend-mode: multiply;
   
   mask-image: var(--mascheraCircolare);
   -webkit-mask-image: var(--mascheraCircolare);
 }
-.imageLoaded{ obiject-fit: cover }
+.imageLoaded{ object-fit: cover }
 
 .loading, .loadingError { mix-blend-mode: multiply }
 .loading{
@@ -236,8 +237,8 @@ onMounted( async () => {
 /* .overlaySpinner{ width: 4rem; height: 4rem; position: absolute; margin: 0 auto;}
 .overlaySpinner{ width: 50%; position: initial; margin: 0 auto; transform: translateY(-350px) } */
 .imgOverlaySpinner{ width: 50%; position: initial }
-/* #imgSettings{ */
-.cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; /* background-color: rgba(0, 0, 0, .2); */ }
+
+.cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; margin-right: -.4rem; /* background-color: rgba(0, 0, 0, .2); */ }
 .cntimgSettingsBtns > button:first-child{
   background-image: url('@/assets/3-vertical-dots.svg');
   background-repeat: no-repeat;
@@ -246,10 +247,18 @@ onMounted( async () => {
 .cntimgSettingsBtns > button:first-child:hover{ cursor: grab }
 .cntimgSettingsBtns > button:not(:first-child){ opacity: 0; }
 
+.cntimgSettingsBtns > button { background: transparent; border: none; margin-top: .7rem; }
 .cntimgSettingsBtns > button:not(:first-child):hover{ text-shadow: 10px 10px 20px #555; cursor: move; }
 
-.cntimgSettingsBtns:hover .imgSettingsBtns{ opacity: 1; transition: .3s; }
-/* #imgSettings:hover ~ .imgSettingsBtns{ opacity: 1; transition: .3s; } */
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(2){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: .3s; }
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(3){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.0s; }
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(4){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.5s; }
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(5){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 3s; }
 
-.cntimgSettingsBtns > button { background: transparent; border: none; margin-top: .7rem; }
+
+/* @keyframes fadeInBtns {
+    0% { opacity: 0 }
+    100% { opacity: 1 }
+} */
+
 </style>
