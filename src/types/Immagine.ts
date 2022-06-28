@@ -10,6 +10,7 @@ export default class Immagine implements Iterator<number>{
     id: number
     classStyle: string
     alt?: string
+    imgID: string
     catalogoID: string
     adjustmentID: string
     createdAt: Date
@@ -22,8 +23,9 @@ export default class Immagine implements Iterator<number>{
         this.src = src ? src : require("./../assets/loading.gif")
         this.realURL = src
         this.id = -1
+        this.imgID = ''
         this.classStyle = 'loading'
-        this.exifDatas = this.requireFakeExifs()
+        this.exifDatas = []
         this.catalogoID = ''
         this.adjustmentID = ''
         this.createdAt = new Date
@@ -53,17 +55,17 @@ export default class Immagine implements Iterator<number>{
         return this.alt ? this.alt : 'descrizione non prensente';
     }
     
-    requireFakeExifs() {
+    static requireFakeExifs() {
         const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
         return [
-          { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
-          { label: "ImageHeight", val: randomVal(5000,400) },
+/*           { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
+          { label: "ImageHeight", val: randomVal(5000,400) }, */
           { label: "Software", val: "Adobe Photoshop 22.1 (Macintosh)" },
           { label: "ModifyDate", val: "2021:05:24 16:07:10" },
           { label: "Copyright", val: "zabba.lucabazzanella.com" },
           { label: "Aspect ratio", val: "4/5" },
           { label: "gps", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
-          { label: "classificazione", val: this.getStelline(randomVal(0,5)) },
+          { label: "classificazione", val: "⭐".repeat(randomVal(0,5)) },
           { label: "note", val: "..." },
         ];
     }
@@ -77,7 +79,7 @@ export default class Immagine implements Iterator<number>{
         this.exifDatas = exifDatas
     }
 
-    getStelline(count: number): string{
+    getStelline(count: number){
         return "⭐".repeat(count)
     }
 

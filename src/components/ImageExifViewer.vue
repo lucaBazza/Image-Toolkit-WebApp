@@ -1,31 +1,29 @@
 <template>
   <div class="mainViewer">
     <img
-        :src="imageRf.realURL"
+        v-if="showImageRef"
+        :src="src_real"
         :class="imageRf.classStyle"
         :id=" 'img_' + imageRf.id"
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
     />
-    <img v-if=" ! isImgLoaded()" class="overlaySpinner" src="@/assets/loading-io-spinner.gif"/>
-    
+    <!-- <img v-if=" ! isImgLoaded()" class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
-        
-        <div class="cntimgSettingsBtns">
-          <button id="imgSettings"> &nbsp; </button>
-          <button class="imgSettingsBtns" attr="rename"> 📋 </button>
-          <button class="imgSettingsBtns" attr="delete" @click="deleteImg"> 🗑️ </button>
-          <button class="imgSettingsBtns" attr="edit" @click="reqEdit">🖊️</button>
-        </div>
-
+      <div class="cntimgSettingsBtns">
+        <button id="imgSettings"> &nbsp; </button>
+        <button class="imgSettingsBtns" attr="rename"> 📋 </button>
+        <button class="imgSettingsBtns" attr="delete" @click="deleteImg"> 🗑️ </button>
+        <button class="imgSettingsBtns" attr="edit" @click="reqEdit">🖊️</button>
+        <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
+      </div>
       <ul>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
         </li>
       </ul>
-      <button v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
     </span>
   </div>
   <ImageEditorModalVue 
@@ -38,22 +36,29 @@
 import { ref, onMounted } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
-import { deleteImage } from '@/types/FirebaseModel'
+import { deleteImage } from '@/types/Firebase_immagini'
+import { isType } from '@babel/types';
+import { put } from '@/utilities/GetPostPut';
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
+const emits = defineEmits(['deleteImageCallbk'])
 
 let src_real = ref(props.imageRf.src)
 let showImgEditModal = ref(false)
 let showFixButton = ref(false)
+let showImageRef = ref(true)
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
   src_real.value = require("@/assets/noImg.jpg")
+  props.imageRf.src = require("@/assets/noImg.jpg")
   props.imageRf.classStyle = 'loadingError'
   showFixButton.value = true
+  showImageRef.value = false
+  setTimeout(() => { showImageRef.value = true }, 500);
 }
 
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
@@ -76,9 +81,12 @@ function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
 }
 
-function deleteImg(){
-  deleteImage(props.imageRf.getNomeFile(), props.imageRf.catalogoID)
-  // emit('deleteImageComp', props.imageRf.getNomeFile())
+async function deleteImg(){
+  //deleteImage(props.imageRf.getNomeFile(), props.imageRf.catalogoID)
+  //  .then( res => console.log('ImageExifViewer().deleteimg() res: ', res) )
+  //  .then( () => emits('deleteImageCallbk', props.imageRf.getNomeFile()) )
+  //  .catch( ex => console.log('ImagViewer err: ',ex) )
+  emits('deleteImageCallbk', props.imageRf.imgID)
 }
 
 function toggleEditorFn(){
@@ -98,15 +106,35 @@ function hideExtension(str: string){
   return str.replace(/\.[^/.]+$/, "")
 }
 
+function getInfoSize() : {label:string, val:string}[]{
+  const obi /* :{label:string, val:string} */ = (l:string, v: undefined | any ) => { 
+      //return v ? {label: l, value: Number(v) ? `${Math.floor(Number(v)/1000)}KB` : v } : { label:'',value:''}
+      return {label: l, val: v}
+    }
+  //return [{label: 'Width', val: props.imageRf.width},{label: 'Height', val: props.imageRf.height},{label:'Size', val: `${Math.floor(props.imageRf.size!/1000)}KB` }]
+  //return [obi('Width',props.imageRf.width),obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
+  //const w = obi('Width', props.imageRf.width)
+  //return [w,obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
+  let out : {label:string, val:string}[]= []
+  if(props.imageRf.width) out.push( obi('Width', props.imageRf.width) )
+  if(props.imageRf.height) out.push( obi('Height', props.imageRf.height) )
+  if(props.imageRf.size) out.push( obi('Size', `${Math.floor(Number(props.imageRf.size)/1000)} KB`) )
+  return out
+}
+
 onMounted( async () => {
-  // console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
-  
-  props.imageRf.classStyle = 'loadingBG'
+  //console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
   
   // ATTENZIONE FETCH non è detto che funzioni correttamente, la risposta dal server è false ???
-  await fetch(props.imageRf.realURL, { mode: 'no-cors'})
-      .then(res => swapRealImage(res) )
-      .catch(ex => console.log(ex.message))
+  //await fetch(props.imageRf.realURL, { mode: 'no-cors'})
+  //    .then(res => swapRealImage(res) )
+  //    .catch(ex => console.log(ex.message))
+
+  props.imageRf.classStyle = 'loadingBG'
+
+  props.imageRf.exifDatas = [...getInfoSize(), ...Immagine.requireFakeExifs()]
+
+  swapRealImage(props.imageRf.realURL)
   
 })
 </script>
@@ -177,13 +205,13 @@ onMounted( async () => {
   background-position: center;
   background-repeat: no-repeat;*/
   content: url('./../assets/loading.gif');
-  object-fit: contain;
+  obiject-fit: contain;
   mix-blend-mode: multiply;
   
   mask-image: var(--mascheraCircolare);
   -webkit-mask-image: var(--mascheraCircolare);
 }
-.imageLoaded{ object-fit: cover }
+.imageLoaded{ obiject-fit: cover }
 
 .loading, .loadingError { mix-blend-mode: multiply }
 .loading{
@@ -205,17 +233,9 @@ onMounted( async () => {
   height: 100%;
 }*/
 
-.overlaySpinner{
-/*   width: 4rem;
-  height: 4rem;
-  position: absolute;
-  margin: 0 auto; */
-  width: 50%;
-  position: initial;
-  margin: 0 auto;
-  transform: translateY(-350px);
-}
-
+/* .overlaySpinner{ width: 4rem; height: 4rem; position: absolute; margin: 0 auto;}
+.overlaySpinner{ width: 50%; position: initial; margin: 0 auto; transform: translateY(-350px) } */
+.imgOverlaySpinner{ width: 50%; position: initial }
 /* #imgSettings{ */
 .cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; /* background-color: rgba(0, 0, 0, .2); */ }
 .cntimgSettingsBtns > button:first-child{
@@ -224,7 +244,9 @@ onMounted( async () => {
   margin-left: 0.4rem;
 }
 .cntimgSettingsBtns > button:first-child:hover{ cursor: grab }
-.cntimgSettingsBtns > button:not(:first-child){ opacity: 0;}
+.cntimgSettingsBtns > button:not(:first-child){ opacity: 0; }
+
+.cntimgSettingsBtns > button:not(:first-child):hover{ text-shadow: 10px 10px 20px #555; cursor: move; }
 
 .cntimgSettingsBtns:hover .imgSettingsBtns{ opacity: 1; transition: .3s; }
 /* #imgSettings:hover ~ .imgSettingsBtns{ opacity: 1; transition: .3s; } */

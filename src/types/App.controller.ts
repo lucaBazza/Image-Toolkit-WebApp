@@ -1,5 +1,6 @@
 import Catalogo from '@/types/Catalogo'
-import { loadImagesFromCatalog_firebaseA, getCatalog_fs, deleteCatalog, updateUser } from '@/types/FirebaseModel' 
+import { getCatalog_fs, deleteCatalog, updateUser } from '@/types/FirebaseModel' 
+import { loadImagesFromCatalog_firebaseA } from '@/types/Firebase_immagini' 
 
 
 /**

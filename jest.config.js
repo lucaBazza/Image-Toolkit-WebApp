@@ -14,5 +14,6 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!@ngrx|(?!deck.gl)|ng-dynamic)"
   ],
+  //testEnvironment: 'node'
   //globals:{ fetch, Response, Request }
 };

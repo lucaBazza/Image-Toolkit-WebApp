@@ -8,7 +8,7 @@
     <ul>
       <span v-if=" ! catalogIsReady">Catalog not ready</span>
       <li v-else v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
-        <ImageExifViewer :imageRf="img" />
+        <ImageExifViewer :imageRf="img" @deleteImageCallbk="deleteGuiImageViewer"/>
       </li>
       <em v-if=" ! catalogoProp.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </ul>
@@ -20,6 +20,7 @@
 import { ref, onMounted } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
+import { deleteImage } from '@/types/Firebase_immagini'
 
 const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
 const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
@@ -36,6 +37,16 @@ function openSortingOptions(){
 }
 function downloadAlbum(){
   console.log('downloadAlbum()')
+}
+
+// TODO: re implementare usando l'event bus
+function deleteGuiImageViewer(imgID : string){
+  console.log('CatalogForm.deleteGuiImageViewer() \t', imgID)
+  
+  deleteImage(imgID,props.catalogoProp.cid, props.catalogoProp.uid)
+
+  catalogIsReady.value = false
+  setTimeout(() => { catalogIsReady.value = true }, 500)
 }
 
 onMounted(() => {

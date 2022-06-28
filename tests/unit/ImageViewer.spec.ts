@@ -1,6 +1,5 @@
 import { shallowMount } from "@vue/test-utils"
 import Immagine from "../../src/types/Immagine"
-// import AspectRatio from './../../src/utilities/AspectRatio'
 import ImageExifViewer from './../../src/components/ImageExifViewer.vue'
 
 describe("ImageExifViewer.vue", () => {
@@ -9,6 +8,6 @@ describe("ImageExifViewer.vue", () => {
     const wrapper = shallowMount(ImageExifViewer, {
       props: { imageRf }
     });
-    expect(wrapper.text()).toMatch( imageRf.src );
+    expect(wrapper.text()).toMatch( imageRf.src.replace(/\.[^/.]+$/, "") ) // hideExtension()
   });
 })

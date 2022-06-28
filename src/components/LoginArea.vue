@@ -19,7 +19,8 @@ import { ref } from 'vue'
 import Utente from '@/types/Utente'
 import Catalogo from '@/types/Catalogo'
 import { useAuth } from '@/firebase'
-import { addCatalogo2 } from '@/types/FirebaseModel'
+import { addCatalogo3 } from '@/types/FirebaseModel'
+import { serverTimestamp } from '@firebase/firestore'
 
 const props = defineProps({       utente: { type: Utente, required: true }   })
 const emits = defineEmits(['change_catalog','notificate', 'add_catalog'])
@@ -37,11 +38,10 @@ const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( 
  */
 const addNewCatalogo = (e) =>{
   if( e.target.value == '' ) return
-  let newCatalogo = new Catalogo(props.utente.nome, e.target.value)
-  e.target.value = ''
-  //props.utente.listaCataloghi.push(newCatalogo)
-  addCatalogo2(newCatalogo, props.utente.uid)
+  addCatalogo3(new Catalogo(props.utente.nome, e.target.value).setCatalogUserID(props.utente.uid))
     .then( res_cid => emits('add_catalog', res_cid) )
+    .catch( ex => emits('notificate',ex))
+  e.target.value = ''
 }
 
 function change_catalog(cid){ 

@@ -4,8 +4,9 @@
 
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/storage'
-import { db } from '@/firebase'
-import { addImageToCatalog } from './../types/FirebaseModel'
+// import { db } from '@/firebase'
+//import { addImageToCatalog2 } from './../types/FirebaseModel'
+import { addImageToCatalog2 } from './../types/Firebase_immagini'
 
 export default async function uploadImageCodeInspire(e, cid){
     //console.log(e.target.files, catalogID)
@@ -33,15 +34,8 @@ export function uploadSingleFile_firestore(file, cid, image){
 }
 
 function prepareToFirestore(image, downloadURL){
-    /*let i = new Immagine('')    //.setRealURL(downloadURL)
-    i.nomeFile = file.nomeFile
-    i.realURL = downloadURL
-    i.catalogoID = cid
-    i.width = size.width
-    i.height = size.height
-    i.size = size.size*/
     image.realURL = downloadURL
-    addImageToCatalog(image)
+    addImageToCatalog2(image).then( res => console.log('prepareToFirestore().addImageTocatlaog2().then() res: ', res) )
 }
 
 
@@ -50,7 +44,7 @@ function prepareToFirestore(image, downloadURL){
  *      -> viene inserito un documento nel catalogo selezionato con nome uguale all'immagine, all'intenro i dati
  *      -> vedere se tramite FS function è possibile triggerare l'inserimento automatico
  */
-import { CATALOGHI_COL } from './../types/FirebaseModel'
+/*import { CATALOGHI_COL } from './../types/FirebaseModel'
 import Immagine from '../types/Immagine'
 function updateCollection(imgName, downloadURL, cid){
     //console.log(`updateCollection() Completed file upload 🎉 \n img: ${imgName} \t cid: ${cid} \n File aviable at : \n ${downloadURL}`)
@@ -77,7 +71,7 @@ function updateCollection(imgName, downloadURL, cid){
                  .catch( ex => console.error('updateCollection() Error adding document: ', ex) )
         
 }
-
+*/
 
 
 
@@ -91,7 +85,7 @@ function updateCollection(imgName, downloadURL, cid){
  * -
  * 
  */
-function uploadImageCodeInspire_singleFile(e){
+/*function uploadImageCodeInspire_singleFile(e){
     let file = e.target.files[0]
     console.log("uploadImageCodeInspire() ", file)
 
@@ -138,4 +132,4 @@ function updateCollection_old(imgName, downloadURL){
     .catch(function (error) {
         console.error('Error adding document: ', error);
     })
-}
+}*/

@@ -9,8 +9,8 @@ export default class Catalogo{
     uid: string
     listaImmagini: Immagine[]
     secretkey: string
-    id: number
-    createdAt: Date
+    id?: number
+    createdAt?: Date
     // TODO implementare cid:  catalog id cioè il valore preso da firebase
     cid: string
 
@@ -21,7 +21,6 @@ export default class Catalogo{
         this.secretkey = ''
         this.listaImmagini = []
         this.id = -1
-        this.createdAt = new Date
         this.cid = ''
     }
 
@@ -43,6 +42,12 @@ export default class Catalogo{
 
     setCatalog_cid(cid: string){
         this.cid = cid
+        return this
+    }
+
+
+    setCreateDate_fs(serverTimestamp : any){
+        this.createdAt = serverTimestamp
         return this
     }
 

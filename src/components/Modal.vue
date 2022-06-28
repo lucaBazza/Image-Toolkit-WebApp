@@ -41,7 +41,7 @@ export default defineComponent({
   left: 0;
   position: fixed;
   backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(var(--backgroundColor), 0.5);
   width: 100vw;
   height: 100%;
 }
@@ -51,7 +51,7 @@ export default defineComponent({
   margin: 15vh auto;
   border-radius: 1rem;
   overflow: visible;
-  box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 10px 20px 30px rgba(0,0,0, .3);
   backdrop-filter: blur(3px);
   width: max(40%,280px);
   height: min(70vh, 800px)

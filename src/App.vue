@@ -42,7 +42,8 @@ import Immagine from './types/Immagine'
  
 import { useAuth, auth } from '@/firebase'
 import { uploadImageCodeInspire, uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
-import { getCataloghi_C, loadImagesFromCatalog_firebaseA, loadUserSettings, updateUser, existCatalogForUtente } from './types/FirebaseModel'
+import { getCataloghi_C, loadUserSettings, updateUser, existCatalogForUtente } from './types/FirebaseModel'
+import { updateImage, getImagesID_byCid, loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
 import { add_catalog_logic, delete_catalog_logic, change_catalog_logic } from '@/types/App.controller'
 /**
  *    Roadmap
@@ -133,7 +134,7 @@ export default defineComponent({
     deleteCatalog(cid){ 
       delete_catalog_logic(this, cid)
     },
-    async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSizes: object /* {width, height} */){
+    async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSizes: object){
       let i = new Immagine(imgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest').setCatalogID(this.utenteSng.selected_cid)
       i.width = imageSizes['width']
       i.height = imageSizes['height']
@@ -168,8 +169,8 @@ export default defineComponent({
         this.showCatalogo = false
         this.isLoading = true
       }
-    })
-    
+    }) 
+
   }
 })
 </script>

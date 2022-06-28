@@ -35,25 +35,18 @@ WebApp VueJS che permette di gestire un catalogo di immagini caricate dall'utent
     firebase serve -o 0.0.0.0
 ```
 
-### Lints and fixes files
-```
-    npm run lint
-```
-
 ### Testing
 ```
     npm run test
+    npm run test CatalogoFormExample
 ```
 
 ### Firebase deploy
 ```
-    firebase deploy
-
-    firebase emulators:export seed
-    firebase emulators:start --import seed
+firebase deploy
+firebase emulators:export seed
+firebase emulators:start --import seed
 ```
-
-
 
 .
 
@@ -63,12 +56,22 @@ Dockerization (frontend + firebase emulator + raspbarry porting)
 
 .
 
+usare refs + reactive per passare il catalogo utente direttamente senza lista current
+
 .
+
+usare dependecy injection per passare immagine aperta + adjustments da App.vue a ImageViewer.vue etc.
+
+> https://www.youtube.com/watch?v=dOxjzgZpTfk
+
+.
+
+usare funzionalità real time database con snapshot per utente + adjustments
+
 
 ---
 
 # Note varie
-
 
 PWA > Apple Icon Scaling using ffmpeg
 ```js
@@ -82,6 +85,7 @@ ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon.png
 
 .
 
+.
 
 > cool gallery for show images
 
@@ -100,7 +104,7 @@ https://codepen.io/gzkdev/details/VwKqjGm
 .
 
 
-# check addizionali firebase
+# Check addizionali installazione firebase
 
 > firebase function modules
 ```
@@ -119,4 +123,11 @@ firebase serve -o 0.0.0.0  (on local-network)
 brew install java11
 sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
 java -version
+```
+
+---
+
+## Lints and fixes files
+```
+    npm run lint
 ```
