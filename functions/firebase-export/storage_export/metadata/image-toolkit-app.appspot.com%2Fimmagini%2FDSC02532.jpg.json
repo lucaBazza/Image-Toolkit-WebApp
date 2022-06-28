@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC02532.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656277355219,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "66459e83-84bb-4b06-b578-b60d6dd6729d"
+  ],
+  "etag": "eeOkEe6ApTGZPn/n+o6NeYfO3fo",
+  "timeCreated": "2022-06-26T21:02:35.218Z",
+  "updated": "2022-06-26T21:02:35.226Z",
+  "size": 1139751,
+  "md5Hash": "6ZCa+R069tqrTEUBUEAEBA==",
+  "crc32c": "763788079"
+}

@@ -1,30 +1,26 @@
 <template>
   <div class="backdrop" @v-click-away="closeModal">
-    <div class="modal" :class="{ sale: theme === 'sale' }">
-      <!-- <button class="altoDxBtn" @click="closeModal">❌</button> -->
-      <span>Tutorial</span><button @click="closeModal">❌</button>
+    <div class="modal">
+      <span>Informations</span><button @click="closeModal">❌</button><br>
       <h1>Image toolkit App</h1>
       <p>Manage easly your images:</p>
       <ul>
-        <li>Log In</li>
-        <li>Create a catalog</li>
-        <li>Upload your photos</li>
-        <li>Organize / make diffs</li>
-        <li>Check your metadatas</li>
-        <li>Edit</li>
-        <li>Presets 🪄 </li>
-        <li>Export </li>
+        <li attr="google account">Log In</li>
+        <li attr="from the user area">Create catalogs</li>
+        <li attr="based on your plan, with the cloud function">Upload your photos</li>
+        <li attr="check the sort button">Organize / make diffs</li>
+        <li attr="gps, copyright, exifs">Update your metadatas</li>
+        <li attr="stylize you photo with our adjustment tools">Edit</li>
+        <li attr="Combine adjustments, luts and more recursively on your catalog">Presets 🪄 </li>
+        <li attr="Get back your photos locally">Export </li>
       </ul>
-      <button @click="openDocumentation">Need help? 📖</button>
+      <a @click="openDocumentation" href='mailto:info@lucabazzanella.com?subject=ImageToolkit'>Need more help? 📖</a>
     </div>
   </div>
-  <!--  <div v-else>
-            <button class="altoDxBtn" @click="closeModal">ℹ️</button>
-        </div> -->
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   props: ["theme"],
@@ -33,61 +29,44 @@ export default defineComponent({
       console.log("closeModal");
       this.$emit("updateCloseMain");
     },
-    openDocumentation(){
-      console.log('openDocumentation()')
-    }
+    openDocumentation(){ console.log('openDocumentation()') }
   },
 })
 </script>
 
-<style scoped>
-/** scoped permette di avere solo lo stile applicato 
-                al componente/templates e non globale*/
+<style>
 .backdrop {
   z-index: 2;
   top: 0;
   left: 0;
   position: fixed;
-  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  background: rgba(var(--backgroundColor), 0.5);
   width: 100vw;
   height: 100%;
 }
 .modal {
+  color: var(--mainText);
   padding: 20px;
-  margin: 40vh auto;
+  margin: 15vh auto;
   border-radius: 1rem;
   overflow: visible;
+  box-shadow: 10px 20px 30px rgba(0,0,0, .3);
+  backdrop-filter: blur(3px);
+  width: max(40%,280px);
+  height: min(70vh, 800px)
 }
-.modal > p{
-  border-bottom: 1px solid rgba(8,8,8,.5);
-}
-.modal > span {
-  margin-top: 1.5rem;
-  font-size: 1.5rem;
-}
-.modal > button {
-  font-size: 1rem;
-  background: transparent;
-  border: none;
-  float: right;
-  cursor: grabbing;
-  color: var(--mainText)
-}
-.modal > button:hover{ cursor: grab }  
-.modal > button:last-child{ margin: -2rem auto }  
+.modal > p{ border-bottom: 2px solid var(--backText) }
+.modal > span { margin-top: 1.5rem; font-size: 1.5rem }
+.modal button { font-size: 1rem; background: transparent; border: none; float: right; cursor: grabbing }
+.modal > button { transform: translateY(-2rem) translateX(2rem); }
+.modal > button:hover{ cursor: grab }
+.modal > a{ float: right }
+/*.modal.sale { background: var(--background_mod); width: max(40%,280px) }*/
 
-.modal.sale {
-  background: var(--background_mod);
-  color: var(--mainText);
-  width: min(90%,400px);
-}
-.modal.sale h1 {
-  color: var(--mainText);
-}
+.modal > ul { padding-left: 0; margin:0; text-align: left; height: min(80vh, 600px); overflow-y: scroll; }
+.modal > ul > li { padding: .9rem 0 }
+.modal > ul > li:hover + .modal > ul > li::after{ animation: fadeIn .3s; background-color: yellow; }
+.modal > ul > li::after{ display: grid; margin-left: .8rem; content: attr(attr); animation: fadeIn .3s; color: var(--backText); font-style: italic }
 
-.modal > ul { 
-  margin-left:10%; 
-  text-align: left;
-}
-.modal > ul > li{ list-style-type: disclosure-closed }
 </style>

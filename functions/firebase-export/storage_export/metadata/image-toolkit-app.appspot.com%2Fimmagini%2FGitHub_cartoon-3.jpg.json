@@ -1,0 +1,20 @@
+{
+  "name": "immagini/GitHub_cartoon-3.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656166597366,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "9ba0d4d6-252b-4398-9825-e5f13c5af6cf"
+  ],
+  "etag": "c+4lNDNhW7VesG5bhMdB6eGi/PY",
+  "timeCreated": "2022-06-25T14:16:37.365Z",
+  "updated": "2022-06-25T14:16:37.367Z",
+  "size": 230651,
+  "md5Hash": "CJHK9PtEo5IjY2p9abeBgw==",
+  "crc32c": "472100641"
+}

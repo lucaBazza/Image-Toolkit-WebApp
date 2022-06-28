@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC09213-ProPs.webp",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/webp",
+  "metageneration": 1,
+  "generation": 1656439678775,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "77ba47c0-63c6-4a1c-8fd0-60d08a1ecdb5"
+  ],
+  "etag": "OtfNefv1yaiB+6UVXNRbSrmrf+Y",
+  "timeCreated": "2022-06-28T18:07:58.774Z",
+  "updated": "2022-06-28T18:07:58.784Z",
+  "size": 452004,
+  "md5Hash": "Fp2fOxrm7m4zLhosi8I8dA==",
+  "crc32c": "2868411758"
+}

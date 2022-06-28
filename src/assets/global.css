@@ -1,39 +1,45 @@
 /*
-*       DARK MODE
-    attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
+*       D A R K     M O D E      V A R S 
+*
+*    attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
 */
-body{
-    --varExample: #000;
-    --backgroundColor: #fff;
-    --background_mod: #ddd;
-    --mainText: #000;
-    --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
-}
 .darkMode{
-    --backgroundColor: #111;
+    --backgroundColor: 16,16,16;
     --background_mod: #333;
     --mainText: #fff;
+    --backText: #ddd;
     --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
+}
+body{
+    --varExample: #000;
+    --backgroundColor: 239,239,239;
+    --background_mod: #ddd;
+    --mainText: #000;
+    --backText: #222;
+    --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
+    --mascheraCircolare: radial-gradient(black 0%, rgba(0, 0, 0, 0.2) 80%);
 }
 
 
 /*
-    B A S E     D E C L A R A T I O N S
+    B A S E     D E C L A R A T I O N S     +       A N I M A T I O N $
 */
+* { 
+    color: var(--mainText);
+    font-family: 'Times New Roman', Times, serif;
+}
 body{
     background: var(--homeBackGradinet) no-repeat;
-    background-size: 2000% 2000%;
+    background-size: 8000% 8000%;
     animation: gradient 10s ease infinite;
-    -moz-animation: gradient 10s ease infinite;
-
-    color: var(--mainText);
-    min-width: 300px;
+    -moz-animation: gradient 10s ease infinite;    
 }
 
-.headerImg { content: url("./DSC09538-ProPs.webp") }
-.darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
+.headerImg { content: url("./DSC09538-ProPs_16x9.jpg") }
+.darkMode .headerImg{ content: url("./DSC09538-ProPs_16x9-darkMode.jpg") }
 
-h1, h2, h3{ color: var(--mainText) }
+/*h1, h2, h3, h4, h5, p{ color: var(--mainText) }*/
+ul { list-style-type: none }
 
 @keyframes gradient {
     0% { background-position: 0% 50% }
@@ -41,12 +47,21 @@ h1, h2, h3{ color: var(--mainText) }
     100% { background-position: 0% 50% }
 }
 
+@keyframes fadeIn {
+    0% { opacity: 0 }
+    100% { opacity: 1 }
+}
+
 
 
 /*
-    C U S T O M     I M A G E       E D I T O R
+
+    C U S T O M     I M A G E       E D I T O R     ||      L A N D S C A P E
+
 */
 @media only screen and (orientation: landscape){
+    .headerImg { content: url("./DSC09538-ProPs.webp") }
+    .darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
     .imgEditorModal{ 
         display: flex; 
         flex-flow: row  wrap; 
@@ -56,21 +71,20 @@ h1, h2, h3{ color: var(--mainText) }
         margin: 1rem;
         margin-left: max(10%, 1rem);
     }
-    .imgEditorModal > ul{
-        width: max(30%, 400px );
-
-    }
+    .imgEditorModal > ul{ width: max(30%, 400px ) }
 }
 
 
 
 /*
+
     P R O D U C T I O N     M O D E     S T Y L E
+
 */
 .productionMode{ animation: action .5s infinite  alternate }
 .productionMode > h2{
   border: 2px solid gray;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(var(--backgroundColor),.3);
   border-radius: 1rem;
   padding: 1rem;
   width: max(50%,300px);
@@ -89,57 +103,41 @@ h1, h2, h3{ color: var(--mainText) }
 
 
 /*
-M E D I A   Q U E R Y E S
+
+    M E D I A   Q U E R Y E S
+
 */
 @media screen and ( max-width: 650px ){           /* SMALL DEVICES */
-    .mainViewer > img{ min-width:90% }
-    .mainViewer > span{  width: 80%; margin-bottom: 2rem  }
-    .mainViewer{
-        display: grid;
-        min-width: 330px;
-        height: auto;
-        place-items: center;
-    }
-    .catalogDiv > p {
-        width: 100%;
-        margin: 3rem 0;
-    }
-    .loginForm{
-        margin: 1rem;
-        width: auto;
-    }
-    .loginForm > input{ margin: 1rem .2rem }
-
-    .imgEditorModal{ height: 90vh; overflow: hidden; }
-    .imgEditorModal > button { top: 1rem; right: 1rem; }
-    .imgEditorModal > img {
-        width: 90%;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-    } 
-    .imgEditorModal > ul { 
-        width: max(95%, 300px );
-        
-        overflow-y: auto;
-        height: max( 50%, 500px);
-    }
+    .headerImg{ height: 100vh }
+    #mainTitle{ width: 85%; margin: 4rem auto 1rem }
+    .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
+    .mainViewer > img:first-child{ min-width:90% }
+    .mainViewer > span{  width: 85%; margin: 1rem 0 2rem }
+    .controlBtns { top: .3rem }
+    .controlBtns > button { padding: 0.2rem  }
+    .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }
+    .catalogDiv > h3 { width: max(90%, 250px) }
+    .dropzone{ width: 95% }
+    .loginForm{ margin: 1rem; width: auto }
+    .loginForm > button { width: 95% }
+    .loginForm > ul > input[type=text] { width: 88% }
+    .loginForm > ul > li { text-align: center }
+    .loginForm > ul > li > b { display: none }
+    .imgEditorModal{ height: 90vh; overflow: hidden; margin: 1rem }
+    .imgEditorModal > button { top: 1rem; right: 1rem }
+    .imgEditorModal > img { width: 90%; margin-top: 1rem; margin-bottom: 1rem }
+    .imgEditorModal > ul { width: max(95%, 300px ); overflow-y: auto; height: max( 50%, 500px) }
+    .imgEditorModal > ul > li { width: 90% }
+    .avatar{ margin: .2rem; padding-right:0 ; width: min(30%, 120px); overflow: hidden; box-shadow: 5px 10px 15px rgba(0,0,0,.3) }
+    .modal { margin-top: 5vh }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */
-    .catalogDiv > ul{
-        display: flex;
-        flex-flow: row  wrap;
-        width: 96%;
-        margin: 0 auto;
-    }
+    .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto }
     .catalogDiv > ul > li{ flex: 1 1 0px }
 }
 
-@media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES / 4K */
+@media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */
     .mainViewer{ min-width: 750px }
-
-    .imgEditorModal{
-        width: 50%;
-        margin: 5% auto;
-    }
+    .imgEditorModal{ width: 50%; margin: 5% auto }
 }

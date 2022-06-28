@@ -1,0 +1,20 @@
+{
+  "name": "immagini/image_8da5a5df-e0e2-44cd-849d-e63f446a47bb20220620_074737.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656166304283,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "5978bcc3-f567-4e9a-a99b-1ec474424275"
+  ],
+  "etag": "Fd9Y3mBNSLq+SDSu55oNr5O2ol0",
+  "timeCreated": "2022-06-25T14:11:44.282Z",
+  "updated": "2022-06-25T14:11:44.283Z",
+  "size": 236496,
+  "md5Hash": "Yc6bGnx3yJ2AfnEMDQXFSQ==",
+  "crc32c": "4117551255"
+}

@@ -11,7 +11,7 @@ var isReacheable = false;
 // https://javascript.info/fetch-crossorigin
 export default async function FetchUser(user, password, secretKey) : Promise<Utente>{
       console.log("FetchUser()")
-      var helpUser = new Utente('','','');
+      var helpUser = new Utente(''/*,'',''*/);
       const urlRequest = Settings.getInstance().urlImageServer + "/user";
 
         // CONTROLLI INIZIALI
@@ -64,9 +64,11 @@ export default async function FetchUser(user, password, secretKey) : Promise<Ute
         return helpUser
 
         // CREO UTENTE DA RESPONSE
-      const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo, cat.secretKey ))
-      helpUser = new Utente(data.nome, data.password, helpListaCat ).setEmail(data.email)
-      helpUser.setCurrentCatalog(data.indexCatalogNow)     
+      const helpListaCat : Array<Catalogo> = data.listaCataloghi.map(cat => new Catalogo(cat.proprietario, cat.titolo /*, cat.secretKey*/ ))
+      helpUser = new Utente(data.nome/*, data.password, helpListaCat*/ ).setEmail(data.email).setListaCataloghi(helpListaCat)
+      
+      // TODO: metodo obsoleto, non usare id ma Catalog ID di firebase
+      //helpUser.setCurrentCatalog(data.indexCatalogNow)     
 
       return helpUser
 }

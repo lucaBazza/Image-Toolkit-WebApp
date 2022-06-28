@@ -4,36 +4,73 @@ import Immagine from "./Immagine"
 //interface Catalogo{
 export default class Catalogo{
 
-    private _titolo: string
+    titolo: string
     proprietario: string
+    uid: string
     listaImmagini: Immagine[]
-    secretkey: string | undefined
-    static id: number = 0
+    secretkey: string
+    id?: number
+    createdAt?: Date
+    // TODO implementare cid:  catalog id cioè il valore preso da firebase
+    cid: string
 
-    constructor(proprietario: string, titolo: string, id: number) {
-        this._titolo = titolo
+    constructor(proprietario: string, titolo: string) {
+        this.titolo = titolo
         this.proprietario = proprietario
+        this.uid = ''
+        this.secretkey = ''
         this.listaImmagini = []
-        Catalogo.id = ++Catalogo.id     //this.id = id
-
-        //console.log(`Catalogo costruito ${titolo} \t- id: ${Catalogo.id}`)
+        this.id = -1
+        this.cid = ''
     }
 
-    setListaImmagini(listaImmagini: Immagine[]) {
+    setListaImmagini(listaImmagini: Immagine[]) : Catalogo {
+        console.log('Catalogo.ts setListaImmagini() \t',this.listaImmagini)
         this.listaImmagini = listaImmagini
+        return this
+    }
+    
+    setCatalogID(id : number){
+        this.id = id
+        return this
     }
 
-    public get titolo(): string {
-        return this._titolo
+    setCatalogUserID(uid : string){
+        this.uid = uid
+        return this
     }
-    public set titolo(value: string) {
-        this._titolo = value
-    }       
 
-    getCurrentId():number{
+    setCatalog_cid(cid: string){
+        this.cid = cid
+        return this
+    }
+
+
+    setCreateDate_fs(serverTimestamp : any){
+        this.createdAt = serverTimestamp
+        return this
+    }
+
+    /*
+    toString(){
+        return 'Catalog: ' + this.titolo
+    }
+    public getTitolo(): string {
+        return this.titolo
+    }
+    public setTitolo(value: string) {
+        this.titolo = value
+    }  
+    */     
+
+    /*
+    getCurrentId() : number{
         return Catalogo.id
     }
-
+    getUid(): string{
+        return this.uid;
+    }
+    */
 }
 
 interface Catalogo_extended extends Catalogo {
