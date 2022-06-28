@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC01960.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656420944845,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "3b9d9ca2-0055-4a62-bc4b-c20f475507fb"
+  ],
+  "etag": "wgndyU+unbhyaUi/LaI8y81eXME",
+  "timeCreated": "2022-06-28T12:55:44.844Z",
+  "updated": "2022-06-28T12:55:44.851Z",
+  "size": 929531,
+  "md5Hash": "GQ1co3/mMc2MUyXDYOiMlA==",
+  "crc32c": "31829080"
+}

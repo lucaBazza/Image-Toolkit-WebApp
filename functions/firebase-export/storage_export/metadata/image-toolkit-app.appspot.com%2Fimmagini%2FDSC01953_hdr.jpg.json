@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC01953_hdr.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656420944833,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "a050ddbe-6905-47b5-93da-44b93371358a"
+  ],
+  "etag": "qWVzdtxwJ66Gzvjvd1yTB5bP/wA",
+  "timeCreated": "2022-06-28T12:55:44.832Z",
+  "updated": "2022-06-28T12:55:44.838Z",
+  "size": 902041,
+  "md5Hash": "1G4yt52b1o6CD1dwcVO13A==",
+  "crc32c": "697197263"
+}
