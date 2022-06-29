@@ -26,7 +26,11 @@ export default class Settings{
     }
 
     public isDevelopMode(): boolean{
-        return process.env.NODE_ENV=='development'
+        return process.env.NODE_ENV==='development'
+    }
+
+    public isProductionMode(): boolean{
+        return process.env.NODE_ENV==='production'
     }
 
     /**

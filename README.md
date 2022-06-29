@@ -91,10 +91,10 @@ ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon.png
 
 fix porte rimaste aperte
 ```
-    //Find Pid
-sudo lsof -i :3000
-    //kill
-kill -9 <pid>
+sudo lsof -i :3000  //Find Pid
+kill -9 <pid>    //kill
+
+lsof -t -i :8081 | xargs kill -9
 
 ```
 .

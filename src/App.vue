@@ -8,7 +8,7 @@
   <nav class="controlBtns">
       <button @click="toggleDarkModeBtn">🌓</button>
       <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
-      <button @click="toggleCatalogMode" v-if="! isLoading" >📚</button>
+      <button @click="toggleCatalogMode" v-if="isLogin" >📚</button>
       <button @click="toggleModalInfos">ℹ️</button>
   </nav>
 
@@ -20,7 +20,7 @@
 
   <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
 
-  <CatalogoForm v-if="showCatalogo && ( ! isLoading )" :catalogoProp="currentAppCatalog" @deleteCatalog="deleteCatalog"/>
+  <CatalogoForm v-if="showCatalogo" :catalogoProp="currentAppCatalog" @deleteCatalog="deleteCatalog"/>
 
   <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div>
 
@@ -40,9 +40,9 @@ import Catalogo from './types/Catalogo'
 import Immagine from './types/Immagine'
  
 import { useAuth, auth } from '@/firebase'
-import { uploadImageCodeInspire, uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
+import { uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
 import { getCataloghi_C, loadUserSettings, updateUser, existCatalogForUtente } from './types/FirebaseModel'
-import { updateImage, getImagesID_byCid, loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
+import { loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
 import { add_catalog_logic, delete_catalog_logic, change_catalog_logic } from '@/types/App.controller'
 /**
  *    Roadmap
@@ -54,6 +54,7 @@ import { add_catalog_logic, delete_catalog_logic, change_catalog_logic } from '@
  * 
  *  . TODO quando carica un catalogo, impostare random come sfondo una delle immagini ?
  *  . TODO registrazione by mail
+ *  . Implementare ML5.js per classificare immagini
 */
 
 export default defineComponent({
@@ -62,13 +63,12 @@ export default defineComponent({
   setup(){
     let utenteSng = new Utente('')
     let currentAppCatalog = ref(new Catalogo('',''))
-    const isProductionBuild = ! Settings.getInstance().isDevelopMode()
+    const isProductionBuild = Settings.getInstance().isProductionMode()
     const { user, isLogin, signIn, unsubscribe} = useAuth()
 
-    let isLoading = ref(true)       // caricamento del catalogo aperto
     let showModalInfos = ref(false)
     let showUploadMode = ref(false)
-    let showCatalogo = ref(true)
+    let showCatalogo = ref(false)
     let showLogInArea = ref(false)
  
     const toggleModalInfos = ()=>{ showModalInfos.value = ! showModalInfos.value }
@@ -77,14 +77,12 @@ export default defineComponent({
     const openUserSettings = ()=>{ showLogInArea.value = ! showLogInArea.value }
     const postCloseLoggin = ()=>{ toggleModalInfos() }
     const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
-    const loadingDone = ()=>{ console.log("loading user data done 😊"); isLoading.value = false }
     const signIn_utente = ()=>{ signIn() }
 
-    return {  utenteSng, isLoading,
-              showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
-              toggleModalInfos, toggleUploadMode, toggleCatalogMode, openUserSettings, postCloseLoggin, toggleDarkModeBtn, loadingDone,
+    return {  showModalInfos, showUploadMode, showCatalogo, showLogInArea, 
+              toggleModalInfos, toggleUploadMode, toggleCatalogMode, postCloseLoggin, toggleDarkModeBtn, openUserSettings,
               currentAppCatalog, isProductionBuild,
-              user, unsubscribe, isLogin, signIn, signIn_utente }
+              utenteSng, user, unsubscribe, isLogin, signIn, signIn_utente }
   },
   methods: {
     /**
@@ -107,10 +105,9 @@ export default defineComponent({
         if( ! await existCatalogForUtente(this.utenteSng.uid, this.utenteSng.selected_cid) )
           { console.log(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${this.utenteSng.uid} \t req: ${this.utenteSng.selected_cid}`); this.utenteSng.selectFirstAviableCatalog() }
         
-
           // carico immagini catalogo selezionato
         this.load_images_by_cid(this.utenteSng.selected_cid)
-              .then( (current_catalog)=> { 
+              .then( (current_catalog) => { 
                             this.currentAppCatalog = current_catalog
                             this.loadingDone()
                             return this.utenteSng.getCataloghi_NON_sel()
@@ -131,6 +128,7 @@ export default defineComponent({
     deleteCatalog(cid){ 
       delete_catalog_logic(this, cid)
     },
+    loadingDone(){ console.log("loading user data done 😊"); this.showCatalogo = true },
     async requestImageUpload(file: HTMLInputElement, imgBase64: string, imageSizes: object){
       let i = new Immagine(imgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest').setCatalogID(this.utenteSng.selected_cid)
       i.width = imageSizes['width']
@@ -164,7 +162,6 @@ export default defineComponent({
         this.utenteSng = new Utente('')
         this.showLogInArea = false
         this.showCatalogo = false
-        this.isLoading = true
       }
     }) 
 

@@ -30,7 +30,7 @@ export const auth = firebase.auth()
 export const functions = getFunctions(getApp())
 
 
-const EMULATOR_ENABLED = process.env.NODE_ENV === 'development'
+const EMULATOR_ENABLED = Settings.getInstance().isDevelopMode() //process.env.NODE_ENV === 'development'
 
 /**
  *    Emulator    https://stackoverflow.com/questions/58260877/access-firebase-emulator-from-local-network
@@ -74,6 +74,7 @@ export function useAuth(){
 
   return { user, isLogin, signIn, signOut }
 }
+
 
 
 
