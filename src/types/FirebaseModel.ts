@@ -38,7 +38,7 @@ export async function addCatalogo3(catalogo : Catalogo ){
 export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
   const displayName = u.displayName !
   const localization = await getLocalizationInfos()
-  // console.log('current ip is: ', localization.lastIp)
+  // console.log('current ip is: ', localization.lastIp, localization)
   const loadFromFirebase = async () => {
     const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
     if(docSnapshot.exists){
