@@ -1,21 +1,25 @@
 <template>
     <div class="avatar">
-        <img :src="photoURL">
+        <img :src="photoURL" @error="imageLoadError">
         <span>{{nomeShorted}}</span>
     </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 
 const props = defineProps({
-    nome: {     type: String, default: 'Unknown' },
-    photoURL: { type: String, default: require('@/assets/loading-io-spinner.gif') }
+  nome: {     type: String, default: 'Unknown' },
+    photoURL: { type: String, default: require('@/assets/logo-user-abstract.svg') }
 })
+
+function imageLoadError(){ photoURL.value = require('@/assets/logo-user-abstract.svg') }
 
 const nameOnly = (nomeCompleto:string) => { return nomeCompleto.includes(' ') ? nomeCompleto.split(' ')[0] : '' }
 
 let nomeShorted = nameOnly( props.nome )
-let photoURL = props.photoURL
+let photoURL = ref(props.photoURL)
 
 </script>
 
