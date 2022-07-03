@@ -21,6 +21,7 @@
         <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
       </div>
       <ul>
+        <li><svg src="@/assets/size-svgrepo-com.svg" class="iconSVG"></svg>Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size/1000)}} Kb</span></li>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
         </li>
@@ -133,7 +134,8 @@ onMounted( async () => {
 
   props.imageRf.classStyle = 'loadingBG'
 
-  props.imageRf.exifDatas = [...getInfoSize(), ...Immagine.requireFakeExifs()]
+  //props.imageRf.exifDatas = [...getInfoSize(), ...Immagine.requireFakeExifs()]
+  props.imageRf.exifDatas = Immagine.requireFakeExifs()
 
   swapRealImage(props.imageRf.realURL)
   
@@ -171,12 +173,13 @@ onMounted( async () => {
   margin: 0.4rem;
   transition: 0.2s;
 }
-/*.mainViewer > img[data-src]{ opacity: 1 }*/
 .mainViewer > span {
   flex: 50%;
   margin: 1rem;
   overflow: hidden;
   overflow-y: scroll;
+  scrollbar-width: thin; 
+  scrollbar-color: red;
 }
 .mainViewer > span::first-line {
   line-height: 2rem;
@@ -193,7 +196,10 @@ onMounted( async () => {
   list-style-type: none;
   text-align: left;
   padding: .2rem 0;
+  color: var(--backText);
+  font-size: 90%;
 }
+
 /*
 *     http://css3.bradshawenterprises.com/cfimg/
 */
@@ -260,5 +266,7 @@ onMounted( async () => {
     0% { opacity: 0 }
     100% { opacity: 1 }
 } */
+
+.iconSVG{ width: 1rem; height: 1rem; object-fit: cover; }
 
 </style>

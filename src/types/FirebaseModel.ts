@@ -52,8 +52,8 @@ export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
       const ref = doc(db, USER_COL, u.uid).withConverter(utenteConverter)
       
       const newUtente = new Utente(displayName).setUID(u.uid)
-                                                  .setSubscription_date(/* firebase.firestore.FieldValue. */serverTimestamp())
-                                                  .setLastLogin(/* firebase.firestore.FieldValue. */serverTimestamp())
+                                                  .setSubscription_date(serverTimestamp())
+                                                  .setLastLogin(serverTimestamp())
                                                   .setActive_plan('free')
                                                   .setAllowNotifications(false)
                                                   .setLastIp(localization.lastIp)

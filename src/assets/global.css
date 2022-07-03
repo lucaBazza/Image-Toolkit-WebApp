@@ -10,14 +10,16 @@
     --backText: #ddd;
     --homeBackGradinet: linear-gradient(-45deg, #000, #232222, #222);
 }
-body{
-    --varExample: #000;
+:root{
     --backgroundColor: 239,239,239;
     --background_mod: #ddd;
     --mainText: #000;
     --backText: #222;
     --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
-    --mascheraCircolare: radial-gradient(black 0%, rgba(0, 0, 0, 0.2) 80%);
+
+    --backgroundImage: url("./DSC09538-ProPs_16x9.jpg");
+    --darkModeImageGradinet: linear-gradient(rgba(0, 0, 0, 0.6),rgba(0, 0, 0, 0.8));    /* --darkModeImageGradinet: linear-gradient(rgba(0, 30, 66, 0.6),rgba(0, 96, 198, 0.8)); */
+    --mascheraCircolare: radial-gradient(black 80%, rgba(0, 0, 0, 0.2) 100%);
 }
 
 
@@ -28,29 +30,19 @@ body{
     color: var(--mainText);
     font-family: 'Times New Roman', Times, serif;
 }
-body{
-    background: var(--homeBackGradinet) no-repeat;
-    background-size: 8000% 8000%;
-    animation: gradient 10s ease infinite;
-    -moz-animation: gradient 10s ease infinite;    
+.headerImg { content: var(--backgroundImage) } 
+.darkMode #app::before{
+    z-index: -1;
+    content: '';
+    position: fixed;
+    left: 0; top: 0;
+    width: 100%; 
+    min-height: 100%;    
+    background: var(--darkModeImageGradinet);
+    mix-blend-mode: multiply;
 }
 
-.headerImg { content: url("./DSC09538-ProPs_16x9.jpg") }
-.darkMode .headerImg{ content: url("./DSC09538-ProPs_16x9-darkMode.jpg") }
-
-/*h1, h2, h3, h4, h5, p{ color: var(--mainText) }*/
 ul { list-style-type: none }
-
-@keyframes gradient {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-}
-
-@keyframes fadeIn {
-    0% { opacity: 0 }
-    100% { opacity: 1 }
-}
 
 
 
@@ -60,8 +52,8 @@ ul { list-style-type: none }
 
 */
 @media only screen and (orientation: landscape){
-    .headerImg { content: url("./DSC09538-ProPs.webp") }
-    .darkMode .headerImg{ content: url("./DSC09538-ProPs-darkMode.webp") }
+    body{ --backgroundImage: url("./DSC09536-ProPs-landscape.jpg") }
+    .headerImg{ height: 100vh; }
     .imgEditorModal{ 
         display: flex; 
         flex-flow: row  wrap; 
@@ -113,28 +105,28 @@ ul { list-style-type: none }
     .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
     .mainViewer > img:first-child{ min-width:90% }
     .mainViewer > span{  width: 85%; margin: 1rem 0 2rem }
-    .controlBtns { top: .3rem }
-    .controlBtns > button { padding: 0.2rem  }
-    .catalogDiv > p { width: max(85%, 200px); margin-top: 2rem }
-    .catalogDiv > h3 { width: max(90%, 250px) }
-    .dropzone{ width: 95% }
-    .loginForm{ margin: 1rem; width: auto }
+    .controlBtns{ top: .3rem }
+    .controlBtns > button{ padding: 0.2rem  }
+    .catalogDiv > p{ width: max(85%, 200px); margin-top: 2rem }
+    .catalogDiv > h3{ width: max(90%, 250px) }
+    .dropzone { width: 95% }
+    .loginForm { margin: 1rem; width: auto }
     .loginForm > button { width: 95% }
     .loginForm > ul > input[type=text] { width: 88% }
     .loginForm > ul > li { text-align: center }
     .loginForm > ul > li > b { display: none }
     .imgEditorModal{ height: 90vh; overflow: hidden; margin: 1rem }
-    .imgEditorModal > button { top: 1rem; right: 1rem }
-    .imgEditorModal > img { width: 90%; margin-top: 1rem; margin-bottom: 1rem }
-    .imgEditorModal > ul { width: max(95%, 300px ); overflow-y: auto; height: max( 50%, 500px) }
+    .imgEditorModal > button{ top: 1rem; right: 1rem }
+    .imgEditorModal > img{ width: 90%; margin-top: 1rem; margin-bottom: 1rem }
+    .imgEditorModal > ul{ width: max(95%, 300px); overflow-y: auto; height: max(50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
-    .avatar{ margin: .2rem; padding-right:0 ; width: min(30%, 120px); overflow: hidden; box-shadow: 5px 10px 15px rgba(0,0,0,.3) }
+    .avatar{ margin: .2rem; padding-right:0; width: min(30%, 120px); overflow: hidden }
     .modal { margin-top: 5vh }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */
     .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto }
-    .catalogDiv > ul > li{ flex: 1 1 0px }
+    .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%); }
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */

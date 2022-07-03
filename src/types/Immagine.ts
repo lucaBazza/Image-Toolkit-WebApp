@@ -13,7 +13,7 @@ export default class Immagine implements Iterator<number>{
     imgID: string
     catalogoID: string
     adjustmentID: string
-    createdAt: Date
+    createdAt?: Date
     width?: number
     height?: number
     size?: number
@@ -28,7 +28,6 @@ export default class Immagine implements Iterator<number>{
         this.exifDatas = []
         this.catalogoID = ''
         this.adjustmentID = ''
-        this.createdAt = new Date
     }
 
     isEmptyOrSpaces = (str)=>{ return str === null || str.match(/^ *$/) !== null }
@@ -64,9 +63,10 @@ export default class Immagine implements Iterator<number>{
           { label: "ModifyDate", val: "2021:05:24 16:07:10" },
           { label: "Copyright", val: "zabba.lucabazzanella.com" },
           { label: "Aspect ratio", val: "4/5" },
-          { label: "gps", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
-          { label: "classificazione", val: "⭐".repeat(randomVal(0,5)) },
-          { label: "note", val: "..." },
+          { label: "GPS", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
+          { label: "Voto", val: "⭐".repeat(randomVal(0,5)) },
+          { label: "Classificazione", val: ['Landscape','Mountain','Nature','Rocks','Portrait'][randomVal(0,4)] },
+          { label: "Note", val: "..." },
         ];
     }
 

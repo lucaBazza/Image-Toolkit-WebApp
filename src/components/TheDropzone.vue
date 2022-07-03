@@ -86,7 +86,7 @@ function clickUpload(){
     mix-blend-mode: multiply;
     object-fit: contain;
     mask-image: var(--mascheraCircolare);
-    -webkit-mask-image: var(--mascheraCircolare)
+    -webkit-mask-image: var(--mascheraCircolare);
 }
-.dropzone:hover{ border-left: .8rem solid black; border-right: .8rem solid black; cursor:crosshair }
+.dropzone:hover{ border-left: .2rem solid black; border-right: .2rem solid black; cursor:crosshair; transition: .2s ease-in; }
 </style>

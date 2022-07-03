@@ -26,11 +26,11 @@ export default class Settings{
     }
 
     public isDevelopMode(): boolean{
-        return process.env.NODE_ENV==='development'
+        return process.env.NODE_ENV==='development' && window.location.hostname!=='pickit.nasbazza.myds.me'
     }
 
     public isProductionMode(): boolean{
-        return process.env.NODE_ENV==='production'
+        return process.env.NODE_ENV==='production' && window.location.hostname!=='pickit.nasbazza.myds.me'
     }
 
     /**

@@ -39,8 +39,8 @@ const EMULATOR_ENABLED = Settings.getInstance().isDevelopMode() //process.env.NO
 import { getStorage, connectStorageEmulator } from "firebase/storage"
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions"
 import { connectAuthEmulator } from "firebase/auth"
-const isEmulator = ()=>{ return location.hostname === 'localhost' || location.hostname === '192.168.1.78' }
-if( EMULATOR_ENABLED && isEmulator ){
+// const isEmulator = ()=>{ return location.hostname === 'localhost' || location.hostname === '192.168.1.78' }
+if( EMULATOR_ENABLED /* && isEmulator */ ){
   const addr = 'localhost'
   connectFirestoreEmulator(db, addr, 8081)
   connectStorageEmulator(storage, addr, 9199)

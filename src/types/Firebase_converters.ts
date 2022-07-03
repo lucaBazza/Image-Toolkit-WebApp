@@ -1,6 +1,7 @@
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
+import firebase from 'firebase/compat/app';
 
 /**
  *    C L A S S   C O N V E R T E R
@@ -80,7 +81,7 @@ export const immagineConverter = {
             imgID: immagine.imgID,
             alt: alsoEmpty(immagine.alt),
             catalogoID: immagine.catalogoID,
-            createdAt: immagine.createdAt,
+            createdAt: immagine.createdAt ? immagine.createdAt : firebase.firestore.FieldValue.serverTimestamp(),
             adjustmentID: immagine.adjustmentID,
             width: immagine.width,
             height: immagine.height,

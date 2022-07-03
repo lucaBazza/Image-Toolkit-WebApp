@@ -33,7 +33,7 @@ let photoURL = ref(props.photoURL)
   width: max(15%, 120px);
   padding: .5rem;
   margin: .5rem;
-  box-shadow: 10px 20px 30px rgba(0,0,0,.4);
+  box-shadow: 10px 20px 30px rgba(0,0,0,.2);
   backdrop-filter: blur(5px);
 }
 .avatar:hover{ cursor: grab }

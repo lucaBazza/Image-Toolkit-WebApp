@@ -1,10 +1,11 @@
 <template>
+  <img class="headerImg" />  <!-- src="./assets/DSC09538-ProPs.webp" -->
+
   <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @click="openUserSettings"/>
   <button v-else @click="signIn" class="googleSignIn" :disabled="isProductionBuild">
       <img src='./assets/logoGoogle.svg'/>Sign In
   </button>
 
-  <img class="headerImg" src="./assets/DSC09538-ProPs.webp" />
   <nav class="controlBtns">
       <button @click="toggleDarkModeBtn">🌓</button>
       <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
@@ -175,15 +176,14 @@ export default defineComponent({
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
 }
-.headerImg {
-  z-index: -1;
+.headerImg {  /* default state: portrait, change with media @portrait */
+  z-index: -2;
   position: fixed;
   left: 0;
   top: 0;
-  height: 30vh;
   width: 100%;
   object-fit: cover;
-  filter: blur(2px);
+  filter: blur(5px);
   transform: scale(1.05);
 }
 #mainTitle{ 
@@ -193,7 +193,7 @@ export default defineComponent({
   padding: 1rem;
   background: 10rem rgba(var(--backgroundColor), .4);
   border-radius: 0.5rem;
-  width: max(30%, 200px); 
+  width: max(35%, 200px); 
   margin: 0rem auto 1rem;
   /*font-size: 1.5rem;  text-transform: uppercase; -webkit-text-fill-color: transparent; -webkit-background-clip: text;*/
 }

@@ -12,7 +12,7 @@ module.exports = defineConfig({
     //proxy: 'http://localhost:8080/'
   },
   pwa: {
-    name: "Image Toolkit App",
+    name: "Pic Kit App",
     themeColor: "#ffd100",
     msTileColor: '#000000',
     appleMobileWebAppCapable: 'yes',
