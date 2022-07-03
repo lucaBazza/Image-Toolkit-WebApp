@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC08214_ps_5x7.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656838839895,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "b10c9ae2-c854-4180-b999-6508677eee6c"
+  ],
+  "etag": "98TGRguDgjyE0iIMd6YC1jAzGtA",
+  "timeCreated": "2022-07-03T09:00:39.894Z",
+  "updated": "2022-07-03T09:00:39.896Z",
+  "size": 232796,
+  "md5Hash": "RzafmMCG03IbpNixFBII2A==",
+  "crc32c": "3329235952"
+}

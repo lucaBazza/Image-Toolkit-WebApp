@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC08185_psPano_0.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656839074801,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "e6e64ff4-1554-47b3-9219-c0bb3ad4bd25"
+  ],
+  "etag": "5IEicd0UsN1l245pSP+6URsniZg",
+  "timeCreated": "2022-07-03T09:04:34.800Z",
+  "updated": "2022-07-03T09:04:34.804Z",
+  "size": 540360,
+  "md5Hash": "raD0EEmfQWZzgNh0SJf9jA==",
+  "crc32c": "2522845205"
+}

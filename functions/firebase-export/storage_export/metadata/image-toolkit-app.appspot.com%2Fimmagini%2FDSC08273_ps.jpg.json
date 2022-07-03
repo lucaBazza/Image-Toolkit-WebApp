@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC08273_ps.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656839090911,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "41ea7780-27f6-4bea-b4bc-f4be8737d4c7"
+  ],
+  "etag": "qaNS5OPFmd7UEZ+ScF6yo2hjrl4",
+  "timeCreated": "2022-07-03T09:04:50.910Z",
+  "updated": "2022-07-03T09:04:50.916Z",
+  "size": 1078078,
+  "md5Hash": "h8sKCZ3IV2m/35KcqsExkw==",
+  "crc32c": "2192862861"
+}

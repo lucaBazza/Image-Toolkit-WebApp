@@ -1,0 +1,20 @@
+{
+  "name": "immagini/DSC08180_ps_2x3.jpg",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/jpeg",
+  "metageneration": 1,
+  "generation": 1656838839930,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "9fd89ee9-c728-4c40-9263-4bbfb68193f8"
+  ],
+  "etag": "yziOeUQvgymVNS4ILVOWMLQHhUQ",
+  "timeCreated": "2022-07-03T09:00:39.929Z",
+  "updated": "2022-07-03T09:00:39.931Z",
+  "size": 284645,
+  "md5Hash": "ovgU+2KB5IVp1b6ptmHsUw==",
+  "crc32c": "206425386"
+}
