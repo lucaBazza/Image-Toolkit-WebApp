@@ -1,6 +1,10 @@
 
 //interface Immagine{ }
 //import { throwStatement } from "@babel/types"
+export interface ImageSize {
+    width: number
+    height: number
+}
 
 export default class Immagine implements Iterator<number>{
     nomeFile: string
@@ -95,6 +99,17 @@ export default class Immagine implements Iterator<number>{
 
     setRealURL(realURL: string){
         this.realURL = realURL
+        return this
+    }
+
+    setImageDimension(dims : ImageSize ){
+        this.width = dims['width']
+        this.height = dims['height']
+        return this
+    }
+
+    setSize(size: number){
+        this.size = size
         return this
     }
 }

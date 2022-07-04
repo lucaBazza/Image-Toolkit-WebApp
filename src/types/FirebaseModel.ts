@@ -36,38 +36,44 @@ export async function addCatalogo3(catalogo : Catalogo ){
  *  implementare -> https://www.youtube.com/watch?v=wvRVfyPKOA0
  */
 export async function loadUserSettings(u : firebase.User) : Promise<Utente>{
-  const displayName = u.displayName !
-  const localization = await getLocalizationInfos()
-  // console.log('current ip is: ', localization.lastIp, localization)
-  const loadFromFirebase = async () => {
-    const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
-    if(docSnapshot.exists){
-      updateUser( (docSnapshot.data() as Utente)
-                                .setLastLogin(serverTimestamp())                                                  
-                                .setLastIp(localization.lastIp)
-                                .setLocation(localization.location) )
-      return docSnapshot.data()
-    }
-    else{
-      const ref = doc(db, USER_COL, u.uid).withConverter(utenteConverter)
-      
-      const newUtente = new Utente(displayName).setUID(u.uid)
-                                                  .setSubscription_date(serverTimestamp())
-                                                  .setLastLogin(serverTimestamp())
-                                                  .setActive_plan('free')
-                                                  .setAllowNotifications(false)
-                                                  .setLastIp(localization.lastIp)
-                                                  .setLocation(localization.location)
-                                                  
-      await setDoc(ref, newUtente)
-      console.log('\tCreate new userprefs for: ', displayName)
-      return newUtente
-    }
-  }
-  let res = await loadFromFirebase()
+  //console.log('loadUserSettings() : ', u)
+  let res : Utente
+  const docSnapshot = await firebase.firestore().collection(USER_COL).withConverter(utenteConverter).doc(u.uid).get()
+  if( docSnapshot.exists )
+    res = await docSnapshot.data() as Utente
+  else 
+    res = await registerNewUtenteFirestore(u)
 
-  return (res as Utente).setNome(displayName).setEmail( u.email !).setPhotoURL( u.photoURL !)
+  //console.log('loaded user settings: ', res.getDatiUtente())
+  return res
 }
+
+
+async function registerNewUtenteFirestore(u: firebase.User){
+  const ref = doc(db, USER_COL, u.uid).withConverter(utenteConverter)
+    
+  const newUtente = Utente.getInstance().setNome( u.displayName ! )
+                                        .setEmail( u.email ! )
+                                        .setPhotoURL( u.photoURL ? u.photoURL : '')
+                                        .setUID(u.uid)
+                                        .setSubscription_date(serverTimestamp())
+                                        .setAllowNotifications(false)                      
+  await setDoc(ref, newUtente)
+  console.log('\n\n \tCreate new userprefs for: ', newUtente.getDatiUtente() , "\n\n")
+  return newUtente
+}
+
+
+
+export async function updateLocalizationUser(utente : Utente){
+  const localization = await getLocalizationInfos() // la localizzazione va aggiornata dopo il caricamento / registrazione utente
+  console.log('current ip is: ', localization.lastIp, localization)
+  const ref = doc(db, USER_COL, utente.uid).withConverter(utenteConverter)
+  setDoc(ref, utente.setLocation(localization.location).setLastIp(localization.lastIp))
+    .then( () => console.log('Localization updated') )
+    .catch( err => console.log(err) )
+}
+
 
 
 /**
@@ -137,6 +143,7 @@ export async function getCatalogsID_fromUserID(uid: string) : Promise<string[]>{
  *  Aggiornamento una-tantum utente
  */
 export async function updateUser(utente: Utente){
+  // console.log('update user: ', utente)
   await db.collection(USER_COL).doc(utente.uid).update( utenteConverter.toFirestore(utente) ).catch((ex: any)=>console.log(ex))
 }
 

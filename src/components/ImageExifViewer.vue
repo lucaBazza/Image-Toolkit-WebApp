@@ -4,11 +4,12 @@
         v-if="showImageRef"
         :src="src_real"
         :class="imageRf.classStyle"
-        :id=" 'img_' + imageRf.id"
+        :id=" 'img_' + imageRf.id "
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
     />
+    <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/>
     <!-- <img v-if=" ! isImgLoaded()" class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
@@ -21,7 +22,10 @@
         <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
       </div>
       <ul>
-        <li><svg src="@/assets/size-svgrepo-com.svg" class="iconSVG"></svg>Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size/1000)}} Kb</span></li>
+        <li>
+          <svg src="@/assets/size-svgrepo-com.svg" class="iconSVG"></svg>
+          Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size/1000)}} Kb</span>
+        </li>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
         </li>
@@ -203,14 +207,7 @@ onMounted( async () => {
 /*
 *     http://css3.bradshawenterprises.com/cfimg/
 */
-.loadingBG{ 
-  /*background-blend-mode: multiply;
-  background-image: url('./../assets/loading.gif');
-  background: url('./../assets/loading.gif');
-  background-blend-mode: multiply;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;*/
+.loadingBG{
   content: url('./../assets/loading.gif');
   object-fit: contain;
   mix-blend-mode: multiply;
@@ -227,6 +224,15 @@ onMounted( async () => {
 }
 
 .imgUploadRequest{ opacity: .4; z-index: 0; }
+.imgUploadRequest + .imgOverlaySpinner{ opacity: 1; }
+.imgOverlaySpinner{ 
+    /*   width: 50%; position: initial  */
+    position: absolute;
+    top: 30%;
+    left: 30%;
+    opacity: 0;
+}
+
 /*.imgUploadRequest::after{ 
   content: ''; 
   background-image: url('./../assets/loading-io-spinner.gif');
@@ -239,11 +245,13 @@ onMounted( async () => {
   width: 75%; 
   height: 100%;
 }*/
-
 /* .overlaySpinner{ width: 4rem; height: 4rem; position: absolute; margin: 0 auto;}
 .overlaySpinner{ width: 50%; position: initial; margin: 0 auto; transform: translateY(-350px) } */
-.imgOverlaySpinner{ width: 50%; position: initial }
 
+
+/*
+    Pulsanti azione a sinistra
+*/
 .cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; margin-right: -.4rem; /* background-color: rgba(0, 0, 0, .2); */ }
 .cntimgSettingsBtns > button:first-child{
   background-image: url('@/assets/3-vertical-dots.svg');
@@ -260,7 +268,6 @@ onMounted( async () => {
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(3){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.0s; }
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(4){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.5s; }
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(5){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 3s; }
-
 
 /* @keyframes fadeInBtns {
     0% { opacity: 0 }

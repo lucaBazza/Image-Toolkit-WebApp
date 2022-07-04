@@ -1,18 +1,20 @@
 <template>
     <div class="avatar">
-        <img :src="photoURL" @error="imageLoadError">
-        <span>{{nomeShorted}}</span>
+        <img :src="photoURL" @error="imageLoadError" @click="emits('showSettings')">
+        <span @click="emits('showSettings')">{{nomeShorted}}</span>
+        <button @click="emits('logout')"> 🚪 </button>
     </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 
-
 const props = defineProps({
   nome: {     type: String, default: 'Unknown' },
-    photoURL: { type: String, default: require('@/assets/logo-user-abstract.svg') }
+  photoURL: { type: String, default: require('@/assets/logo-user-abstract.svg') }
 })
+
+const emits = defineEmits(['showSettings','logout'])
 
 function imageLoadError(){ photoURL.value = require('@/assets/logo-user-abstract.svg') }
 
@@ -33,7 +35,7 @@ let photoURL = ref(props.photoURL)
   width: max(15%, 120px);
   padding: .5rem;
   margin: .5rem;
-  box-shadow: 10px 20px 30px rgba(0,0,0,.2);
+  box-shadow: var(--boxShadowCorto);
   backdrop-filter: blur(5px);
 }
 .avatar:hover{ cursor: grab }
@@ -44,5 +46,19 @@ let photoURL = ref(props.photoURL)
   float: left;
 }
 .avatar > span{ float: left; margin-top: 0.3rem; }
+.avatar > button {
+  opacity: .01;
+  background-color: transparent;
+  text-shadow: 0 0 20px rgba(0,0,0,.9);
+  border-radius: 50%;
+  padding: .4rem;
+  border: none; 
+  position: absolute;
+  top: .3rem;
+  right: -3rem;
+  font-size: 1.5rem;
+}
+.avatar:hover > button{ opacity: 1; transition: .2s ease; }
+.avatar > button:hover{ cursor: not-allowed }
 </style>
 

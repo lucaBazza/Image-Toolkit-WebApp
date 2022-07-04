@@ -8,33 +8,38 @@ import firebase from 'firebase/compat/app';
  */
 
 const alsoEmpty = (v:any)=>{ return v ? v : ''}
+
 export const utenteConverter = {
     toFirestore: (utente) => {
-        //console.log('utenteConverter() - user toFirestore() ', utente)
         return {
-            uid: utente.uid,
+            nome: utente.nome,
+            email: utente.email,
+            password: alsoEmpty(utente.password),
+            secretKey: alsoEmpty(utente.secretKey),
+            photoURL: alsoEmpty(utente.photoURL),
+
             selected_cid: alsoEmpty(utente.selected_cid),
-            subscription_date: alsoEmpty(utente.subscription_date),
-            lastLogin: alsoEmpty(utente.lastLogin),
+            subscription_date: alsoEmpty(utente.subscription_date),     // se non presente indicare data attuale?
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp(), //alsoEmpty(utente.lastLogin),
             allowNotifications: utente.allowNotifications?'true':'false',
-            active_plan: alsoEmpty(utente.active_plan),
+            active_plan: utente.active_plan ? utente.active_plan : 'free',
             watermark_src: alsoEmpty(utente.watermark_src),
             public_gallery: alsoEmpty(utente.public_gallery),
-            lastIp: alsoEmpty(utente.lastIp),
-            location: alsoEmpty(utente.location)
+            lastIp: alsoEmpty(utente.lastIp),                           // last ip essendo async è meglio chiamarlo prima
+            location: alsoEmpty(utente.location)                        // in fase di composizione
         }
     },
     fromFirestore: (snapshot, options) => {
         //console.log('FirebaseModel.immagineConverter() ', snapshot)
         const data = snapshot.data(options)
-        let out = new Utente('')
-        out.nome = data.nomefile
+        let out = Utente.getInstance()//new Utente('')
+        out.setNome(data.nome)
         out.email = data.email
         out.password  = data.password
         out.secretKey  = data.secretKey
         out.photoURL = data.photoURL
         out.selected_cid  = data.selected_cid
-        out.uid = data.uid  // -> ! ! ! campo doppio di snapshot.id ! ! !
+        out.uid = snapshot.id
         // dati salvati da userspace
         out.subscription_date = data.subscription_date
         out.lastLogin = data.lastLogin
@@ -44,9 +49,11 @@ export const utenteConverter = {
         out.public_gallery = data.public_gallery
         out.lastIp = data.lastIp
         out.location = data.location
+        console.log(' \n\n CALL UTENTE CONVERTER \n\n ')
+
         return out
     }
-    }
+}
  
 export const catalogoConverter = {
     toFirestore: (catalogo) => {

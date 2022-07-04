@@ -5,13 +5,12 @@
       <button @click="downloadAlbum" alt="download album"> ⬇ </button>
       <button @click="openSortingOptions" alt="sort images"> ↕️ </button>
     </h3> 
-    <ul>
-      <span v-if=" ! catalogIsReady">Catalog not ready</span>
-      <li v-else v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
+    <transition-group tag="ul" name="list">
+      <li v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
         <ImageExifViewer :imageRf="img" @deleteImageCallbk="deleteGuiImageViewer"/>
       </li>
       <em v-if=" ! catalogoProp.listaImmagini.length">No images in this catalog, add from ☁️ </em>
-    </ul>
+    </transition-group>
     <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
 </template>
@@ -27,10 +26,7 @@ const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
 let catalogIsReady = ref(false)
 
 async function deleteAllImages() {
-  if (confirm("Are u sure to delete this catalog?") == true)
-    emit('deleteCatalog', props.catalogoProp.cid)
-  else 
-    console.log( "Catalog protected from destruction 🛡️ ")
+  confirm("Are yuo sure to delete this catalog?") == true ? emit('deleteCatalog', props.catalogoProp.cid) : console.log( "Catalog protected from destruction 🛡️ ")
 }
 function openSortingOptions(){
   console.log('openSortingOptions()')

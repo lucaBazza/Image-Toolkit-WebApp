@@ -1,5 +1,6 @@
 /*
-*       D A R K     M O D E      V A R S 
+*
+*           D A R K     M O D E      V A R S 
 *
 *    attenzione, prima dichiarare le variabili 'light', poi le variabili dark, poi dichiarare quali proprietà vanno a modifidcare 
 */
@@ -17,32 +18,43 @@
     --backText: #222;
     --homeBackGradinet: linear-gradient(-45deg, #FFF, #e2d1d8, #DDD);
 
+    --boxShadowCorto: 5px 5px 15px rgba(0,0,0,.15);
     --backgroundImage: url("./DSC09538-ProPs_16x9.jpg");
+    --lightModeImageGradinet: linear-gradient(rgba(255, 255, 255, 0.6),rgba(255, 255, 255, 0.95));    /* --darkModeImageGradinet: linear-gradient(rgba(0, 30, 66, 0.6),rgba(0, 96, 198, 0.8)); */
     --darkModeImageGradinet: linear-gradient(rgba(0, 0, 0, 0.6),rgba(0, 0, 0, 0.8));    /* --darkModeImageGradinet: linear-gradient(rgba(0, 30, 66, 0.6),rgba(0, 96, 198, 0.8)); */
     --mascheraCircolare: radial-gradient(black 80%, rgba(0, 0, 0, 0.2) 100%);
 }
 
 
+
 /*
-    B A S E     D E C L A R A T I O N S     +       A N I M A T I O N $
+
+    B A S E     D E C L A R A T I O N S     +       A N I M A T I O N $     +       L I S T
+
 */
 * { 
     color: var(--mainText);
     font-family: 'Times New Roman', Times, serif;
 }
-.headerImg { content: var(--backgroundImage) } 
-.darkMode #app::before{
+.headerImg { content: var(--backgroundImage) }
+#app::before{
     z-index: -1;
-    content: '';
+    content: ' ';
     position: fixed;
     left: 0; top: 0;
     width: 100%; 
     min-height: 100%;    
-    background: var(--darkModeImageGradinet);
-    mix-blend-mode: multiply;
+    mix-blend-mode: soft-light;
+    background: var(--lightModeImageGradinet);
 }
-
+.darkMode #app::before{
+    mix-blend-mode: multiply;
+    background: var(--darkModeImageGradinet);
+}
 ul { list-style-type: none }
+.list-move, .list-enter-active, .list-leave-active{ transition: all .5s ease }
+.list-enter-from, .list-leave-to{ opacity: 0; transform: translateX(-50px); }
+.list-leave-active { position: absolute }
 
 
 
@@ -94,12 +106,13 @@ ul { list-style-type: none }
 }
 
 
+
 /*
 
     M E D I A   Q U E R Y E S
 
 */
-@media screen and ( max-width: 650px ){           /* SMALL DEVICES */
+@media screen and ( max-width: 650px ){         /* SMALL DEVICES */
     .headerImg{ height: 100vh }
     #mainTitle{ width: 85%; margin: 4rem auto 1rem }
     .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
@@ -120,7 +133,8 @@ ul { list-style-type: none }
     .imgEditorModal > img{ width: 90%; margin-top: 1rem; margin-bottom: 1rem }
     .imgEditorModal > ul{ width: max(95%, 300px); overflow-y: auto; height: max(50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
-    .avatar{ margin: .2rem; padding-right:0; width: min(30%, 120px); overflow: hidden }
+    .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px); /* overflow: hidden */ }
+    .avatar > button { top: .1rem /* right: -3rem */ }
     .modal { margin-top: 5vh }
 }
 

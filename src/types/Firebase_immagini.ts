@@ -102,7 +102,7 @@ export async function updateImage( img : Immagine){
 /**
  *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
  */
- export async function loadImagesFromCatalog_firebaseA(cid){
+ export async function loadImagesFromCatalog_firebaseA(cid) : Promise<Immagine[]>{
   //console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
   let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
   return res.docs.map(imgQuery => imgQuery.data())

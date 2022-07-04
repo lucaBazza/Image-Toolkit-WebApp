@@ -1,4 +1,3 @@
-//import MD5 from "@/utilities/MD5.js"
 import Catalogo from "./Catalogo"
 import Immagine from "./Immagine"
 
@@ -6,19 +5,21 @@ export type user_plan = 'free'|'photography'|'direction'|'full';
 
 export default class Utente{
 
-    nome: string;
-    email: string;
-    password: string;
-    secretKey: string;
-    listaCataloghi: Catalogo[];
-    photoURL: string;
-    selected_cid: string
-    uid: string;
+    private static instance: Utente;
+
+    nome: string
+    email?: string
+    uid: string
+    password?: string
+    secretKey?: string
+    listaCataloghi: Catalogo[]
+    photoURL?: string
+    selected_cid?: string
     // parametri che salvo su firebase ( oltre a uid e selected catalog id )
     subscription_date?: Date
     lastLogin?: Date
     allowNotifications? : boolean
-    active_plan?: user_plan /*string*/
+    active_plan?: user_plan
     watermark_src?: string
     public_gallery?: string
     lastIp?: string
@@ -27,15 +28,14 @@ export default class Utente{
     /**
      *      di default se l'utente ha più cataloghi vado a selezionare il primo
      */
-    constructor(nome: string){
+    private constructor(nome: string){
         this.nome = nome
-        this.email= ''
-        this.password = ''
-        this.secretKey = ''
         this.listaCataloghi = []
-        this.photoURL= ''
-        this.selected_cid = ''
-        this.uid='-'
+        this.uid = ''
+    }
+
+    public static getInstance(){
+        return this.instance || (this.instance = new this('undefined user'))
     }
 
     setNome(nome: string){
@@ -53,24 +53,38 @@ export default class Utente{
         return this
     }
 
+    addListaCataloghi(cats: Catalogo[]){
+        this.listaCataloghi = [...this.listaCataloghi, ...cats]
+        return this
+    }
+
     getListaCataloghi(): Catalogo[]{
         return this.listaCataloghi
     }
 
     /**
-     *  restituiscce il cid selezionato:
+     *  restituisce il catalogo selezionato:
      *      -se non settato, lo setta come primo catalogo disponibile
      */
     getCurrentCatalog_cid(){
+        if( this.listaCataloghi.length == 0)
+            throw new Error(`No catalogs aviable for ${this.nome}`)
+
         let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
         if( ! out) {
-            if( this.listaCataloghi.length > 0){
-                this.selectFirstAviableCatalog()
+            this.selectFirstAviableCatalog()
+            if(this.selected_cid) 
                 out = this.getCatalog_by_cid(this.selected_cid)
-            }
-            else throw new Error(`No catalogs aviable for ${this.nome}`)
         }
         return out
+    }
+    
+    getCatalog_by_cid(cid : string){
+        return this.listaCataloghi.filter(c => c.cid === cid)[0]
+    }
+
+    getCid(){
+        return this.selected_cid ? this.selected_cid : '' 
     }
 
     selectFirstAviableCatalog(){
@@ -84,10 +98,6 @@ export default class Utente{
     setSelected_cid(cid: string){
         this.selected_cid = cid
         return this
-    }
-
-    getCatalog_by_cid(cid : string){
-        return this.listaCataloghi.filter(c => c.cid === cid)[0]//.pop()
     }
 
     isCurrentCatalog(cid : string){
@@ -160,6 +170,23 @@ export default class Utente{
     getCataloghi_NON_sel(): Catalogo[]{
         if( 2 > this.listaCataloghi.length) return []
         return this.listaCataloghi.filter(c => c.cid != this.selected_cid)
+    }
+
+    getDatiUtente(){
+        return `
+                nome: ${this.nome}\n
+                email: ${this.email}\n 
+                uid: ${this.uid} \n
+                password: ${this.password}\n 
+                ip: ${this.lastIp}\n 
+                location: ${this.location}\n
+                photoUrl: ${this.photoURL}\n
+                selected cid: ${this.selected_cid}\n
+                watermark: ${this.watermark_src}\n
+                plan: ${this.active_plan}\n
+                public gallery: ${this.public_gallery}\n
+                allow notifications: ${this.allowNotifications}
+            `
     }
 }
 

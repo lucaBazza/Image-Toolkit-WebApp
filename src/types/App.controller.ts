@@ -1,21 +1,25 @@
 import Catalogo from '@/types/Catalogo'
-import { getCatalog_fs, deleteCatalog, updateUser } from '@/types/FirebaseModel' 
+import { getCatalog_fs, deleteCatalog, updateUser, getCataloghi_C, existCatalogForUtente } from '@/types/FirebaseModel' 
 import { loadImagesFromCatalog_firebaseA } from '@/types/Firebase_immagini' 
-
+import Utente from './Utente'
+import { Ref } from 'vue'
+import Immagine from './Immagine'
 
 /**
  *   callback: il catalogo è già stato inserito su FS, occorre leggerlo e aggiornare la gui
  */
-export async function add_catalog_logic(app: any, cid : string){
-    let catalog : Catalogo = await getCatalog_fs(cid)
-    app.utenteSng.listaCataloghi.push(catalog)
-    app.currentAppCatalog = catalog
-    updateUser(app.utenteSng.setSelected_cid(catalog.cid))
-
-    app.showLogInArea = false
-    setTimeout( () => app.showLogInArea = true, 700)
+export async function add_catalog_logic(utente: Utente, cid : string){
     
-    app.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
+    let catalog : Catalogo = await getCatalog_fs(cid)
+    utente.listaCataloghi.push(catalog)
+    //app.currentAppCatalog = catalog
+    updateUser(utente.setSelected_cid(catalog.cid))
+
+    //app.showLogInArea = false
+    //setTimeout( () => app.showLogInArea = true, 700)
+    
+    //app.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
+    return { title: "Catalog added", text: catalog.titolo, type: 'info' }
 }
 
 
@@ -39,29 +43,108 @@ export async function delete_catalog_logic(app: any, cid : string){
  *      - controllo se le immagini del catalogo sono state caricate
  *      - imposta sulla gui il nuovo catalogo
  */
-export async function change_catalog_logic(app: any, cid : string){
-    updateUser(app.utenteSng.setSelected_cid(cid))
+export async function change_catalog_logic( cid : string){
+    let utente = Utente.getInstance().setSelected_cid(cid)
+
+    updateUser(utente)
 
     //if( ! this.utenteSng.getCatalog_by_cid(cid).listaImmagini.length){  // true anche quando il catalogo è correttaemnte inizializzato (ma è senza imamgini)
-    if( ! app.utenteSng.getCatalog_by_cid(cid).listaImmagini){
+    if( ! utente.getCatalog_by_cid(cid).listaImmagini){
       console.log(`Catalogo: ${cid} non ha immagini caricate, provvedo a scaricarle`)
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
-      app.utenteSng.setImages_by_cid(listaImgs,cid)
+      utente.setImages_by_cid(listaImgs,cid)
     }
 
-    app.currentAppCatalog = app.utenteSng.getCatalog_by_cid(cid)
+    //app.currentAppCatalog = app.utenteSng.getCatalog_by_cid(cid)
     
-    console.log('App.change_catalog() \t titolo: ', app.currentAppCatalog.titolo)
+    console.log('App.change_catalog() \t titolo: ', utente.getCurrentCatalog_cid().titolo)
+}
+
+
+/**
+ *  Ottiene lista cataloghi per utente corrente:
+ *    - imposta il primo catalogo disponibile
+ *    - carica tutti i cataloghi
+ *    - setta il catalogo corrente nella CatalogForm -inattiva
+ *    - segnale di loaded
+ */
+export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
+  console.log('🕰 App.controller.loadCatalogo() ')
+  const cataloghi : Catalogo[] = await getCataloghi_C( utenteRef.uid ).catch( err => { console.log(err); return []})
+                                                    
+  if( cataloghi && cataloghi.length > 0 ){
+    utenteRef.setListaCataloghi(cataloghi)
+    if( ! utenteRef.selected_cid )
+      { console.log('❌ utente senza cid nei cataloghi, assegno il primo disponibile'); utenteRef.selectFirstAviableCatalog() }
+
+    if( ! await existCatalogForUtente(utenteRef.uid, utenteRef.selected_cid!) ){ 
+      console.log(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${utenteRef.uid} \t req: ${utenteRef.selected_cid}`); 
+      utenteRef.selectFirstAviableCatalog() 
+    }
+    
+    //return utente.selected_cid ? Promise.resolve(utente.selected_cid) : Promise.reject({title:'No cid', text: 'User has no cid aviable'})
+    if( ! utenteRef.selected_cid )
+      return Promise.reject({title:'No cid', text: 'User has no cid aviable'})
+
+    /*const resLoading = await load_all_catalogIimages(utenteRef)
+      .then( res => console.log(res))
+      .catch( err => console.log(err))*/
+    
+   
+    /*
+    utenteRef.value.listaCataloghi.forEach(cat =>{
+      if(cat.cid === utenteRef.value.selected_cid)
+        cat.setListaImmagini(imagesSelectedCat)
+    })
+    */
+    const imagesSelectedCat = await loadImagesFromCatalog_firebaseA(utenteRef.selected_cid) 
+    Utente.getInstance().getListaCataloghi().forEach( cat =>{
+      if(cat.cid === utenteRef.selected_cid)
+        cat.setListaImmagini(imagesSelectedCat)
+    })
+
+    //console.log('resLoading: ', utenteRef.listaCataloghi.map(c => c.titolo))
+
+    return Promise.resolve('true')
+
+      // carico immagini catalogo selezionato
+    //app.load_images_by_cid(utente.selected_cid)
+    //      .then( current_catalog => { 
+    //                    // app.currentAppCatalog = current_catalog
+    //                    app.loadingDone()
+    //                    return utente.getCataloghi_NON_sel()
+    //                  })
+    //      .then( otherCatalgs => otherCatalgs.forEach(c => app.load_images_by_cid(c.cid)) )
+
+
+  }
+  else return Promise.reject({ 
+                    title: "No catalog found", 
+                    text: `Please insert a new catalog in user area`, 
+                    type: 'warn', 
+                    duration: 10000 })
 }
 
 
 
+/*
+async function load_all_catalogIimages(utente : Ref<Utente>){
+  console.log('load_all_catalogIimages() ', utente.value.nome)
+  if( ! utente.value.selected_cid )
+    throw Error ('Load all images fail, no selected cid')
 
+  let listaImgs = await loadImagesFromCatalog_firebaseA(utente.value.selected_cid)
+  utente.value.setImages_by_cid(listaImgs, utente.value.selected_cid)
+  console.log('\t 📚 Loaded catalog \t ', utente.value.getCatalog_by_cid(utente.value.selected_cid).titolo)
+  return utente.value.getCurrentCatalog_cid()
+}
+*/
 
+/* async function load_catalogImages(cid : String) : Promise<Immagine[]>{
+  console.log('load_catalogImages() ',cid)
 
-
-
-
+  let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
+} */
 
 
 

@@ -25,7 +25,7 @@ export default class Catalogo{
     }
 
     setListaImmagini(listaImmagini: Immagine[]) : Catalogo {
-        console.log('Catalogo.ts setListaImmagini() \t',this.listaImmagini)
+        //console.log('Catalogo.ts setListaImmagini() \t',this.listaImmagini)
         this.listaImmagini = listaImmagini
         return this
     }

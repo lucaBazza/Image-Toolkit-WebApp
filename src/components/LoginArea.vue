@@ -1,32 +1,35 @@
 <template>
-  <div class="loginForm">
+  <div class="loginForm" v-if="utente">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
-    <ul v-if="cataloghiLoaded">
-      <h4>Catalogs</h4>
+    <transition-group v-if="cataloghiLoaded" tag="ul" name="list">
+      <h4 key="title">Catalogs</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.cid" :imageCount="cat.listaImmagini.length"
-                   @click="change_catalog(cat.cid)" :class="props.utente.selected_cid === cat.cid && 'selezionato'">
+                   @click="change_catalog(cat.cid)" :class="utente.selected_cid === cat.cid && 'selezionato'">
         <b>Title:</b> {{cat.titolo}}
       </li>
-      <em v-if=" ! utente.listaCataloghi.length">Empty list: please add a new catalog! <br></em>
-      <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog"/>
-    </ul>
-    <button @click="signOut">🚪 Log out</button>
+      <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog" key="inputCatalogs"/>
+      <em v-if=" ! utente.listaCataloghi.length" key="emptyList">Empty list: please add a new catalog! <br></em>
+    </transition-group>
+   <!--  <button @click="signOut">🚪 Log out</button> -->
   </div>
+  <span v-else>No user logged</span>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import Utente from '@/types/Utente'
 import Catalogo from '@/types/Catalogo'
 import { useAuth } from '@/firebase'
 import { addCatalogo3 } from '@/types/FirebaseModel'
-import { serverTimestamp } from '@firebase/firestore'
 
-const props = defineProps({       utente: { type: Utente, required: true }   })
+//const props = defineProps({       utente: { type: Utente }   })
+//const utente : Utente | undefined = inject('utente')
+let utente = reactive(Utente.getInstance())
+
 const emits = defineEmits(['change_catalog','notificate', 'add_catalog'])
 const { signOut } = useAuth()
 
-console.log('LoginArea.setup()')
+// console.log('LoginArea.setup()')
 
 let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
 const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true }, 500) }
@@ -38,9 +41,12 @@ const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( 
  */
 const addNewCatalogo = (e) =>{
   if( e.target.value == '' ) return
-  addCatalogo3(new Catalogo(props.utente.nome, e.target.value).setCatalogUserID(props.utente.uid))
+  if( ! utente ) return
+
+  console.log(utente)
+  addCatalogo3(new Catalogo(utente.nome, e.target.value).setCatalogUserID(utente.uid))
     .then( res_cid => emits('add_catalog', res_cid) )
-    .catch( ex => emits('notificate',ex))
+    .catch( err => emits('notificate',{ title: 'Error', text: err, type: 'error' }))
   e.target.value = ''
 }
 
@@ -53,7 +59,7 @@ function change_catalog(cid){
 <style>
 .loginForm {
   display: block;
-  box-shadow: 10px 20px 30px black;
+  box-shadow: var(--boxShadowCorto);
   border-radius: 0.5rem;
   width: min(50%, 650px);
   margin: 0 auto;
@@ -71,6 +77,7 @@ function change_catalog(cid){
   background-color: transparent;
   margin: 1rem auto;
 }
+.loginForm > ul > input[type=text]::placeholder{ color: gray; opacity: 1; /* Firefox */ }
 .loginForm > button > img { width: 1.5rem; margin-right: .8rem; vertical-align:middle; }
 .loginForm > button {
   padding: 1rem;
