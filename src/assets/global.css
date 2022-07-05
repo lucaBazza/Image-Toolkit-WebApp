@@ -134,16 +134,28 @@ ul { list-style-type: none }
     .imgEditorModal > ul{ width: max(95%, 300px); overflow-y: auto; height: max(50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
     .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px); /* overflow: hidden */ }
-    .avatar > button { top: .1rem /* right: -3rem */ }
+    .avatar > button { top: .1rem }
     .modal { margin-top: 5vh }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */
     .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto }
-    .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%); }
+    .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%) }
+    .mainViewer > .imgOverlaySpinner{ left: 18%; }
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */
     .mainViewer{ min-width: 750px }
     .imgEditorModal{ width: 50%; margin: 5% auto }
 }
+
+
+/*
+
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    top: 30%;
+    left: -29%;
+
+*/

@@ -9,31 +9,27 @@
   <nav class="controlBtns">
       <button @click="toggleDarkModeBtn">🌓</button>
       <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
-      <!-- <button @click="toggleCatalogMode" v-if="isLogin" >📚</button> -->
       <button @click="toggleModalInfos">ℹ️</button>
   </nav>
 
   <h1 id="mainTitle">Image Toolkit App</h1>
 
-  <!-- <LoginArea v-if="showLogInArea" @change_catalog="change_catalog" @notificate="notificate" @add_catalog="add_catalog"/> -->
   <LoginArea v-if="showLogInArea" :utente="utenteSng" @change_catalog="change_catalog" @notificate="notificate" @add_catalog="add_catalog"/>
 
   <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
 
   <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
 
-  <!-- <CatalogoForm v-if="showCatalogo" :catalogoProp="currentAppCatalog" @deleteCatalog="deleteCatalog"/> -->
-  <!-- <CatalogoForm v-if="catalogoRef" :catalogoProp="catalogoRef" @deleteCatalog="deleteCatalog"/> -->
-  <CatalogoForm v-if="/* catalogoRef && */ showCatalogo" :catalogoProp="catalogoSelezionato" @deleteCatalog="deleteCatalog"/>
+  <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato" @deleteCatalog="deleteCatalog"/>
 
-  <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div>
+  <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div> 
 
   <notifications position="bottom center" />
 </template>
 
 
 <script setup lang="ts">
-import { ref,reactive, computed, onMounted } from 'vue'
+import { ref,reactive, computed, onMounted, provide } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
@@ -53,9 +49,9 @@ import { add_catalog_logic, delete_catalog_logic, change_catalog_logic,loadCatal
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 
-let utenteSng
+let utenteSng = reactive(Utente.getInstance())
 const isProductionBuild = Settings.getInstance().isProductionMode()
-const { user, isLogin, signIn, unsubscribe} = useAuth()
+const { user, isLogin, signIn, unsubscribe } = useAuth()
 
 let showModalInfos = ref(false)
 let showUploadMode = ref(false)
@@ -64,29 +60,18 @@ let showLogInArea = ref(false)
 
 const toggleModalInfos = ()=>{ showModalInfos.value = ! showModalInfos.value }
 const toggleUploadMode = ()=>{ showUploadMode.value = ! showUploadMode.value }
-const toggleCatalogMode = ()=>{ showCatalogo.value = ! showCatalogo.value }
 const openUserSettings = ()=>{ showLogInArea.value = ! showLogInArea.value }
 const postCloseLoggin = ()=>{ toggleModalInfos() }
 const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
 function notificate(data){ notify(data) }
-const catalogoSelezionato = computed( ()=>{ return Utente.getInstance().getCurrentCatalog_cid() })
+const catalogoSelezionato = computed( () : Catalogo => { /* console.log('\n\ncatalogoSelezionato-computed()\n\n\n'); */ return utenteSng.getCurrentCatalog_cid() })
 
-
-
-// T E STING
-/* setTimeout(() => {
-  console.log('\n\nTEST ING agigunge un immagine fake per vedere se viene renderizzata con reactivity\n\n')
-  const i = new Immagine('https://zabba.lucabazzanella.com/img/estate/DSC04881_ps.webp').setCatalogID(utenteSng.getCid()).setClassStyle('imageLoaded')
-  Utente.getInstance().getCurrentCatalog_cid().listaImmagini.push(i)
-  showCatalogo.value = false
-  setTimeout(()=> showCatalogo.value = true, 500)
-}, 1200); */
-
+provide('utente',utenteSng)
 
 
 onMounted( async () => {
-  console.log('app.mounted()')
+  // console.log('app.mounted()')
 
         // Avvio in dark mode
   document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
@@ -98,17 +83,21 @@ onMounted( async () => {
         loadUserSettings(user)
           .then( utente => utenteSng = reactive(utente) )
           .then( () => loadCatalogo(utenteSng)
-                          .then( () => { showCatalogo.value = true; return utenteSng.getCataloghi_NON_sel() })
-                          .then( otherCatalgs => otherCatalgs.forEach( c => loadImagesFromCatalog_firebaseA(c.cid)) )
-                          .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
-                          .catch( err =>{ console.log(' 🕷  : ',err); notificate(err) })
+                        .then( () => { showCatalogo.value = true; return utenteSng.getCataloghi_NON_sel() })
+                        .then( async otherCatalgs => { 
+                          console.log('Remaining catalogs to load in backgrounds: ', otherCatalgs.length)
+                          let prs = otherCatalgs.map( async c => utenteSng.getCatalog_by_cid(c.cid).setListaImmagini(await loadImagesFromCatalog_firebaseA(c.cid)) )
+                          await Promise.all(prs).then( () => console.log('\tloaded all the other catalogs 😘 \n\t\t', otherCatalgs.map(c=>c.titolo)) )
+                        })
+                        .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
+                        .catch( err =>{ console.log(' 🕷  : ',err); notificate(err) })
                 )
           .catch( ex => console.log(ex))
     }
     else {
       console.log('Auth status new is un-logged')
-      //unsub_refCatalogs && unsub_refCatalogs()
-      utenteSng = null
+      Utente.newInstance()
+      // unsubscribe() //unsub_refCatalogs && unsub_refCatalogs()
       showLogInArea.value = false
       showCatalogo.value = false
     }
@@ -125,14 +114,13 @@ async function change_catalog(cid : string){
   change_catalog_logic(cid)
 }
 /**
- *    Metodo call back di TheDropZone: ho la 
+ *    Metodo call back di TheDropZone: ho il catalogo aggiornato
  */
 async function requestImageUpload(file: HTMLInputElement, previewImgBase64: string, imageSizes: ImageSize){
-  let u = Utente.getInstance()
-  // const current_cid = Utente.getInstance().getCid()
+  const current_cid = Utente.getInstance().getCid()
   let i = new Immagine(previewImgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest')
-                                          .setCatalogID(u.getCid()).setImageDimension(imageSizes).setSize(file.size)
-  u.getCurrentCatalog_cid().listaImmagini.push(i)
+                                          .setCatalogID(current_cid).setImageDimension(imageSizes).setSize(file.size)
+  utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(i)
   uploadSingleFile_firestore(file, i.catalogoID, i)
 }
 

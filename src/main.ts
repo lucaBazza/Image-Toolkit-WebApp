@@ -14,7 +14,9 @@ if( ! Settings.getInstance().isDevelopMode() )
     app.config.errorHandler = (err, instance, info) => console.log( "app.config.errorHandler() - \n " + err )
     
 
+
 app.use(Notifications)
+
 
 
 app.mount("#app")

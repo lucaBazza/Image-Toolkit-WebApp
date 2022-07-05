@@ -18,3 +18,18 @@ describe('App.vue', function () {
         expect(true).toBe(true);
     })
 })
+
+
+/*       
+
+    // T E S T I N G  add images
+setTimeout(() => {
+  console.log('\n\nTEST ING agigunge un immagine fake per vedere se viene renderizzata con reactivity\n\n\n')
+  addFakeImage();
+  // shuffleArray(utenteSng.getCurrentCatalog_cid().listaImmagini)
+}, 1000); 
+function hardRefreshCatalogo(){ showCatalogo.value = false; setTimeout(()=> showCatalogo.value = true, 0) }
+function addFakeImage(){ utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(new Immagine('https://zabba.lucabazzanella.com/img/estate/DSC04881_ps.webp').setCatalogID(utenteSng.getCid()).setClassStyle('imageLoaded')) }
+ 
+
+*/

@@ -1,9 +1,11 @@
 import { doc, deleteDoc/*,  getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField */ } from "firebase/firestore"
-import { db } from '@/firebase'
+import { getStorage, ref, deleteObject } from "firebase/storage"
+import { db, storage } from '@/firebase'
 import { CATALOGHI_COL, IMMAGINI_COL  } from "./FirebaseModel"
 import { catalogoConverter, utenteConverter,  immagineConverter } from '@/types/Firebase_converters'
 import Catalogo from "./Catalogo"
 import Immagine from "./Immagine"
+import Utente from "./Utente"
 
 
 
@@ -25,6 +27,15 @@ import Immagine from "./Immagine"
     else return Promise.reject(`existImageInsideCatalog() - catalog ${cid} not found`)
 }
 
+/**
+ *  Metodo con promise all per cancellare immagine di utente
+ */
+export async function deleteImageFacade(img : Immagine) : Promise<void>{
+  Promise.all([deleteImage_firestore(`immagini/${img.nomeFile}`), deleteImage(img.imgID, img.catalogoID,Utente.getInstance().uid)])
+    .then( ()=> { console.log(`Cancellazione riuscita ${img.nomeFile}`); Promise.resolve()})
+    .catch( (err)=> { console.log(`Errore cancellazione ${img.nomeFile} : \n ${err}`); Promise.reject() } )
+}
+
 
 /**
  * cancella immagine su firestore
@@ -34,17 +45,20 @@ import Immagine from "./Immagine"
  * @param uid 
  * @returns vero/falso se è andato a buon fine
  */
-export async function deleteImage(imgID: string, cid: string, uid: string) : Promise<boolean>{
-  console.log('Delete image: ', imgID, " \n\t| cid: ", cid, ' \n\t| uid: ', uid)
-
+export async function deleteImage(imgID: string, cid: string, uid: string) : Promise<void>{
+  // console.log('Delete image: ', imgID, " \n\t| cid: ", cid, ' \n\t| uid: ', uid)
   const listImgID_utente = await getImagesID_byCid(cid,uid)
   if(listImgID_utente.includes(imgID)){
     let col = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}`).get()
-    col.forEach( snapshot => { if( snapshot.id == imgID ){ snapshot.ref.delete(); return true } })
+    col.forEach( snapshot => { if( snapshot.id === imgID ){ snapshot.ref.delete(); return Promise.resolve() } })
   }
-  return false
+  else return Promise.reject()
 }
 
+async function deleteImage_firestore(imagePath) : Promise<void>{
+  const imageStoreRef = ref(storage, imagePath)
+  return deleteObject(imageStoreRef)
+}
 
 /**
  *  Listo gli ID delle immagini salvate per l'utente come documento nel relativo catalogo
@@ -103,10 +117,11 @@ export async function updateImage( img : Immagine){
  *  Richiede a firestore la lista delle immagini di un catalogo specifico, usando l'id catalogo di fs stesso
  */
  export async function loadImagesFromCatalog_firebaseA(cid) : Promise<Immagine[]>{
-  //console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
+  // console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
   let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
   return res.docs.map(imgQuery => imgQuery.data())
 }
+
 
 
 /**

@@ -1,15 +1,16 @@
 <template>
   <div class="catalogDiv">
     <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <h3 v-if="catalogoProp.titolo">{{ catalogoProp.titolo }} 
+    <h3 v-if="catalogo.titolo">{{ catalogo.titolo }} 
       <button @click="downloadAlbum" alt="download album"> ⬇ </button>
       <button @click="openSortingOptions" alt="sort images"> ↕️ </button>
+      <button @click="shuffleAlbum" alt="shuffle images"> 🔀 </button>
     </h3> 
     <transition-group tag="ul" name="list">
-      <li v-for="img in catalogoProp.listaImmagini" :key="img.nomeFile">
+      <li v-for="img in catalogo.listaImmagini" :key="img.nomeFile">
         <ImageExifViewer :imageRf="img" @deleteImageCallbk="deleteGuiImageViewer"/>
       </li>
-      <em v-if=" ! catalogoProp.listaImmagini.length">No images in this catalog, add from ☁️ </em>
+      <em v-if=" ! catalogo.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </transition-group>
     <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
@@ -20,13 +21,15 @@ import { ref, onMounted } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
 import { deleteImage } from '@/types/Firebase_immagini'
+import Utente from "@/types/Utente"
+import shuffleArray from '@/utilities/ShuffleArray'
 
-const props = defineProps({   catalogoProp: {type: Catalogo, required: true }    })
+const props = defineProps({   catalogo: {type: Catalogo, required: true }    })
 const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
-let catalogIsReady = ref(false)
+let catalogIsReady = ref(true)
 
 async function deleteAllImages() {
-  confirm("Are yuo sure to delete this catalog?") == true ? emit('deleteCatalog', props.catalogoProp.cid) : console.log( "Catalog protected from destruction 🛡️ ")
+  confirm("Are yuo sure to delete this catalog?") == true ? emit('deleteCatalog', props.catalogo.cid) : console.log( "Catalog protected from destruction 🛡️ ")
 }
 function openSortingOptions(){
   console.log('openSortingOptions()')
@@ -35,28 +38,26 @@ function downloadAlbum(){
   console.log('downloadAlbum()')
 }
 
+function shuffleAlbum(){
+  console.log('shuffle album() \t before: ', Utente.getInstance().getCurrentCatalog_cid().listaImmagini.map(i=>i.getNomeFile()))
+  shuffleArray(Utente.getInstance().getCurrentCatalog_cid().listaImmagini)
+  console.log('shuffle album() \t after: ', Utente.getInstance().getCurrentCatalog_cid().listaImmagini.map(i=>i.getNomeFile()))
+}
+
 // TODO: re implementare usando l'event bus
 function deleteGuiImageViewer(imgID : string){
   console.log('CatalogForm.deleteGuiImageViewer() \t', imgID)
-  
-  deleteImage(imgID,props.catalogoProp.cid, props.catalogoProp.uid)
-
+  deleteImage(imgID,props.catalogo.cid, props.catalogo.uid)
   catalogIsReady.value = false
   setTimeout(() => { catalogIsReady.value = true }, 500)
 }
 
+/* 
 onMounted(() => {
   console.log("CatalogoForm.mounted()")
-  /*
-  let listUrlImgs = props.catalogoProp.listaImmagini.map( img => img.realURL )
-  props.catalogoProp.listaImmagini.forEach((img, i) => {
-    img.src = listUrlImgs[i]; 
-    img.classStyle = "";   //console.log(`img.src ${img.src} \t\t new img: ${listUrlImgs[i]}`)
-  })
-  */
   catalogIsReady.value = true
 })
-
+ */
 </script>
 
 <style>
@@ -71,7 +72,7 @@ onMounted(() => {
 .catalogDiv > h3 > button { float: right; background: transparent; border: none; padding: 0 .5rem 0; }
 .catalogDiv > h3 > button:hover { cursor: grabbing }
 .catalogDiv > h3 > button:after { content: attr(alt); position: absolute; z-index: 1; margin-top: -1rem; margin-left: -2rem; visibility: hidden; }
-.catalogDiv > h3 > button:hover + :after {visibility:initial }
+.catalogDiv > h3 > button:hover + :after { visibility:initial }
 .isReadySpinner {
   width: 3rem;
   position: absolute;

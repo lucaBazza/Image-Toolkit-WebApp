@@ -38,6 +38,10 @@ export default class Utente{
         return this.instance || (this.instance = new this('undefined user'))
     }
 
+    public static newInstance(){
+        return (this.instance = new this('undefined user').setListaCataloghi([]) )
+    }
+
     setNome(nome: string){
         this.nome = nome
         return this
@@ -185,6 +189,7 @@ export default class Utente{
                 watermark: ${this.watermark_src}\n
                 plan: ${this.active_plan}\n
                 public gallery: ${this.public_gallery}\n
+                cataloghi: ${this.listaCataloghi.map(c=>` ${c.titolo}`)}\n
                 allow notifications: ${this.allowNotifications}
             `
     }

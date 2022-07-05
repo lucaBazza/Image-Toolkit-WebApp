@@ -7,10 +7,9 @@
                    @click="change_catalog(cat.cid)" :class="utente.selected_cid === cat.cid && 'selezionato'">
         <b>Title:</b> {{cat.titolo}}
       </li>
-      <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog" key="inputCatalogs"/>
       <em v-if=" ! utente.listaCataloghi.length" key="emptyList">Empty list: please add a new catalog! <br></em>
+      <input type="text" @keyup.enter="addNewCatalogo" placeholder="➕ Enter a new catalog" key="inputCatalogs"/>
     </transition-group>
-   <!--  <button @click="signOut">🚪 Log out</button> -->
   </div>
   <span v-else>No user logged</span>
 </template>
@@ -19,17 +18,11 @@
 import { ref, reactive } from 'vue'
 import Utente from '@/types/Utente'
 import Catalogo from '@/types/Catalogo'
-import { useAuth } from '@/firebase'
-import { addCatalogo3 } from '@/types/FirebaseModel'
+import { addCatalogo3, updateUser } from '@/types/FirebaseModel'
 
-//const props = defineProps({       utente: { type: Utente }   })
-//const utente : Utente | undefined = inject('utente')
 let utente = reactive(Utente.getInstance())
 
 const emits = defineEmits(['change_catalog','notificate', 'add_catalog'])
-const { signOut } = useAuth()
-
-// console.log('LoginArea.setup()')
 
 let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
 const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true }, 500) }
@@ -51,8 +44,12 @@ const addNewCatalogo = (e) =>{
 }
 
 function change_catalog(cid){ 
+/* 
   forceReloadCataloghi()
   emits('change_catalog', cid)
+*/
+  updateUser( utente.setSelected_cid(cid) )
+
 }
 </script>
 
@@ -106,31 +103,6 @@ function change_catalog(cid){
 .loginForm > ul > li:hover { cursor: grab }
 .loginForm > ul > em { color: var(--backText) }
 </style>
-
-
-
-
-<!--  
-
-<br>
-<input id="registerName" type="text" ref="name" @keyup.enter="registerName"><br>
-<button @click.shift="handleClick">click me with shift</button> 
-<div v-if="hearts > 0" class="heartContainer">
-    <span v-for="heart in hearts">❤️</span>
-</div>
-
-
-//let utente: Utente | any
-//if( props.utente ) 
-//  utente = props.utente
-//else 
-//  utente = new Utente('','',[])    
-
--->
-
-
-
-
 
 <!-- 
 .loginForm > input {

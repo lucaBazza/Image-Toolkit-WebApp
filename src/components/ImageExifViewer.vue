@@ -9,7 +9,7 @@
         @error="imageLoadError"
         @click="toggleEditorFn"
     />
-    <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/>
+    <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <!-- <img v-if=" ! isImgLoaded()" class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
@@ -19,12 +19,13 @@
         <button class="imgSettingsBtns" attr="delete" @click="deleteImg"> 🗑️ </button>
         <button class="imgSettingsBtns" attr="edit" @click="reqEdit">🖊️</button>
         <button class="imgSettingsBtns" attr="reset adj" @click="resetAdj"> 🔄 </button>
+        <button class="imgSettingsBtns" attr="download image" @click="downloadImg"> ⬇️ </button>
         <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
       </div>
       <ul>
         <li>
           <svg src="@/assets/size-svgrepo-com.svg" class="iconSVG"></svg>
-          Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size/1000)}} Kb</span>
+          Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size!/1000)}} Kb</span>
         </li>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
@@ -39,10 +40,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
-import { deleteImage } from '@/types/Firebase_immagini'
+import { deleteImage, deleteImageFacade } from '@/types/Firebase_immagini'
+import Utente from '@/types/Utente'
+import { notify } from '@kyvg/vue3-notification'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
@@ -54,6 +57,9 @@ let src_real = ref(props.imageRf.src)
 let showImgEditModal = ref(false)
 let showFixButton = ref(false)
 let showImageRef = ref(true)
+
+let utente = inject('utente') as Utente
+
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
@@ -71,12 +77,12 @@ function swapRealImage(res){
   //console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
   src_real.value = props.imageRf.realURL
   
-  props.imageRf.classStyle = 'imageLoaded'  // TODO: controllare
+  props.imageRf.setClassStyle('imageLoaded')  // TODO: controllare
 
   //if( ! props.imageRf.classStyle )
-  //  props.imageRf.classStyle = 'imageLoaded'
+    props.imageRf.classStyle = 'imageLoaded'
 
-  //props.imageRf.classStyle = 'imgUploadRequest'
+  // props.imageRf.setClassStyle('imgUploadRequest')
 
   // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
 }
@@ -87,12 +93,27 @@ function reqEdit() {
 
 function resetAdj(){ console.log("ImageExifViewer.resetAdj() ") }
 
+function downloadImg(){ 
+  console.log('donwload image')
+  notify({ title: "Download image", text: `processing ${props.imageRf.getNomeFile()}` })
+}
+
+/**
+ *  - backuppa lista (se fallisse)
+ *  - cancella dalla gui l'immagine
+ *  - cancella parallelamente da firebase e firestore
+ */
 async function deleteImg(){
-  //deleteImage(props.imageRf.getNomeFile(), props.imageRf.catalogoID)
-  //  .then( res => console.log('ImageExifViewer().deleteimg() res: ', res) )
-  //  .then( () => emits('deleteImageCallbk', props.imageRf.getNomeFile()) )
-  //  .catch( ex => console.log('ImagViewer err: ',ex) )
-  emits('deleteImageCallbk', props.imageRf.imgID)
+  const listBefore = utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini
+  const listRemoved = listBefore.filter( i => i.imgID !== props.imageRf.imgID )
+  utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listRemoved
+
+  deleteImageFacade(props.imageRf)
+    .then( ()=> notify({title:'Success', text: `${props.imageRf.getNomeFile()} deleted`}) )
+    .catch( ()=> {
+      notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}` })
+      setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listBefore, 500)
+    })
 }
 
 function toggleEditorFn(){
@@ -130,11 +151,6 @@ function getInfoSize() : {label:string, val:string}[]{
 
 onMounted( async () => {
   //console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
-  
-  // ATTENZIONE FETCH non è detto che funzioni correttamente, la risposta dal server è false ???
-  //await fetch(props.imageRf.realURL, { mode: 'no-cors'})
-  //    .then(res => swapRealImage(res) )
-  //    .catch(ex => console.log(ex.message))
 
   props.imageRf.classStyle = 'loadingBG'
 
@@ -157,7 +173,7 @@ onMounted( async () => {
   min-width: 550px;
   max-width: 1200px;
   height: 30vh;
-  background: var(--lighWarmGradinet); /*linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);*/
+  background: var(--lighWarmGradinet);
   background-size: 400% 400%;
   animation: gradient 10s ease infinite;
   -moz-animation: gradient 10s ease infinite;
@@ -182,8 +198,7 @@ onMounted( async () => {
   margin: 1rem;
   overflow: hidden;
   overflow-y: scroll;
-  scrollbar-width: thin; 
-  scrollbar-color: red;
+  scrollbar-width: thin;
 }
 .mainViewer > span::first-line {
   line-height: 2rem;
@@ -226,11 +241,18 @@ onMounted( async () => {
 .imgUploadRequest{ opacity: .4; z-index: 0; }
 .imgUploadRequest + .imgOverlaySpinner{ opacity: 1; }
 .imgOverlaySpinner{ 
+  opacity: 0;
     /*   width: 50%; position: initial  */
-    position: absolute;
+    /*position: absolute;
     top: 30%;
-    left: 30%;
-    opacity: 0;
+    left: 30%;*/
+    /* 
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    top: 30%;
+    left: -29%;
+     */
 }
 
 /*.imgUploadRequest::after{ 
@@ -268,10 +290,11 @@ onMounted( async () => {
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(3){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.0s; }
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(4){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 1.5s; }
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(5){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 3s; }
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(6){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 3.5s; }
+.cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(7){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 4s; }
 
 /* @keyframes fadeInBtns {
-    0% { opacity: 0 }
-    100% { opacity: 1 }
+    0% { opacity: 0 }     100% { opacity: 1 }
 } */
 
 .iconSVG{ width: 1rem; height: 1rem; object-fit: cover; }

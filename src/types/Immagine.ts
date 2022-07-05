@@ -6,6 +6,8 @@ export interface ImageSize {
     height: number
 }
 
+export type imageStyles = 'loading'|'loadingBG'|'imgUploadRequest'|'imageLoaded';
+
 export default class Immagine implements Iterator<number>{
     nomeFile: string
     src: string
@@ -21,6 +23,7 @@ export default class Immagine implements Iterator<number>{
     width?: number
     height?: number
     size?: number
+    classificatore?: any
 
     constructor(src) {
         this.nomeFile = this.checkFileName(src)
@@ -92,7 +95,7 @@ export default class Immagine implements Iterator<number>{
         return this
     }
 
-    setClassStyle(classe: string){
+    setClassStyle(classe: imageStyles){
         this.classStyle = classe
         return this
     }
@@ -110,6 +113,11 @@ export default class Immagine implements Iterator<number>{
 
     setSize(size: number){
         this.size = size
+        return this
+    }
+
+    setClassificatore(cl : any){
+        this.classificatore = cl
         return this
     }
 }
