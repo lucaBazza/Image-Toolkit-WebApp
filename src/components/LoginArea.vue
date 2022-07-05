@@ -1,7 +1,7 @@
 <template>
   <div class="loginForm" v-if="utente">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
-    <transition-group v-if="cataloghiLoaded" tag="ul" name="list">
+    <transition-group tag="ul" name="list"> <!-- <transition-group v-if="cataloghiLoaded" tag="ul" name="list"> -->
       <h4 key="title">Catalogs</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.cid" :imageCount="cat.listaImmagini.length"
                    @click="change_catalog(cat.cid)" :class="utente.selected_cid === cat.cid && 'selezionato'">
@@ -15,41 +15,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 import Utente from '@/types/Utente'
 import Catalogo from '@/types/Catalogo'
 import { addCatalogo3, updateUser } from '@/types/FirebaseModel'
+import { notify } from '@kyvg/vue3-notification'
 
 let utente = reactive(Utente.getInstance())
 
-const emits = defineEmits(['change_catalog','notificate', 'add_catalog'])
-
-let cataloghiLoaded = ref(true)   // serve per 'forzare' il reload della lista utenti, perchè la key non è reactive (?!)
-const forceReloadCataloghi = () => { cataloghiLoaded.value = false; setTimeout( ()=>{ cataloghiLoaded.value = true }, 500) }
+const emits = defineEmits(['change_catalog','notificate'/* , 'add_catalog' */])
 
 /**
  *  - creo un catalogo localmente e cancello l'input text
  *  - aggiorno la gui TODO controllare props push non va
  *  - aggiorno catalogo su firebase, se va bene aggiorno il componente padre
+ *    TODO: mettere limite per userplan di cataloghi
  */
 const addNewCatalogo = (e) =>{
-  if( e.target.value == '' ) return
-  if( ! utente ) return
+  if( e.target.value == '' || ! utente ) return
 
-  console.log(utente)
-  addCatalogo3(new Catalogo(utente.nome, e.target.value).setCatalogUserID(utente.uid))
-    .then( res_cid => emits('add_catalog', res_cid) )
-    .catch( err => emits('notificate',{ title: 'Error', text: err, type: 'error' }))
+  let cat = new Catalogo(utente.nome, e.target.value).setCatalogUserID(utente.uid)
   e.target.value = ''
+
+  addCatalogo3(cat)
+    .then( res_cid => {
+        utente.listaCataloghi.push(cat)   // console.log('Lista cataloghi aggiornata: ', utente.listaCataloghi.map(c=>c.titolo).join(','))
+        updateUser(utente.setSelected_cid(res_cid))
+          .then( ()=> notify({ title: "Catalog added", text: cat.titolo, type: 'info' }) )
+    })
+    .catch( err => emits('notificate',{ title: 'Error', text: `${cat.titolo} \n ${err}`, type: 'error' }))
+  
 }
 
 function change_catalog(cid){ 
-/* 
-  forceReloadCataloghi()
-  emits('change_catalog', cid)
-*/
   updateUser( utente.setSelected_cid(cid) )
-
 }
 </script>
 

@@ -17,10 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, reactive, onMounted } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
 import { deleteImage } from '@/types/Firebase_immagini'
+import { deleteCatalog, updateUser } from '@/types/FirebaseModel'
 import Utente from "@/types/Utente"
 import shuffleArray from '@/utilities/ShuffleArray'
 
@@ -29,7 +30,17 @@ const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
 let catalogIsReady = ref(true)
 
 async function deleteAllImages() {
-  confirm("Are yuo sure to delete this catalog?") == true ? emit('deleteCatalog', props.catalogo.cid) : console.log( "Catalog protected from destruction 🛡️ ")
+  if(confirm("Are yuo sure to delete this catalog?") == true){
+
+    /* emit('deleteCatalog', props.catalogo.cid)  */
+    deleteCatalog(props.catalogo.cid)
+    .then( res =>{ 
+      console.log('Delete done: ', res);
+      utente.listaCataloghi = utente.listaCataloghi.filter(c => c.cid !== props.catalogo.cid )
+      updateUser( utente.selectFirstAviableCatalog() )
+    })
+  } 
+  else console.log( "Catalog protected from destruction 🛡️ ")
 }
 function openSortingOptions(){
   console.log('openSortingOptions()')
@@ -38,10 +49,9 @@ function downloadAlbum(){
   console.log('downloadAlbum()')
 }
 
+let utente = reactive(Utente.getInstance())
 function shuffleAlbum(){
-  console.log('shuffle album() \t before: ', Utente.getInstance().getCurrentCatalog_cid().listaImmagini.map(i=>i.getNomeFile()))
-  shuffleArray(Utente.getInstance().getCurrentCatalog_cid().listaImmagini)
-  console.log('shuffle album() \t after: ', Utente.getInstance().getCurrentCatalog_cid().listaImmagini.map(i=>i.getNomeFile()))
+  shuffleArray(utente.getCurrentCatalog_cid().listaImmagini)
 }
 
 // TODO: re implementare usando l'event bus

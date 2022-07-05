@@ -5,37 +5,6 @@ import Utente from './Utente'
 import { Ref } from 'vue'
 import Immagine from './Immagine'
 
-/**
- *   callback: il catalogo è già stato inserito su FS, occorre leggerlo e aggiornare la gui
- */
-export async function add_catalog_logic(utente: Utente, cid : string){
-    
-    let catalog : Catalogo = await getCatalog_fs(cid)
-    utente.listaCataloghi.push(catalog)
-    //app.currentAppCatalog = catalog
-    updateUser(utente.setSelected_cid(catalog.cid))
-
-    //app.showLogInArea = false
-    //setTimeout( () => app.showLogInArea = true, 700)
-    
-    //app.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
-    return { title: "Catalog added", text: catalog.titolo, type: 'info' }
-}
-
-
-/**
- *  cancella da firebase
- */
-export async function delete_catalog_logic(app: any, cid : string){
-    deleteCatalog(cid)
-        .then( res =>{ 
-            console.log(res)
-            app.utenteSng.listaCataloghi = app.utenteSng.listaCataloghi.filter(c => c.cid !== cid )
-            if( app.currentAppCatalog.cid === cid )
-                app.currentAppCatalog = app.utenteSng.getCurrentCatalog_cid()
-        })
-}
-
 
 /**
  *    Cambia il catalogo selezionato usando il cid (aggiorna utente e catalogo aperto)
@@ -48,14 +17,11 @@ export async function change_catalog_logic( cid : string){
 
     updateUser(utente)
 
-    //if( ! this.utenteSng.getCatalog_by_cid(cid).listaImmagini.length){  // true anche quando il catalogo è correttaemnte inizializzato (ma è senza imamgini)
     if( ! utente.getCatalog_by_cid(cid).listaImmagini){
       console.log(`Catalogo: ${cid} non ha immagini caricate, provvedo a scaricarle`)
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
       utente.setImages_by_cid(listaImgs,cid)
     }
-
-    //app.currentAppCatalog = app.utenteSng.getCatalog_by_cid(cid)
     
     console.log('App.change_catalog() \t titolo: ', utente.getCurrentCatalog_cid().titolo)
 }
@@ -82,21 +48,9 @@ export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
       utenteRef.selectFirstAviableCatalog() 
     }
     
-    //return utente.selected_cid ? Promise.resolve(utente.selected_cid) : Promise.reject({title:'No cid', text: 'User has no cid aviable'})
     if( ! utenteRef.selected_cid )
       return Promise.reject({title:'No cid', text: 'User has no cid aviable'})
 
-    /*const resLoading = await load_all_catalogIimages(utenteRef)
-      .then( res => console.log(res))
-      .catch( err => console.log(err))*/
-    
-   
-    /*
-    utenteRef.value.listaCataloghi.forEach(cat =>{
-      if(cat.cid === utenteRef.value.selected_cid)
-        cat.setListaImmagini(imagesSelectedCat)
-    })
-    */
     const imagesSelectedCat = await loadImagesFromCatalog_firebaseA(utenteRef.selected_cid) 
     Utente.getInstance().getListaCataloghi().forEach( cat =>{
       if(cat.cid === utenteRef.selected_cid)
@@ -106,17 +60,6 @@ export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
     //console.log('resLoading: ', utenteRef.listaCataloghi.map(c => c.titolo))
 
     return Promise.resolve('true')
-
-      // carico immagini catalogo selezionato
-    //app.load_images_by_cid(utente.selected_cid)
-    //      .then( current_catalog => { 
-    //                    // app.currentAppCatalog = current_catalog
-    //                    app.loadingDone()
-    //                    return utente.getCataloghi_NON_sel()
-    //                  })
-    //      .then( otherCatalgs => otherCatalgs.forEach(c => app.load_images_by_cid(c.cid)) )
-
-
   }
   else return Promise.reject({ 
                     title: "No catalog found", 
@@ -127,6 +70,45 @@ export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
 
 
 
+
+            // 2022 07 05
+/**
+ *   callback: il catalogo è già stato inserito su FS, occorre leggerlo e aggiornare la gui
+ */
+/* export async function add_catalog_logic(utente: Utente, cid : string){
+    
+    let catalog : Catalogo = await getCatalog_fs(cid)
+    utente.listaCataloghi.push(catalog)
+    //app.currentAppCatalog = catalog
+    updateUser(utente.setSelected_cid(catalog.cid))
+
+    //app.showLogInArea = false
+    //setTimeout( () => app.showLogInArea = true, 700)
+    
+    //app.notificate({ title: "Catalog added", text: catalog.titolo, type: 'info' })
+    return { title: "Catalog added", text: catalog.titolo, type: 'info' }
+} */
+
+
+/**
+ *  cancella da firebase  - OBSOLETO
+ */
+/* export async function delete_catalog_logic(app: any, cid : string){
+    deleteCatalog(cid)
+        .then( res =>{ 
+            console.log(res)
+            app.utenteSng.listaCataloghi = app.utenteSng.listaCataloghi.filter(c => c.cid !== cid )
+            if( app.currentAppCatalog.cid === cid )
+                app.currentAppCatalog = app.utenteSng.getCurrentCatalog_cid()
+        })
+} */
+
+
+
+
+
+
+          // 2022 07
 /*
 async function load_all_catalogIimages(utente : Ref<Utente>){
   console.log('load_all_catalogIimages() ', utente.value.nome)

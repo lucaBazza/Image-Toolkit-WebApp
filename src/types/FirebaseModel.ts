@@ -150,10 +150,11 @@ export async function updateUser(utente: Utente){
 
 /**
  * https://www.youtube.com/watch?v=s1frrNxq4js
+ *    TODO: delete also the images inside!
  */
 export async function deleteCatalog(cid: string){
   const docRef = doc(db,CATALOGHI_COL, cid)
-  return deleteDoc(docRef).then( ()=> Promise.resolve('callback delete catalog, update form')).catch(ex => Promise.reject(ex))
+  return deleteDoc(docRef).then( ()=> Promise.resolve('callback delete catalog, now update form')).catch(ex => Promise.reject(ex))
 }
 
 
