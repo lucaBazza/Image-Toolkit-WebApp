@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ImageSize } from '@/types/Immagine'
+import getBase64 from '@/utilities/convertBase64'
 
 /**
  *      ROADMAP
@@ -42,13 +43,7 @@ async function drop(e){
 
     sourcesBase64.forEach( (img,index) => emit('requestImageUpload', files[index], img, imageSizes[index]) )
 }
-function getBase64(file) : Promise<string>{
-    const reader = new FileReader()
-    return new Promise(resolve => {
-        reader.onload = ev => { resolve(ev.target!.result as string) }
-        reader.readAsDataURL(file)
-    })
-}
+
 function imageSize(imgBase64){
     const img = document.createElement("img");
     const promise = new Promise<ImageSize>((resolve, reject) => {

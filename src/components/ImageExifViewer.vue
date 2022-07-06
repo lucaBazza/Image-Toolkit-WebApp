@@ -4,13 +4,14 @@
         v-if="showImageRef"
         :src="src_real"
         :class="imageRf.classStyle"
-        :id=" 'img_' + imageRf.id "
+        :id="imageRf.imgID"
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
+        ref="nodeImg"
+        crossorigin="anonymous"
     />
     <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
-    <!-- <img v-if=" ! isImgLoaded()" class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
       <div class="cntimgSettingsBtns">
@@ -22,10 +23,16 @@
         <button class="imgSettingsBtns" attr="download image" @click="downloadImg"> ⬇️ </button>
         <button class="imgSettingsBtns" attr="fix" v-if="showFixButton" @click="fixLinkImage"> 🔧 </button>
       </div>
-      <ul>
+      <ul>        
         <li>
-          <svg src="@/assets/size-svgrepo-com.svg" class="iconSVG"></svg>
-          Size: {{imageRf.width}} x {{imageRf.height}} px <span>{{Math.floor(imageRf.size!/1000)}} Kb</span>
+            <b>&#10064; Dimension</b> {{imageRf.width}} &#8226; {{imageRf.height}} pixel 
+        </li>
+        <li>
+            <b>&#9777; Size</b> {{imageRf.getSizeString()}}
+        </li>
+        <li>
+          <b @click="showClassifier = ! showClassifier">Classifier </b>
+            <component :is="classifierComp" :immagine="imageRf" :nodeImg="nodeImg"/>
         </li>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
@@ -40,26 +47,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from 'vue'
+import { ref, onMounted, inject, defineAsyncComponent, computed, VNodeRef } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
-import { deleteImage, deleteImageFacade } from '@/types/Firebase_immagini'
+import { deleteImageFacade } from '@/types/Firebase_immagini'
 import Utente from '@/types/Utente'
 import { notify } from '@kyvg/vue3-notification'
 
-// https://quasar.dev/vue-components/img#example--native-lazy-loading
-// https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
-
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
-const emits = defineEmits(['deleteImageCallbk'])
 
 let src_real = ref(props.imageRf.src)
 let showImgEditModal = ref(false)
 let showFixButton = ref(false)
 let showImageRef = ref(true)
-
+let showClassifier = ref(false)
 let utente = inject('utente') as Utente
 
+let nodeImg = ref()
+defineExpose({nodeImg})
+
+const classifierComp = computed (() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
@@ -73,17 +80,10 @@ function imageLoadError(e){
 
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
 
-function swapRealImage(res){
-  //console.log(`\t\t\✅ ${props.imageRf.nomeFile} \t`, res.ok ? ":-)" : ":.(" )
+function swapRealImage(){
   src_real.value = props.imageRf.realURL
-  
-  props.imageRf.setClassStyle('imageLoaded')  // TODO: controllare
-
-  //if( ! props.imageRf.classStyle )
-    props.imageRf.classStyle = 'imageLoaded'
-
+  props.imageRf.setClassStyle('imageLoaded')
   // props.imageRf.setClassStyle('imgUploadRequest')
-
   // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
 }
 
@@ -99,7 +99,7 @@ function downloadImg(){
 }
 
 /**
- *  - backuppa lista (se fallisse)
+ *  - backuppa lista attuale (se fallisse la cancellazione)
  *  - cancella dalla gui l'immagine
  *  - cancella parallelamente da firebase e firestore
  */
@@ -133,33 +133,31 @@ function hideExtension(str: string){
   return str.replace(/\.[^/.]+$/, "")
 }
 
-function getInfoSize() : {label:string, val:string}[]{
-  const obi /* :{label:string, val:string} */ = (l:string, v: undefined | any ) => { 
-      //return v ? {label: l, value: Number(v) ? `${Math.floor(Number(v)/1000)}KB` : v } : { label:'',value:''}
-      return {label: l, val: v}
-    }
-  //return [{label: 'Width', val: props.imageRf.width},{label: 'Height', val: props.imageRf.height},{label:'Size', val: `${Math.floor(props.imageRf.size!/1000)}KB` }]
-  //return [obi('Width',props.imageRf.width),obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
-  //const w = obi('Width', props.imageRf.width)
-  //return [w,obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
-  let out : {label:string, val:string}[]= []
-  if(props.imageRf.width) out.push( obi('Width', props.imageRf.width) )
-  if(props.imageRf.height) out.push( obi('Height', props.imageRf.height) )
-  if(props.imageRf.size) out.push( obi('Size', `${Math.floor(Number(props.imageRf.size)/1000)} KB`) )
-  return out
-}
+
+let classifier
+
 
 onMounted( async () => {
-  //console.log(`ImageExifViewer.mounted() - ${props.imageRf.nomeFile}`)
-
   props.imageRf.classStyle = 'loadingBG'
-
-  //props.imageRf.exifDatas = [...getInfoSize(), ...Immagine.requireFakeExifs()]
   props.imageRf.exifDatas = Immagine.requireFakeExifs()
+  swapRealImage()
 
-  swapRealImage(props.imageRf.realURL)
-  
+
+
+  //classifier = ml5.imageClassifier('MobileNet',zabba_classify)
+
+
 })
+
+function zabba_classify(){
+  console.log('zabba_classify()', nodeImg.value)
+  classifier.classify(nodeImg.value, (error : string, results : any)=>{
+    if(error)
+      { console.log(error); /* status.value = 'Error in prediction'; */ return }
+    console.log('Classified as : ', results.map( (r: { label: number | string }) => r.label ).slice(0,2).join(', ') )
+  })
+}
+
 </script>
 
 <style>
@@ -300,3 +298,25 @@ onMounted( async () => {
 .iconSVG{ width: 1rem; height: 1rem; object-fit: cover; }
 
 </style>
+
+
+ 
+<!--  
+
+function getInfoSize() : {label:string, val:string}[]{
+  const obi : any = (l:string, v: undefined | any ) => { 
+      //return v ? {label: l, value: Number(v) ? `${Math.floor(Number(v)/1000)}KB` : v } : { label:'',value:''}
+      return {label: l, val: v}
+    }
+  //return [{label: 'Width', val: props.imageRf.width},{label: 'Height', val: props.imageRf.height},{label:'Size', val: `${Math.floor(props.imageRf.size!/1000)}KB` }]
+  //return [obi('Width',props.imageRf.width),obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
+  //const w = obi('Width', props.imageRf.width)
+  //return [w,obi('Height',props.imageRf.height),obi('Size',props.imageRf.size)]
+  let out : {label:string, val:string}[]= []
+  if(props.imageRf.width) out.push( obi('Width', props.imageRf.width) )
+  if(props.imageRf.height) out.push( obi('Height', props.imageRf.height) )
+  if(props.imageRf.size) out.push( obi('Size', `${Math.floor(Number(props.imageRf.size)/1000)} KB`) )
+  return out
+}
+
+ -->

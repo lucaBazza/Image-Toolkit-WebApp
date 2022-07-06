@@ -1,6 +1,11 @@
+/**
+ * 
+ */
 
 //interface Immagine{ }
 //import { throwStatement } from "@babel/types"
+import { Classification } from "./Classification"
+
 export interface ImageSize {
     width: number
     height: number
@@ -23,7 +28,7 @@ export default class Immagine implements Iterator<number>{
     width?: number
     height?: number
     size?: number
-    classificatore?: any
+    classificatore?: Classification
 
     constructor(src) {
         this.nomeFile = this.checkFileName(src)
@@ -64,16 +69,16 @@ export default class Immagine implements Iterator<number>{
     static requireFakeExifs() {
         const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
         return [
-/*           { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
-          { label: "ImageHeight", val: randomVal(5000,400) }, */
-          { label: "Software", val: "Adobe Photoshop 22.1 (Macintosh)" },
-          { label: "ModifyDate", val: "2021:05:24 16:07:10" },
-          { label: "Copyright", val: "zabba.lucabazzanella.com" },
-          { label: "Aspect ratio", val: "4/5" },
-          { label: "GPS", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
-          { label: "Voto", val: "⭐".repeat(randomVal(0,5)) },
-          { label: "Classificazione", val: ['Landscape','Mountain','Nature','Rocks','Portrait'][randomVal(0,4)] },
-          { label: "Note", val: "..." },
+            { label: "Software", val: "Adobe Photoshop 22.1 (Macintosh)" },
+            { label: "Modify date", val: "2021:05:24 16:07:10" },
+            { label: "Copyright", val: "zabba.lucabazzanella.com" },
+            { label: "Aspect ratio", val: "4/5" },
+            { label: "GPS", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
+            { label: "Voto", val: "⭐".repeat(randomVal(0,5)) },
+        //  { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
+        //  { label: "ImageHeight", val: randomVal(5000,400) },
+        //  { label: "Classificazione", val: ['Landscape','Mountain','Nature','Rocks','Portrait'][randomVal(0,4)] },
+            { label: "Note", val: "..." },
         ];
     }
 
@@ -116,7 +121,19 @@ export default class Immagine implements Iterator<number>{
         return this
     }
 
-    setClassificatore(cl : any){
+    getSize(){
+        return this.size
+    }
+
+    getSizeString(){
+        if( ! this.size) return
+        const million = 1000000
+        if( this.size > million ) 
+            return `${(this.size/million).toFixed(3)} MB`
+        return `${(this.size/1000).toFixed(3)} KB`
+    }
+
+    setClassificatore(cl : Classification){
         this.classificatore = cl
         return this
     }

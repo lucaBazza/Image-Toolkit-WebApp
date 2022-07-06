@@ -12,15 +12,15 @@
       <button @click="toggleModalInfos">ℹ️</button>
   </nav>
 
-  <h1 id="mainTitle">Image Toolkit App</h1>
+  <h1 id="mainTitle">Pic Kit App</h1>
 
-  <LoginArea v-if="showLogInArea" @change_catalog="change_catalog" @notificate="notificate"/> <!--  :utente="utenteSng" @add_catalog="add_catalog" -->
+  <LoginArea v-if="showLogInArea" @change_catalog="change_catalog" @notificate="notificate"/>
  
   <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
 
   <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
 
-  <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato" /> <!-- @deleteCatalog="deleteCatalog" -->
+  <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato" />
 
   <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div> 
 
@@ -45,7 +45,7 @@ import { useAuth, auth } from '@/firebase'
 import { uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
 import { loadUserSettings, updateUser } from './types/FirebaseModel'
 import { loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
-import { /* delete_catalog_logic, */ change_catalog_logic,loadCatalogo } from '@/types/App.controller'
+import { change_catalog_logic,loadCatalogo } from '@/types/App.controller'
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 
@@ -71,8 +71,6 @@ provide('utente',utenteSng)
 
 
 onMounted( async () => {
-  // console.log('app.mounted()')
-
         // Avvio in dark mode
   document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
   
@@ -91,7 +89,7 @@ onMounted( async () => {
                         .then( async otherCatalgs => { 
                           console.log('Remaining catalogs to load in backgrounds: ', otherCatalgs.length)
                           let prs = otherCatalgs.map( async c => utenteSng.getCatalog_by_cid(c.cid).setListaImmagini(await loadImagesFromCatalog_firebaseA(c.cid)) )
-                          await Promise.all(prs).then( () => console.log('\tloaded all the other catalogs 😘 \n\t\t', otherCatalgs.map(c=>c.titolo).join(', ')) )
+                          await Promise.all(prs).then( () => console.log('\t ✅ loaded all the other catalogs: \t', otherCatalgs.map(c=>c.titolo).join(', ')) )
                         })
                         .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
                         .catch( err =>{ console.log(' 🕷  : ',err); notificate(err) })
@@ -107,11 +105,7 @@ onMounted( async () => {
     }
   }) 
 })
-/* 
-function deleteCatalog(cid){ 
-  delete_catalog_logic(Utente.getInstance(), cid)
-}
- */
+
 async function change_catalog(cid : string){
   change_catalog_logic(cid)
 }

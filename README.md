@@ -97,6 +97,13 @@ kill -9 <pid>    //kill
 lsof -t -i :8081 | xargs kill -9
 
 ```
+
+.
+
+Note: for ML classifier is needed to get for each classification a GET of the image => crossOrigin = anonymus, check firebase service CORS policy
+
+> https://stackoverflow.com/questions/37760695/firebase-storage-and-access-control-allow-origin
+
 .
 
 > cool gallery for show images

@@ -1,14 +1,14 @@
 <template>
   <div class="catalogDiv">
     <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
-    <h3 v-if="catalogo.titolo">{{ catalogo.titolo }} 
+    <h3 v-if="catalogo.titolo">{{ catalogo.titolo }}
       <button @click="downloadAlbum" alt="download album"> ⬇ </button>
       <button @click="openSortingOptions" alt="sort images"> ↕️ </button>
       <button @click="shuffleAlbum" alt="shuffle images"> 🔀 </button>
     </h3> 
     <transition-group tag="ul" name="list">
       <li v-for="img in catalogo.listaImmagini" :key="img.nomeFile">
-        <ImageExifViewer :imageRf="img" @deleteImageCallbk="deleteGuiImageViewer"/>
+        <ImageExifViewer :imageRf="img"/>
       </li>
       <em v-if=" ! catalogo.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </transition-group>
@@ -54,20 +54,6 @@ function shuffleAlbum(){
   shuffleArray(utente.getCurrentCatalog_cid().listaImmagini)
 }
 
-// TODO: re implementare usando l'event bus
-function deleteGuiImageViewer(imgID : string){
-  console.log('CatalogForm.deleteGuiImageViewer() \t', imgID)
-  deleteImage(imgID,props.catalogo.cid, props.catalogo.uid)
-  catalogIsReady.value = false
-  setTimeout(() => { catalogIsReady.value = true }, 500)
-}
-
-/* 
-onMounted(() => {
-  console.log("CatalogoForm.mounted()")
-  catalogIsReady.value = true
-})
- */
 </script>
 
 <style>
@@ -108,8 +94,25 @@ onMounted(() => {
   padding: 1rem;
   border-radius: 1rem;
 }
+
 </style>
 
+
+
+<!-- 
+// TODO: re implementare usando l'event bus
+function deleteGuiImageViewer(imgID : string){
+  console.log('CatalogForm.deleteGuiImageViewer() \t', imgID)
+  deleteImage(imgID,props.catalogo.cid, props.catalogo.uid)
+  catalogIsReady.value = false
+  setTimeout(() => { catalogIsReady.value = true }, 500)
+}
+ 
+onMounted(() => {
+  console.log("CatalogoForm.mounted()")
+  catalogIsReady.value = true
+}) 
+-->
 
 
 
