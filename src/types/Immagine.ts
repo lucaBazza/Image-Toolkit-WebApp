@@ -2,9 +2,7 @@
  * 
  */
 
-//interface Immagine{ }
-//import { throwStatement } from "@babel/types"
-import { Classification } from "./Classification"
+import Classification from "./Classification"
 
 export interface ImageSize {
     width: number
@@ -28,10 +26,10 @@ export default class Immagine implements Iterator<number>{
     width?: number
     height?: number
     size?: number
-    classificatore?: Classification
+    classificatore?: Classification[]
 
     constructor(src) {
-        this.nomeFile = this.checkFileName(src)
+        this.nomeFile = this.guessFileName(src)
         this.src = src ? src : require("./../assets/loading.gif")
         this.realURL = src
         this.id = -1
@@ -44,9 +42,12 @@ export default class Immagine implements Iterator<number>{
 
     isEmptyOrSpaces = (str)=>{ return str === null || str.match(/^ *$/) !== null }
 
-    checkFileName = (str) => { 
+    /**
+     *  dalla stringa dell'indrizzo reale, toglie dominio e argomenti per restituire solo il nome
+     */
+    private guessFileName = (str) => { 
         try{ return new URL(str.replaceAll('%2F','/')).pathname.split('/').pop() as string  }
-        catch(err){ return str }   
+        catch(err){ return str }
     }
 
     // TODO: usare il firebase image ID per fare l'iterator
@@ -133,8 +134,28 @@ export default class Immagine implements Iterator<number>{
         return `${(this.size/1000).toFixed(3)} KB`
     }
 
-    setClassificatore(cl : Classification){
+    setClassificatore(cl : Classification[]){
         this.classificatore = cl
+        return this
+    }
+
+    getClassificatoreString(){
+        const number_of_showResults = 3
+        if(this.classificatore)
+            return this.classificatore.map( (r: { label: number | string }) => r.label ).join(',').split(',')
+                                        .slice(0,number_of_showResults).join(',')
+    }
+
+    setTempImgId(tempImgId : string){
+        this.imgID = `temp-${tempImgId}`
+        return this
+    }
+
+    /**
+     *  in fase di upload la preview è nel campo src, per non invarlo su FS pulisco prima
+     */
+    clearSrc(){
+        this.src = ''
         return this
     }
 }

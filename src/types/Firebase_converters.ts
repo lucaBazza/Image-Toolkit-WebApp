@@ -1,7 +1,9 @@
 import Utente from "./Utente"
 import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
-import firebase from 'firebase/compat/app';
+import Classification from "./Classification"
+import firebase from 'firebase/compat/app'
+// import { map } from "@firebase/util"
 
 /**
  *    C L A S S   C O N V E R T E R
@@ -89,7 +91,8 @@ export const immagineConverter = {
             adjustmentID: immagine.adjustmentID,
             width: immagine.width,
             height: immagine.height,
-            size: immagine.size
+            size: immagine.size,
+            classifier: immagine.classificatore ? classificatoreHelperTo(immagine.classificatore) : null
         }
     },
     fromFirestore: (snapshot, options) => {
@@ -97,7 +100,7 @@ export const immagineConverter = {
         let out = new Immagine(data.src)    // indicare realUrl > url   come src
         out.nomeFile = data.nomeFile
         out.realURL = data.realURL
-        out.id = snapshot.id
+        // out.id = snapshot.id
         out.exifDatas = data.exifDatasID
         out.imgID = snapshot.id
         out.alt = snapshot.alt
@@ -107,6 +110,22 @@ export const immagineConverter = {
         out.width = data.width
         out.height = data.height
         out.size = data.size
+
+        if(data.classifier)
+            out.classificatore = data.classifier.map( dat => dat as Classification )
+
         return out
     }
+}
+
+/**
+ *      https://stackoverflow.com/questions/58737899/how-do-i-get-map-object-from-firebase-in-typescript  
+*/
+function classificatoreHelperTo( cls : Classification[] ){
+    return cls.map( cl => {
+        let helper = {} as Classification
+        helper.label = cl.label
+        helper.confidence = cl.confidence
+        return helper
+    })
 }

@@ -8,9 +8,7 @@
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
-        ref="nodeImg"
-        crossorigin="anonymous"
-    />
+    />        <!--   ref="nodeImg"         crossorigin="anonymous" -->
     <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
@@ -31,8 +29,12 @@
             <b>&#9777; Size</b> {{imageRf.getSizeString()}}
         </li>
         <li>
-          <b @click="showClassifier = ! showClassifier">Classifier </b>
-            <component :is="classifierComp" :immagine="imageRf" :nodeImg="nodeImg"/>
+          <b @click="runClassifier">Classifier </b>
+            <span v-if="imageRf.classificatore">{{imageRf.getClassificatoreString()}}</span>
+            <component v-else :is="classifierComp" :immagine="imageRf"/>
+        </li>
+        <li>
+          <b>Aspect ratio </b> {{aspectRatio(imageRf.width!/imageRf.height!,50)}}
         </li>
         <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
@@ -47,12 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject, defineAsyncComponent, computed, VNodeRef } from 'vue'
+import { ref, onMounted, inject, defineAsyncComponent, computed } from 'vue'
 import Immagine from '@/types/Immagine'
 import ImageEditorModalVue from './ImageEditorModal.vue'
 import { deleteImageFacade } from '@/types/Firebase_immagini'
 import Utente from '@/types/Utente'
 import { notify } from '@kyvg/vue3-notification'
+import aspectRatio from '@/utilities/AspectRatio'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 
@@ -62,10 +65,10 @@ let showFixButton = ref(false)
 let showImageRef = ref(true)
 let showClassifier = ref(false)
 let utente = inject('utente') as Utente
-
+/* 
 let nodeImg = ref()
 defineExpose({nodeImg})
-
+ */
 const classifierComp = computed (() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
 
 function imageLoadError(e){
@@ -149,15 +152,20 @@ onMounted( async () => {
 
 })
 
+function runClassifier(){
+  showClassifier.value = true
+}
+
+/* 
 function zabba_classify(){
   console.log('zabba_classify()', nodeImg.value)
   classifier.classify(nodeImg.value, (error : string, results : any)=>{
     if(error)
-      { console.log(error); /* status.value = 'Error in prediction'; */ return }
+      { console.log(error);  return }
     console.log('Classified as : ', results.map( (r: { label: number | string }) => r.label ).slice(0,2).join(', ') )
   })
 }
-
+ */
 </script>
 
 <style>

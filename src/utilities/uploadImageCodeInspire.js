@@ -4,8 +4,7 @@
 
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/storage'
-// import { db } from '@/firebase'
-//import { addImageToCatalog2 } from './../types/FirebaseModel'
+import Utente from '../types/Utente'
 import { addImageToCatalog2 } from './../types/Firebase_immagini'
 
 export default async function uploadImageCodeInspire(e, cid){
@@ -28,14 +27,24 @@ export function uploadSingleFile_firestore(file, cid, image){
         error => console.log('Upload error ❌ \n'+ error),
         () => uploadTask.snapshot.ref.getDownloadURL()
                                         //.then( downloadURL => updateCollection(file.name, downloadURL, cid) )
-                                        .then( downloadURL => prepareToFirestore(image, downloadURL))
+                                        //.then( downloadURL => prepareToFirestore(image, downloadURL))
                                         .catch( ex => console.log('uploadSingleFile_firestore() error: ', ex) )
+                                        .then( downloadURL => addImageToCatalog2(image.setRealURL(downloadURL)) )
     )
 }
 
+/**
+ *  prepara 
+ */
 function prepareToFirestore(image, downloadURL){
     image.realURL = downloadURL
-    addImageToCatalog2(image).then( res => console.log('prepareToFirestore().addImageTocatlaog2().then() res: ', res) )
+    addImageToCatalog2(image.setRealURL(downloadURL))
+        //.then( res => console.log('prepareToFirestore().addImageTocatlaog2().then() res: ', res) )
+        .then( imgId =>{
+            console.log('prepareToFirestore().addImageTocatlaog2().then() res: ', imgId)
+
+
+        })
 }
 
 

@@ -1,7 +1,7 @@
 /**
- * 
+ *  valore width/height
  */
-export default function aspect_ratio(val, lim){
+export default function aspectRatio(val, lim){
     // ritorna array coppia    [ 16, 9 ]
     var lower = [0, 1];
     var upper = [1, 0];

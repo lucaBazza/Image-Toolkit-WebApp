@@ -111,14 +111,19 @@ async function change_catalog(cid : string){
 }
 
 /**
- *    Metodo call back di TheDropZone: ho il catalogo aggiornato
+ *    Metodo call back di TheDropZone
+ *  - creo l'oggetto immagine inserendo base64 come src, etc.etc
+ *  - mostro l'anteprima nella gui
+ *  - faccio l'upload dell'immagine
  */
 async function requestImageUpload(file: HTMLInputElement, previewImgBase64: string, imageSizes: ImageSize){
   const current_cid = Utente.getInstance().getCid()
-  let i = new Immagine(previewImgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest')
-                                          .setCatalogID(current_cid).setImageDimension(imageSizes).setSize(file.size)
-  utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(i)
-  uploadSingleFile_firestore(file, i.catalogoID, i)
+  let img = new Immagine(previewImgBase64).setNomeFile(file.name).setClassStyle('imgUploadRequest')
+                                          .setCatalogID(current_cid)
+                                          .setImageDimension(imageSizes).setSize(file.size)
+                                          .setTempImgId(file.name)
+  utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(img)
+  uploadSingleFile_firestore(file, img.catalogoID, img.clearSrc() )
 }
 
 

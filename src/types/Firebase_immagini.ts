@@ -27,6 +27,8 @@ import Utente from "./Utente"
     else return Promise.reject(`existImageInsideCatalog() - catalog ${cid} not found`)
 }
 
+
+
 /**
  *  Metodo con promise all per cancellare immagine di utente
  */
@@ -60,6 +62,8 @@ async function deleteImage_firestore(imagePath) : Promise<void>{
   return deleteObject(imageStoreRef)
 }
 
+
+
 /**
  *  Listo gli ID delle immagini salvate per l'utente come documento nel relativo catalogo
  * @param cid catalogo da listarne le immagini
@@ -86,29 +90,31 @@ export async function getImages_filenames_fromCID(cid: string){
 
 /**
  *  Carica su firebase l'immagine 
- * @param img immagine da caricare nel suo relativo catalogo
+ * @param img immagine da caricare (già specificato campo catalogo)
  * @return id dell'immagine caricata
  *    TODO check catalog id exist
  *    TOOD se viene caricato un file con lo stesso nome non viene fatto il merge
  */
 export async function addImageToCatalog2(img : Immagine) : Promise<string>{
-  if( 2 > img.catalogoID.length )
-    return Promise.reject('Cant add image, catalog not valid' )
   let imgRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter)
-
-  let out = await imgRef.add(img)
-          .then( res => { return Promise.resolve(res.id) })
+  let _imgId = await imgRef.add(img)
+          .then( res => { return res.id })
           .catch( ex => { return Promise.reject(`updateCollection() Error adding document: ${ex}`) })
 
-  return Promise.resolve(out)
+  Utente.getInstance()
+          .getCatalog_by_cid(img.catalogoID).listaImmagini
+          .filter( i=> img.imgID == `temp-${i.nomeFile}`)[0].imgID = _imgId
+
+  return _imgId
 }
 
 /**
- *  TODO IMPLEMENTARE
- * @param img immagine da aggiornare sul serve
+ *  @param img immagine da aggiornare sul serve
  */
-export async function updateImage( img : Immagine){
-  // TODO
+export async function updateImage( img : Immagine) : Promise<void>{
+  db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).doc(img.imgID).update( immagineConverter.toFirestore(img))
+          .then( () => console.log(`update doc completed! \t ${img.nomeFile}`))
+          .catch( err => console.log(err) )
 }
 
 
@@ -121,16 +127,3 @@ export async function updateImage( img : Immagine){
   let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
   return res.docs.map(imgQuery => imgQuery.data())
 }
-
-
-
-/**
- *  TODO togliere il img.nomeFile e usare l'id autogenerato di fs?
- *    > se viene caricato un file con lo stesso nome non viene fatto il merge
-*/
-/*export async function addImageToCatalog(img : Immagine){
-  let imgRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter).doc(img.nomeFile)
-  imgRef.set(img)
-          .then( ()=> console.log(`updateCollection() Completed file upload 🎉 \n\t img: ${img.nomeFile} \n\t cid: ${img.catalogoID} \n\t File aviable at : \n ${img.realURL}`) )
-           .catch( ex =>  console.error('updateCollection() Error adding document: ', ex) )
-}*/

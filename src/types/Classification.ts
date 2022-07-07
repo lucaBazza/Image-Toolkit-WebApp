@@ -3,7 +3,7 @@
  *  dopo la classificazione di ML5.js
  * 
  */
-export interface Classification {
+export default interface Classification {
     label: string
     confidence: number
 }
