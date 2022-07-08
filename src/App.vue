@@ -83,7 +83,7 @@ onMounted( async () => {
         console.log('Auth status changed, user logged: \t', user['displayName'])
         loadUserSettings(user)
           .then( utente => utenteSng = reactive(utente) )
-          .then( () => loadCatalogo(utenteSng)
+          .then( () => loadCatalogo(utenteSng as Utente)
                         .then( () => { 
                           showCatalogo.value = true;
                           console.log('\t Loaded catalog: ',utenteSng.getCurrentCatalog_cid().titolo)

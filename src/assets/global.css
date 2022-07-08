@@ -36,6 +36,7 @@
     color: var(--mainText);
     font-family: 'Times New Roman', Times, serif;
 }
+body{ margin: 0 }
 .headerImg { content: var(--backgroundImage) }
 #app::before{
     z-index: -1;
