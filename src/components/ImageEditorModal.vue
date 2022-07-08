@@ -127,10 +127,10 @@ export default defineComponent({
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(var(--backgroundColor), .8);
 }
 .imgEditorModal{
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(var(--backgroundColor), .5);
     margin: 2rem;
     border-radius: 1rem;
     /*position: fixed;

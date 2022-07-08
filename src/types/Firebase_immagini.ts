@@ -2,7 +2,7 @@ import { doc, deleteDoc/*,  getDoc, setDoc, serverTimestamp, query, updateDoc, d
 import { getStorage, ref, deleteObject } from "firebase/storage"
 import { db, storage } from '@/firebase'
 import { CATALOGHI_COL, IMMAGINI_COL  } from "./FirebaseModel"
-import { catalogoConverter, utenteConverter,  immagineConverter } from '@/types/Firebase_converters'
+import { catalogoConverter,  immagineConverter } from '@/types/Firebase_converters'
 import Catalogo from "./Catalogo"
 import Immagine from "./Immagine"
 import Utente from "./Utente"

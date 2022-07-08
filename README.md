@@ -87,6 +87,14 @@ ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon-180x180.png
 ffmpeg -i logoToolkit-512px.png  -vf scale=180:-1 apple-touch-icon.png
 ```
 
+thumbs Cover webp:
+```
+for i in *.png; 
+    do cwebp -q 70 -resize 720 0 $i -o "${i%.*}.webp";
+done;
+
+```
+
 .
 
 fix porte rimaste aperte

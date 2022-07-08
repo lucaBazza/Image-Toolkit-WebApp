@@ -1,5 +1,6 @@
 <template>
   <img class="headerImg" />
+  <component :is="TheCover" />
 
   <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @showSettings="openUserSettings" @logout="user=auth.signOut()"/>
   <button v-else @click="signIn" class="googleSignIn" :disabled="isProductionBuild">
@@ -22,17 +23,18 @@
 
   <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato" />
 
-  <div v-if="isProductionBuild" class="productionMode"><h2>Aviable soon</h2></div> 
+  <ComeLater v-if="isProductionBuild" />
 
   <notifications position="bottom center" />
 </template>
 
 
 <script setup lang="ts">
-import { ref,reactive, computed, onMounted, provide } from 'vue'
+import { ref,reactive, computed, onMounted, provide, defineAsyncComponent } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
+import ComeLater from './components/ComeLater.vue'
 import Modal from "./components/Modal.vue"
 import TheDropzone from './components/TheDropzone.vue'
 import Settings from './types/Settings'
@@ -66,6 +68,7 @@ const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
 function notificate(data){ notify(data) }
 const catalogoSelezionato = computed( () => utenteSng.getCurrentCatalog_cid() )
+const TheCover = computed (() => !isLogin.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
 
 provide('utente',utenteSng)
 
@@ -74,7 +77,7 @@ onMounted( async () => {
         // Avvio in dark mode
   document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
   
-        // watcher sullo stato utente firebase
+        // observer sullo stato utente firebase
   auth.onAuthStateChanged( user =>{
     if( user ){
         console.log('Auth status changed, user logged: \t', user['displayName'])
@@ -97,7 +100,7 @@ onMounted( async () => {
           .catch( ex => console.log(ex))
     }
     else {
-      console.log('Auth status new is un-logged')
+      console.log('Auth status now is un-logged')
       Utente.newInstance()
       // unsubscribe() //unsub_refCatalogs && unsub_refCatalogs()
       showLogInArea.value = false

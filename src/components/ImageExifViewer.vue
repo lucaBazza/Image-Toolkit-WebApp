@@ -29,7 +29,7 @@
             <b>&#9777; Size</b> {{imageRf.getSizeString()}}
         </li>
         <li>
-          <b @click="runClassifier">Classifier </b>
+          <b @click="runClassifier">&#9826; Classifier </b>
             <span v-if="imageRf.classificatore">{{imageRf.getClassificatoreString()}}</span>
             <component v-else :is="classifierComp" :immagine="imageRf"/>
         </li>
@@ -144,28 +144,12 @@ onMounted( async () => {
   props.imageRf.classStyle = 'loadingBG'
   props.imageRf.exifDatas = Immagine.requireFakeExifs()
   swapRealImage()
-
-
-
-  //classifier = ml5.imageClassifier('MobileNet',zabba_classify)
-
-
 })
 
 function runClassifier(){
   showClassifier.value = true
 }
 
-/* 
-function zabba_classify(){
-  console.log('zabba_classify()', nodeImg.value)
-  classifier.classify(nodeImg.value, (error : string, results : any)=>{
-    if(error)
-      { console.log(error);  return }
-    console.log('Classified as : ', results.map( (r: { label: number | string }) => r.label ).slice(0,2).join(', ') )
-  })
-}
- */
 </script>
 
 <style>

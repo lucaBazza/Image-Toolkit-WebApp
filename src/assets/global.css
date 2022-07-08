@@ -93,34 +93,6 @@ ul { list-style-type: none }
 }
 
 
-
-/*
-
-    P R O D U C T I O N     M O D E     S T Y L E
-
-*/
-.productionMode{ animation: action .5s infinite  alternate }
-.productionMode > h2{
-  border: 2px solid gray;
-  background: rgba(var(--backgroundColor),.3);
-  border-radius: 1rem;
-  padding: 1rem;
-  width: max(50%,300px);
-  margin: 10% auto;
-}
-.productionMode > h2::before, .productionMode > h2::after{ content:' 🔥 '}
-.productionMode:hover{
-  transform: scale(120%);
-  transition: 1s;
-  animation: none;
-}
-@keyframes action {
-    0% { transform: translateY(0) }
-    100% { transform: translateY(-10px) }
-}
-
-
-
 /*
 
     M E D I A   Q U E R Y E S
@@ -147,9 +119,10 @@ ul { list-style-type: none }
     .imgEditorModal > img{ width: 90%; margin-top: 1rem; margin-bottom: 1rem }
     .imgEditorModal > ul{ width: max(95%, 300px); overflow-y: auto; height: max(50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
-    .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px); /* overflow: hidden */ }
+    .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px) }
     .avatar > button { top: .1rem }
     .modal { margin-top: 5vh }
+    .sliderCover{ top: 25% !important /*override async component */ }
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */

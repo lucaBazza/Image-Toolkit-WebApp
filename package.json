@@ -20,18 +20,19 @@
     "axios": "^0.27.2",
     "cors": "^2.8.5",
     "esm": "^3.2.25",
+    "exif-js": "^2.3.0",
     "exif-parser": "^0.1.12",
     "express": "^4.18.1",
     "firebase": "^9.8.3",
     "firebase-tools": "^11.1.0",
+    "ml5": "^0.12.2",
     "node-fetch": "3.2.6",
     "register-service-worker": "^1.7.2",
     "supervisor": "^0.12.0",
     "vue": "^3.2.13",
     "vue-custom-range-slider": "^0.2.3",
     "vue-media-upload": "^1.1.4",
-    "vue-meta": "^2.4.0",
-    "ml5": "^0.12.2"
+    "vue-meta": "^2.4.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
