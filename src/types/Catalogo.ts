@@ -71,7 +71,18 @@ export default class Catalogo{
         return this.uid;
     }
     */
+
+    getImmagineByID(imgId: string){
+        return this.listaImmagini.filter( i => imgId == `temp-${i.nomeFile}`)[0]
+    }
+
+    getListaImmagini_without(imgId: string){
+        return this.listaImmagini.filter( i => i.imgID != imgId )
+    }
 }
+
+
+
 
 interface Catalogo_extended extends Catalogo {
     secondoTitolo: string;

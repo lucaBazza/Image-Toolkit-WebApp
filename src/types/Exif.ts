@@ -37,4 +37,9 @@ export default interface Exif {
 	WhiteBalance: string
 	DigitalZoomRation: number
 	SceneCaptureType: string
+
+	Author: string
+	Artist: string
+	
+	Copyright: string
 }

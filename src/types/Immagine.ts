@@ -3,6 +3,7 @@
  */
 
 import Classification from "./Classification"
+import Exif from "./Exif"
 
 export interface ImageSize {
     width: number
@@ -15,7 +16,7 @@ export default class Immagine implements Iterator<number>{
     nomeFile: string
     src: string
     realURL: string
-    exifDatas: any[]
+    exifDatas?: Exif //any[]
     id: number
     classStyle: string
     alt?: string
@@ -35,7 +36,7 @@ export default class Immagine implements Iterator<number>{
         this.id = -1
         this.imgID = ''
         this.classStyle = 'loading'
-        this.exifDatas = []
+        // this.exifDatas = []
         this.catalogoID = ''
         this.adjustmentID = ''
     }
@@ -88,8 +89,9 @@ export default class Immagine implements Iterator<number>{
         return this
     }
 
-    setExifDatas(exifDatas: any[]){
+    setExifDatas(exifDatas: Exif /* any[] */){
         this.exifDatas = exifDatas
+        return this
     }
 
     getStelline(count: number){

@@ -1,29 +1,30 @@
 /**
  *      npm install exif-js
+ *          
+ *  bugs: 
+ *      - non legge tutti i campi -es. exif.nome proprietario
+ *      - ?e non li sovrascrive?
 */
 
 import EXIF from 'exif-js'
 import Exif from '@/types/Exif'
 
 export default async function getExif(imgFile) : Promise<Exif>{
-    console.log('getExif() ', imgFile.name)
     let out
 
-    EXIF.getData(imgFile, ()=>{
-            //console.log('\n\ncallback zone!\n\n')
+    EXIF.getData(imgFile, function(){
             var allMetaData = EXIF.getAllTags(imgFile)
+            // console.log(imgFile, JSON.stringify(allMetaData, null, "\t"))
             delete allMetaData['MakerNote']
             delete allMetaData['UserComment']
             delete allMetaData['thumbnail']
-            out = allMetaData as Exif // exifHelper(allMetaData)//JSON.stringify(allMetaData, null, "\t")
-            //console.log('getExif callback() ',out)
+            out = allMetaData as Exif
         }
     )
     
-    // console.log('Wait callback finish to process...')
+    // TRICK: wait until callback function has filled out variable
     while( ! out )
-        await new Promise( res=> setTimeout(res,0) )
-    // console.log('Callback has setted exif datas! 🤗 \t ', typeof out ,'\n', out/* EXIF.getAllTags(imgFile) */ )
+        await new Promise( res=> setTimeout(res,0) )    
 
     return out
 }

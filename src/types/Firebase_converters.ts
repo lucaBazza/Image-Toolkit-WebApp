@@ -3,13 +3,16 @@ import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
 import Classification from "./Classification"
 import firebase from 'firebase/compat/app'
-// import { map } from "@firebase/util"
+import Exif from "./Exif"
+import { stringLength } from "@firebase/util"
 
 /**
  *    C L A S S   C O N V E R T E R
  */
 
 const alsoEmpty = (v:any)=>{ return v ? v : ''}
+function checkExist_stringfy(val){ return val ? ( isJson(val) ? JSON.stringify(val) : val ) : '' }
+function isJson(str) { try { JSON.parse(str) } catch (e) { return false } return true }
 
 export const utenteConverter = {
     toFirestore: (utente) => {
@@ -77,14 +80,11 @@ export const catalogoConverter = {
 }
  
 export const immagineConverter = {
-    toFirestore: (immagine) => {
+    toFirestore: (immagine : Immagine) => {
         return {
+            // src: immagine.src.length < 2048 ? immagine.src : '', // se troppi parametri o base64
             nomeFile: immagine.nomeFile,
-            src: immagine.src.length > 2048 ? '' : immagine.src, // TODO: non salvare il campo src ? tanto c'è realURL  -> rinominare:   url
             realURL: immagine.realURL,
-            id: immagine.id,
-            exifDatas: alsoEmpty(immagine.exifData),
-            // imgID: immagine.imgID,
             alt: alsoEmpty(immagine.alt),
             catalogoID: immagine.catalogoID,
             createdAt: immagine.createdAt ? immagine.createdAt : firebase.firestore.FieldValue.serverTimestamp(),
@@ -92,17 +92,18 @@ export const immagineConverter = {
             width: immagine.width,
             height: immagine.height,
             size: immagine.size,
+            
+            exifData: immagine.exifDatas ? exifHelperTo(immagine.exifDatas) : null,
             classifier: immagine.classificatore ? classificatoreHelperTo(immagine.classificatore) : null
         }
     },
     fromFirestore: (snapshot, options) => {
         const data = snapshot.data(options)
-        let out = new Immagine(data.src)    // indicare realUrl > url   come src
+        let out = new Immagine('') /* data.src */    // indicare realUrl > url   come src
+        out.imgID = snapshot.id
+
         out.nomeFile = data.nomeFile
         out.realURL = data.realURL
-        // out.id = snapshot.id
-        out.exifDatas = data.exifDatasID
-        out.imgID = snapshot.id
         out.alt = snapshot.alt
         out.catalogoID = data.catalogoID
         out.createdAt = data.createdAt
@@ -110,7 +111,9 @@ export const immagineConverter = {
         out.width = data.width
         out.height = data.height
         out.size = data.size
-
+        
+        if(data.exifData)
+            out.exifDatas = data.exifData as Exif
         if(data.classifier)
             out.classificatore = data.classifier.map( dat => dat as Classification )
 
@@ -128,4 +131,51 @@ function classificatoreHelperTo( cls : Classification[] ){
         helper.confidence = cl.confidence
         return helper
     })
+}
+
+function exifHelperTo( ex : Exif){
+    let helper = {} as Exif
+
+    helper.Make = checkExist_stringfy( ex.Make )
+    helper.Model = checkExist_stringfy( ex.Model )
+    helper.Orientation = checkExist_stringfy( ex.Orientation )
+    helper.XResolution = checkExist_stringfy( ex.XResolution )
+    helper.YResolution = checkExist_stringfy( ex.YResolution )
+    helper.ResolutionUnit = checkExist_stringfy( ex.ResolutionUnit )
+    helper.DateTime = checkExist_stringfy( ex.DateTime )
+    helper.YCbCrPositioning = checkExist_stringfy( ex.YCbCrPositioning )
+    helper.ExifIFDPointer = checkExist_stringfy( ex.ExifIFDPointer )
+    helper.ExposureTime = checkExist_stringfy( ex.ExposureTime )
+    helper.FNumber = checkExist_stringfy( ex.FNumber )
+    helper.ExifVersion = checkExist_stringfy( ex.ExifVersion )
+    helper.DateTimeOriginal = checkExist_stringfy( ex.DateTimeOriginal )
+    helper.DateTimeDigitized = checkExist_stringfy( ex.DateTimeDigitized )
+    helper.ComponentsConfiguration = checkExist_stringfy( ex.ComponentsConfiguration )
+    helper.CompressedBitsPerPixel = checkExist_stringfy( ex.CompressedBitsPerPixel )
+    helper.ShutterSpeedValue = checkExist_stringfy( ex.ShutterSpeedValue )
+    helper.ApertureValue = checkExist_stringfy( ex.ApertureValue )
+    helper.ExposureBias = checkExist_stringfy( ex.ExposureBias )
+    helper.MaxApertureValue = checkExist_stringfy( ex.MaxApertureValue )
+    helper.MeteringMode = checkExist_stringfy( ex.MeteringMode )
+    helper.Flash = checkExist_stringfy( ex.Flash )
+    helper.FocalLength = checkExist_stringfy( ex.FocalLength )
+    helper.FlashpixVersion = checkExist_stringfy( ex.FlashpixVersion )
+    helper.ColorSpace = checkExist_stringfy( ex.ColorSpace )
+    helper.PixelXDimension = checkExist_stringfy( ex.PixelXDimension )
+    helper.PixelYDimension = checkExist_stringfy( ex.PixelYDimension )
+    helper.InteroperabilityIFDPointer = checkExist_stringfy( ex.InteroperabilityIFDPointer )
+    helper.FocalPlaneXResolution = checkExist_stringfy( ex.FocalPlaneXResolution )
+    helper.FocalPlaneYResolution = checkExist_stringfy( ex.FocalPlaneYResolution )
+    helper.FocalPlaneResolutionUnit = checkExist_stringfy( ex.FocalPlaneResolutionUnit )
+    helper.SensingMethod = checkExist_stringfy( ex.SensingMethod )
+    helper.FileSource = checkExist_stringfy( ex.FileSource )
+    helper.CustomRendered = checkExist_stringfy( ex.CustomRendered )
+    helper.ExposureMode = checkExist_stringfy( ex.ExposureMode )
+    helper.WhiteBalance = checkExist_stringfy( ex.WhiteBalance )
+    helper.DigitalZoomRation = checkExist_stringfy( ex.DigitalZoomRation )
+    helper.SceneCaptureType = checkExist_stringfy( ex.SceneCaptureType )
+    helper.Author = checkExist_stringfy( ex.Author )
+    helper.Artist = checkExist_stringfy( ex.Artist )
+
+    return helper
 }

@@ -36,7 +36,7 @@
         <li>
           <b>Aspect ratio </b> {{aspectRatio(imageRf.width!/imageRf.height!,50)}}
         </li>
-        <li v-for="ex in imageRf.exifDatas" :key="ex.label"> 
+        <li v-for="ex in getExifDatas/* imageRf.exifDatas */" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
         </li>
       </ul>
@@ -65,11 +65,23 @@ let showFixButton = ref(false)
 let showImageRef = ref(true)
 let showClassifier = ref(false)
 let utente = inject('utente') as Utente
-/* 
-let nodeImg = ref()
-defineExpose({nodeImg})
- */
+
 const classifierComp = computed (() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
+
+
+
+const getExifDatas = computed( () => {
+  let out = [ /* {label:'a', val: 'b'}, {label:'b', val: 'b'}, {label:'c', val: 'b'}, */  ]
+  if(props.imageRf.exifDatas){
+    const etichette = ['Make','Model','FNumber','DateTime','ExposureTime','Copyright']
+
+    const checkExist = etichetta => { return props.imageRf.exifDatas[etichetta] ? true : false }
+    etichette.forEach( e => checkExist(e) && out.push({ label: e, val: props.imageRf.exifDatas[e] }) )
+  }
+  return out
+})
+
+
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
@@ -137,12 +149,12 @@ function hideExtension(str: string){
 }
 
 
-let classifier
+// let classifier
 
 
 onMounted( async () => {
   props.imageRf.classStyle = 'loadingBG'
-  props.imageRf.exifDatas = Immagine.requireFakeExifs()
+  // props.imageRf.exifDatas = Immagine.requireFakeExifs()
   swapRealImage()
 })
 

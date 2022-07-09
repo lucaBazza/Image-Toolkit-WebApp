@@ -122,7 +122,7 @@ ul { list-style-type: none }
     .imgEditorModal > ul > li { width: 90% }
     .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px) }
     .avatar > button { top: .1rem }
-    .modal { margin-top: 5vh }
+    .modal { margin-top: 5vh; width: max(70%, 280px) }
     .sliderCover{ top: 25% !important /*override async component */ }
 }
 
