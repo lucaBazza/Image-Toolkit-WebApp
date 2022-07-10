@@ -15,6 +15,9 @@ export default class Utente{
     listaCataloghi: Catalogo[]
     photoURL?: string
     selected_cid?: string
+
+    // selected_imgId?: string     // dato temporaneo per sapere quale immagine va visuaizz
+
     // parametri che salvo su firebase ( oltre a uid e selected catalog id )
     subscription_date?: Date
     lastLogin?: Date
@@ -75,12 +78,12 @@ export default class Utente{
             throw new Error(`No catalogs aviable for ${this.nome}`)
 
         let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
-        if( ! out) {
+        /*if( ! out) {
             this.selectFirstAviableCatalog()
             if(this.selected_cid) 
                 out = this.getCatalog_by_cid(this.selected_cid)
-        }
-        return out
+        } return out*/
+        return out ? out : this.getCatalog_by_cid( this.selectFirstAviableCatalog().selected_cid! )
     }
     
     getCatalog_by_cid(cid : string){

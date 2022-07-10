@@ -17,10 +17,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
-import { deleteImage } from '@/types/Firebase_immagini'
 import { deleteCatalog, updateUser } from '@/types/FirebaseModel'
 import Utente from "@/types/Utente"
 import shuffleArray from '@/utilities/ShuffleArray'
@@ -29,7 +28,6 @@ import getBase64 from "@/utilities/convertBase64"
 import { notify } from "@kyvg/vue3-notification"
 
 const props = defineProps({   catalogo: {type: Catalogo, required: true }    })
-// const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
 let catalogIsReady = ref(true)
 
 async function deleteAllImages() {
@@ -70,9 +68,7 @@ async function downloadAlbum(){
 }
 
 let utente = reactive(Utente.getInstance())
-function shuffleAlbum(){
-  shuffleArray(utente.getCurrentCatalog_cid().listaImmagini)
-}
+function shuffleAlbum(){ shuffleArray(utente.getCurrentCatalog_cid().listaImmagini) }
 
 </script>
 

@@ -106,7 +106,7 @@ async function handleImageUpload(file: File, previewBase64: string, imageSizes: 
     
     const imgId = await uploadImage_2(file, img.clearSrc())
     
-    imgId ? utente.getCurrentCatalog_cid().getImmagineByID(img.imgID).imgID = imgId : rollbackGuiUpload(img)       
+    imgId ? utente.getCurrentCatalog_cid().getImmagineByTempID(img.imgID).imgID = imgId : rollbackGuiUpload(img)       
 }
 
 function rollbackGuiUpload(img: Immagine){

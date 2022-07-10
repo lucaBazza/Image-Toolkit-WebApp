@@ -23,6 +23,8 @@
 
   <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato"/>
 
+  <TheEditorFullScreen v-if="showEditorFullScreen"/>
+
   <ComeLater v-if="isProductionBuild"/>
 
   <notifications position="bottom center"/>
@@ -30,13 +32,14 @@
 
 
 <script setup lang="ts">
-import { ref,reactive, computed, onMounted, provide, defineAsyncComponent } from 'vue'
+import { ref,reactive, computed, onMounted, provide, defineAsyncComponent, watch, getCurrentInstance } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
 import ComeLater from './components/ComeLater.vue'
 import Modal from "./components/Modal.vue"
 import TheDropzone from './components/TheDropzone.vue'
+import TheEditorFullScreen from './components/TheEditorFullScreen.vue'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
 import Immagine from './types/Immagine'
@@ -49,6 +52,7 @@ import { loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
 import { loadCatalogo } from '@/types/App.controller'
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
+import useEventsBus from '@/utilities/useEmitters'
 
 let utenteSng = reactive(Utente.getInstance())
 const isProductionBuild = Settings.getInstance().isProductionMode()
@@ -58,6 +62,7 @@ let showModalInfos = ref(false)
 let showUploadMode = ref(false)
 let showCatalogo = ref(false)
 let showLogInArea = ref(false)
+let showEditorFullScreen = ref(false)
 let pageFullyLoaded = ref(false)
 
 const toggleModalInfos = ()=>{ showModalInfos.value = ! showModalInfos.value }
@@ -68,10 +73,18 @@ const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
 function notificate(data){ notify(data) }
 const catalogoSelezionato = computed( () => utenteSng.getCurrentCatalog_cid() )
-
 const TheCover = computed( () => !isLogin.value && pageFullyLoaded.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
 
 provide('utente',utenteSng)
+const { bus } = useEventsBus()
+watch(()=>bus.value.get('toggleEditorFullScreen'), (imgId:string) => {
+    getCurrentInstance()?.appContext.config.globalProperties.selectedImageID(imgId)
+    showEditorFullScreen.value = ! showEditorFullScreen.value // console.log('App.watch() - recived: ', imgId)
+        // destruct the parameters
+    //const [openEditorFullScreen] = val ?? []
+    //openEditorFullScreen.value = openEditorFullScreen
+})
+
 
 onMounted( async () => {
         // Avvio in dark mode
@@ -108,6 +121,7 @@ onMounted( async () => {
     }
     pageFullyLoaded.value = true
   }) 
+
 })
 /* 
 async function change_catalog(cid : string){

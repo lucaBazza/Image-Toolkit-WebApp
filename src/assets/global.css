@@ -105,31 +105,40 @@ ul { list-style-type: none }
     .mainViewer{ display: grid; min-width: 330px; height: auto; place-items: center }
     .mainViewer > img:first-child{ min-width:90% }
     .mainViewer > span{  width: 85%; margin: 1rem 0 2rem }
+
     .controlBtns{ top: .3rem }
     .controlBtns > button{ padding: 0.2rem  }
     .catalogDiv > p{ width: max(85%, 200px); margin-top: 2rem }
     .catalogDiv > h3{ width: max(90%, 250px) }
+
     .dropzone { width: 95% }
+
     .loginForm { margin: 1rem; width: auto }
     .loginForm > button { width: 95% }
     .loginForm > ul > input[type=text] { width: 88% }
     .loginForm > ul > li { text-align: center }
     .loginForm > ul > li > b { display: none }
+
+    .cnvs-boxs{ width: 90%; margin-top: 1rem; margin-bottom: 1rem; padding:0 }
     .imgEditorModal{ height: 90vh; overflow: hidden; margin: 1rem }
     .imgEditorModal > button{ top: 1rem; right: 1rem }
-    .imgEditorModal > img{ width: 90%; margin-top: 1rem; margin-bottom: 1rem }
     .imgEditorModal > ul{ width: max(95%, 300px); overflow-y: auto; height: max(50%, 500px) }
     .imgEditorModal > ul > li { width: 90% }
+
     .avatar{ margin: .2rem; padding-right:0; width: min(30%, 100px) }
     .avatar > button { top: .1rem }
     .modal { margin-top: 5vh; width: max(70%, 280px) }
-    .sliderCover{ top: 25% !important /*override async component */ }
+    .sliderCover{ top: 25% !important } /*override async component */
 }
 
 @media only screen and (min-width: 1180px){     /* WIDE DEVICES */
-    .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto }
+    .catalogDiv > ul{ display: flex; flex-flow: row  wrap; width: 96%; margin: 0 auto; }
     .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%) }
     .mainViewer > .imgOverlaySpinner{ left: 18%; }
+
+    .backdropModal { position: fixed; /*  min-width: 100%; min-height: 100%;  box-sizing: border-box; */}
+    .imgEditorModal { max-height: 95vh; }
+    .cnvs-boxs > canvas {   width:auto; height: 80vh;}
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */

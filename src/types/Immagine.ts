@@ -10,15 +10,15 @@ export interface ImageSize {
     height: number
 }
 
-export type imageStyles = 'loading'|'loadingBG'|'imgUploadRequest'|'imageLoaded';
+export type imageStyles = 'loadingError'|'loadingBG'|'imgUploadRequest'|'imageLoaded'
 
 export default class Immagine implements Iterator<number>{
     nomeFile: string
-    src: string
+    src?: string
     realURL: string
-    exifDatas?: Exif //any[]
-    id: number
-    classStyle: string
+    exifDatas?: Exif
+    orderId?: number
+    classStyle: imageStyles
     alt?: string
     imgID: string
     catalogoID: string
@@ -28,15 +28,14 @@ export default class Immagine implements Iterator<number>{
     height?: number
     size?: number
     classificatore?: Classification[]
+    base64?: string
 
-    constructor(src) {
-        this.nomeFile = this.guessFileName(src)
-        this.src = src ? src : require("./../assets/loading.gif")
-        this.realURL = src
-        this.id = -1
+    constructor(realUrl) {
+        this.nomeFile = this.guessFileName(realUrl)
+        //this.src = src ? src : require("./../assets/loading.gif")
+        this.realURL = realUrl
         this.imgID = ''
-        this.classStyle = 'loading'
-        // this.exifDatas = []
+        this.classStyle = 'loadingBG'
         this.catalogoID = ''
         this.adjustmentID = ''
     }
@@ -53,11 +52,11 @@ export default class Immagine implements Iterator<number>{
 
     // TODO: usare il firebase image ID per fare l'iterator
     public next(): IteratorResult<number> {
-        return { done: false, value: this.id++ }
+        return { done: false, value: Number(this.imgID.match( /\d+/g )) }
     }
 
     getTitolo() {
-        return "Hello" + this.src;
+        return this.src;
     }
 
     getNomeFile(){

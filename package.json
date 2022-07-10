@@ -26,6 +26,7 @@
     "firebase": "^9.8.3",
     "firebase-tools": "^11.1.0",
     "jszip": "^3.10.0",
+    "mitt": "^3.0.0",
     "ml5": "^0.12.2",
     "node-fetch": "3.2.6",
     "register-service-worker": "^1.7.2",

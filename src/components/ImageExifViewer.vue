@@ -7,7 +7,7 @@
         :id="imageRf.imgID"
         :alt="imageRf.alt"
         @error="imageLoadError"
-        @click="toggleEditorFn"
+        @click="emit('toggleEditorFullScreen', props.imageRf.imgID)"
     />        
     <!--   ref="nodeImg"         crossorigin="anonymous" -->
     <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
@@ -37,31 +37,33 @@
         <li>
           <b>Aspect ratio </b> {{aspectRatio(imageRf.width!/imageRf.height!,50)}}
         </li>
-        <li v-for="ex in getExifDatas/* imageRf.exifDatas */" :key="ex.label"> 
+        <li v-for="ex in getExifDatas" :key="ex.label"> 
           <b>{{ ex.label }}</b> {{ ex.val }}
         </li>
       </ul>
     </span>
   </div>
-  <ImageEditorModalVue 
+<!--   <ImageEditorModalVue 
       v-if="showImgEditModal" 
       :imageProp="imageRf"
-      @toggle-editor-fn="toggleEditorFn" />
+      @toggle-editor-fn="toggleEditorFn" /> -->
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, inject, defineAsyncComponent, computed } from 'vue'
 import Immagine from '@/types/Immagine'
-import ImageEditorModalVue from './ImageEditorModal.vue'
+// import ImageEditorModalVue from './ImageEditorModal.vue'
 import { deleteImageFacade } from '@/types/Firebase_immagini'
 import Utente from '@/types/Utente'
 import { notify } from '@kyvg/vue3-notification'
 import aspectRatio from '@/utilities/AspectRatio'
+import useEventsBus from '@/utilities/useEmitters'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
+const { emit } = useEventsBus()
 
 let src_real = ref(props.imageRf.src)
-let showImgEditModal = ref(false)
+// let showImgEditModal = ref(false)
 let showFixButton = ref(false)
 let showImageRef = ref(true)
 let showClassifier = ref(false)
@@ -69,7 +71,6 @@ let utente = inject('utente') as Utente
 
 const classifierComp = computed(() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
 const getExifDatas = computed(() => props.imageRf.getCustomExifDatas() )
-
 
 function imageLoadError(e){
   console.log('ImageExifViewer.imageLoadError() ❌  : ', e.target.id)
@@ -103,15 +104,14 @@ function downloadImg(){
   notify({ title: "Download image", text: `processing ${props.imageRf.getNomeFile()}...` })
 
   fetch(props.imageRf.realURL)
-    .then(response => response.blob())
-    .then(function(myBlob) {
-      var fileLink = document.createElement('a')
-      fileLink.setAttribute('href', URL.createObjectURL(myBlob))
-      fileLink.setAttribute('download',props.imageRf.nomeFile)
-      fileLink.click()
-    })
-    .catch(err=> notify({ title: "Error", text: `Download failed ${err}` }))
-
+      .then(response => response.blob())
+      .then(function(myBlob) {
+          var fileLink = document.createElement('a')
+          fileLink.setAttribute('href', URL.createObjectURL(myBlob))
+          fileLink.setAttribute('download',props.imageRf.nomeFile)
+          fileLink.click()
+      })
+      .catch(err=> notify({ title: "Error", text: `Download failed ${err}` }))
 }
 
 /**
@@ -125,16 +125,11 @@ async function deleteImg(){
   utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listRemoved
 
   deleteImageFacade(props.imageRf)
-    .then( ()=> notify({title:'Success', text: `${props.imageRf.getNomeFile()} deleted`}) )
-    .catch( ()=> {
-      notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}` })
-      setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listBefore, 500)
-    })
-}
-
-function toggleEditorFn(){
-    console.log("ImageExifViewer.toggleEditorFn() ", props.imageRf.nomeFile)
-    isImgLoaded() ? showImgEditModal.value = ! showImgEditModal.value : console.log('No image loaded, cant edit')
+      .then( ()=> notify({title:'Success', text: `${props.imageRf.getNomeFile()} deleted`}) )
+      .catch( ()=> {
+          notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}` })
+          setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listBefore, 500)
+      })
 }
 
 /**
@@ -152,13 +147,12 @@ function hideExtension(str: string){
 function runClassifier(){ showClassifier.value = true }
 
 onMounted( async () => {
-  props.imageRf.classStyle = 'loadingBG'
+  props.imageRf.setClassStyle('loadingBG')
 
   swapRealImage()
 
   if( ! props.imageRf.classificatore ) setTimeout( () => runClassifier(), 300)
-
-  if( ! props.imageRf.classificatore ) setTimeout( () => runClassifier(), 300)
+  if( ! props.imageRf.exifDatas ) setTimeout( () => console.log(`Image ${props.imageRf.nomeFile} missing Exif`), 300)  
 })
 
 </script>

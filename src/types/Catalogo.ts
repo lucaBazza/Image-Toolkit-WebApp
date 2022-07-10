@@ -73,7 +73,11 @@ export default class Catalogo{
     */
 
     getImmagineByID(imgId: string){
-        return this.listaImmagini.filter( i => imgId == `temp-${i.nomeFile}`)[0]
+        return this.listaImmagini.filter( i => i.imgID===imgId )[0]
+    }
+
+    getImmagineByTempID(tempImgId: string){
+        return this.listaImmagini.filter( i => tempImgId == `temp-${i.nomeFile}`)[0]
     }
 
     getListaImmagini_without(imgId: string){

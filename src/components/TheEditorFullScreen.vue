@@ -1,10 +1,9 @@
 <template id="imageEditorModalVue_tmpl">
     <div class="backdropModal">
-        <div class="imgEditorModal"> <!-- @mouseleave="$emit('toggle-editor-fn')" -->
-            <button @click="$emit('toggle-editor-fn')"> ❌ </button>
+        <div class="imgEditorModal">
+            <button @click="emit('toggleEditorFullScreen')"> ❌ </button>
             <div class="cnvs-boxs">
                 <canvas ref="cnvsLayerA" style="background: url()"></canvas>
-                 <!-- <img :src="imageProp.realURL" :style="getStyles()"> -->
             </div>
             <ul>
                 <li @click.shift="parameterReset(saturationValue.value)">
@@ -54,17 +53,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, getCurrentInstance, reactive } from 'vue'
 import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
+import useEventsBus from '@/utilities/useEmitters'
+import Utente from '@/types/Utente'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
-
 // https://codepen.io/manifoldkaizen/pen/BJNJgr
 
-const props = defineProps({    imageProp: { type: Immagine, required: true}    })
+let utente = reactive(Utente.getInstance())
+const imgId = getCurrentInstance()?.appContext.config.globalProperties.selectedImageID
+let imageProp : Immagine = utente.getCurrentCatalog_cid().getImmagineByID(imgId)
+/* 
+console.log('TheEditorFullScreen() \t imgId:',imgId,
+                 "\n\t imgs: ", utente.getCurrentCatalog_cid().listaImmagini.map(i=>i.nomeFile).join(), imageProp )
+console.log(utente.getCurrentCatalog_cid().listaImmagini.map(i=>i.nomeFile).join())
+ */
 const cnvsLayerA = ref<HTMLCanvasElement>()
+const { emit } = useEventsBus()
+
 
 let temperatureValue = ref({
     value: 0,
@@ -115,26 +124,25 @@ function parameterReset(slider : any){
 
 function downloadTest(){
     var link = document.createElement('a')
-    link.download = props.imageProp.nomeFile
+    link.download = imageProp.nomeFile
     link.href = cnvsLayerA.value?.toDataURL()!
     link.click()
 }
 
-onMounted(() => {
+onMounted( async() => {
     if( cnvsLayerA.value && cnvsLayerA.value.getContext('2d')){
         let ctxA = cnvsLayerA.value.getContext('2d')!
         let img = new Image()
         img.crossOrigin="anonymous"
-        img.src = props.imageProp.realURL
+        img.src = imageProp.realURL
 
         img.onload = ()=> {
             cnvsLayerA.value!.width = img.width
             cnvsLayerA.value!.height = img.height
-            ctxA.filter = 'contrast(1.2)'//'contrast(5.2) sepia(.2)'
+            ctxA.filter = getStyles() //'contrast(1.2)'//'contrast(5.2) sepia(.2)'
             ctxA.drawImage(img,0,0)
         }
     }
-
 })
 
 </script>
@@ -142,14 +150,14 @@ onMounted(() => {
 <style src="@vueform/slider/themes/default.css"></style>
 <style>
 .backdropModal{
-    position: fixed;            background-color: rgba(var(--backgroundColor), .8);
+    position: fixed;            background-color: rgba(var(--backgroundColor), .6);
     top: 0;                     left: 0;
     width: 100vw;                height: 100vh;
-    transition: .5s ease-in;
+    /* transition: .5s ease-in; */
 }
 .imgEditorModal{
     position: static;
-    background-color: rgba(var(--backgroundColor), .5);
+    background-color: rgba(var(--backgroundColor), .9);
     margin: 2rem 2rem;
     border-radius: 1rem;
     /*position: fixed;
