@@ -6,6 +6,8 @@
  *      - ?e non li sovrascrive?
 */
 
+// altenative https://github.com/MikeKovarik/exifr
+
 import EXIF from 'exif-js'
 import Exif from '@/types/Exif'
 
@@ -28,6 +30,17 @@ export default async function getExif(imgFile) : Promise<Exif>{
 
     return out
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

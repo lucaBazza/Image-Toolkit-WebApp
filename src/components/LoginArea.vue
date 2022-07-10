@@ -23,7 +23,7 @@ import { notify } from '@kyvg/vue3-notification'
 
 let utente = reactive(Utente.getInstance())
 
-const emits = defineEmits(['change_catalog','notificate'/* , 'add_catalog' */])
+/*const emits = defineEmits(['change_catalog','notificate' , 'add_catalog' ])*/
 
 /**
  *  - creo un catalogo localmente e cancello l'input text
@@ -38,13 +38,9 @@ const addNewCatalogo = (e) =>{
   e.target.value = ''
 
   addCatalogo3(cat)
-    .then( res_cid => {
-        utente.listaCataloghi.push(cat)   // console.log('Lista cataloghi aggiornata: ', utente.listaCataloghi.map(c=>c.titolo).join(','))
-        updateUser(utente.setSelected_cid(res_cid))
-          .then( ()=> notify({ title: "Catalog added", text: cat.titolo, type: 'info' }) )
-    })
-    .catch( err => emits('notificate',{ title: 'Error', text: `${cat.titolo} \n ${err}`, type: 'error' }))
-  
+    .then( cid => { utente.listaCataloghi.push(cat.setCatalog_cid(cid)); return cat })
+    .then( cat => updateUser(utente.setSelected_cid(cat.cid)).then( ()=> notify({ title:'Catalog added', text: cat.titolo, type:'info'}) ) )
+    .catch( err => notify({ title: "Error", text:`${cat.titolo} \n ${err}`, type:'error'}) )
 }
 
 function change_catalog(cid){ 

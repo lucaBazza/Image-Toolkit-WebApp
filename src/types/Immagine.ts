@@ -129,11 +129,9 @@ export default class Immagine implements Iterator<number>{
     }
 
     getSizeString(){
-        if( ! this.size) return
+        if( ! this.size ) return
         const million = 1000000
-        if( this.size > million ) 
-            return `${(this.size/million).toFixed(3)} MB`
-        return `${(this.size/1000).toFixed(3)} KB`
+        return this.size > million ? `${(this.size/million).toFixed(3)} MB` : `${(this.size/1000).toFixed(0)} KB`
     }
 
     setClassificatore(cl : Classification[]){
@@ -148,6 +146,10 @@ export default class Immagine implements Iterator<number>{
                                         .slice(0,number_of_showResults).join(',')
     }
 
+    getClassificatoreAllTags(){
+        return this.classificatore && this.classificatore.map( (r: { label: number | string }) => `${r.label}`.trim() ).join(',').split(',')
+    }
+
     setTempImgId(tempImgId : string){
         this.imgID = `temp-${tempImgId}`
         return this
@@ -159,6 +161,33 @@ export default class Immagine implements Iterator<number>{
     clearSrc(){
         this.src = ''
         return this
+    }
+
+    getExposureTime(){
+        if(this.exifDatas && this.exifDatas['ExposureTime']){
+            const expTime = this.exifDatas['ExposureTime']
+            return expTime > 1 ? `${expTime} s` : `${Math.floor(expTime*1000)} ms`
+        }
+    }
+
+    getCustomExifDatas(){
+        if( ! this.exifDatas) return []
+        let out : {label, val}[] = [] //[{label:'a', val: 'b'}, {label:'b', val: 'b'}, {label:'c', val: 'b'}]
+        const checkExist = etichetta => { return this.exifDatas![etichetta] ? true : false }
+
+        if(checkExist('Make') && checkExist('Model') )
+            out.push({
+                label: 'Device', 
+                val: this.exifDatas['Model'].includes(this.exifDatas['Make']) ? this.exifDatas['Model'] : `${this.exifDatas['Make']} ${this.exifDatas['Model']}`
+            })
+    
+        if(checkExist('FNumber') && checkExist('ExposureTime') )
+            out.push({ label:'Exposition', val:`f.${this.exifDatas['FNumber']} for ${this.getExposureTime()}` })
+
+        const otherTags = [/* 'FNumber','ExposureTime', */'DateTime','Copyright']
+        otherTags.forEach( e => checkExist(e) && out.push({ label: e, val: this.exifDatas![e] }) )
+        
+        return out
     }
 }
 

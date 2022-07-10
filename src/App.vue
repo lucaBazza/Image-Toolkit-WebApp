@@ -15,17 +15,17 @@
 
   <h1 id="mainTitle">Pic Kit App</h1>
 
-  <LoginArea v-if="showLogInArea" @change_catalog="change_catalog" @notificate="notificate"/>
+  <LoginArea v-if="showLogInArea"/>
  
-  <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin" />
+  <Modal v-if="showModalInfos" @updateCloseMain="postCloseLoggin"/>
 
   <TheDropzone v-if="showUploadMode" @requestImageUpload="requestImageUpload"/>
 
-  <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato" />
+  <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato"/>
 
-  <ComeLater v-if="isProductionBuild" />
+  <ComeLater v-if="isProductionBuild"/>
 
-  <notifications position="bottom center" />
+  <notifications position="bottom center"/>
 </template>
 
 
@@ -39,7 +39,6 @@ import Modal from "./components/Modal.vue"
 import TheDropzone from './components/TheDropzone.vue'
 import Settings from './types/Settings'
 import Utente from './types/Utente'
-import Catalogo from './types/Catalogo'
 import Immagine from './types/Immagine'
 import { ImageSize } from  './types/Immagine'
  
@@ -47,7 +46,7 @@ import { useAuth, auth } from '@/firebase'
 import { uploadSingleFile_firestore } from '@/utilities/uploadImageCodeInspire'
 import { loadUserSettings, updateUser } from './types/FirebaseModel'
 import { loadImagesFromCatalog_firebaseA } from './types/Firebase_immagini'
-import { change_catalog_logic,loadCatalogo } from '@/types/App.controller'
+import { loadCatalogo } from '@/types/App.controller'
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 
@@ -59,6 +58,7 @@ let showModalInfos = ref(false)
 let showUploadMode = ref(false)
 let showCatalogo = ref(false)
 let showLogInArea = ref(false)
+let pageFullyLoaded = ref(false)
 
 const toggleModalInfos = ()=>{ showModalInfos.value = ! showModalInfos.value }
 const toggleUploadMode = ()=>{ showUploadMode.value = ! showUploadMode.value }
@@ -68,14 +68,14 @@ const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
 function notificate(data){ notify(data) }
 const catalogoSelezionato = computed( () => utenteSng.getCurrentCatalog_cid() )
-const TheCover = computed (() => !isLogin.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
+
+const TheCover = computed( () => !isLogin.value && pageFullyLoaded.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
 
 provide('utente',utenteSng)
 
-
 onMounted( async () => {
         // Avvio in dark mode
-  document.addEventListener("DOMContentLoaded", function () { document.body.classList.toggle("darkMode") })
+  document.addEventListener("DOMContentLoaded", () => document.body.classList.toggle("darkMode") )
   
         // observer sullo stato utente firebase
   auth.onAuthStateChanged( user =>{
@@ -106,13 +106,14 @@ onMounted( async () => {
       showLogInArea.value = false
       showCatalogo.value = false
     }
+    pageFullyLoaded.value = true
   }) 
 })
-
+/* 
 async function change_catalog(cid : string){
   change_catalog_logic(cid)
 }
-
+ */
 /**
  *    Metodo call back di TheDropZone
  *  - creo l'oggetto immagine inserendo base64 come src, etc.etc
@@ -128,7 +129,6 @@ async function requestImageUpload(file: HTMLInputElement, previewImgBase64: stri
   utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(img)
   uploadSingleFile_firestore(file, img.catalogoID, img.clearSrc() )
 }
-
 
 </script>
 

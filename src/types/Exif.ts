@@ -9,7 +9,7 @@ export default interface Exif {
 	YCbCrPositioning: number
 	ExifIFDPointer: number
 	ExposureTime: number
-	FNumber: number | string
+	FNumber: number /* | string */
 	ExifVersion: string
 	DateTimeOriginal: string
 	DateTimeDigitized: string

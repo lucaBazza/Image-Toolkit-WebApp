@@ -8,7 +8,8 @@
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="toggleEditorFn"
-    />        <!--   ref="nodeImg"         crossorigin="anonymous" -->
+    />        
+    <!--   ref="nodeImg"         crossorigin="anonymous" -->
     <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
@@ -66,21 +67,8 @@ let showImageRef = ref(true)
 let showClassifier = ref(false)
 let utente = inject('utente') as Utente
 
-const classifierComp = computed (() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
-
-
-
-const getExifDatas = computed( () => {
-  let out = [ /* {label:'a', val: 'b'}, {label:'b', val: 'b'}, {label:'c', val: 'b'}, */  ]
-  if(props.imageRf.exifDatas){
-    const etichette = ['Make','Model','FNumber','DateTime','ExposureTime','Copyright']
-
-    const checkExist = etichetta => { return props.imageRf.exifDatas[etichetta] ? true : false }
-    etichette.forEach( e => checkExist(e) && out.push({ label: e, val: props.imageRf.exifDatas[e] }) )
-  }
-  return out
-})
-
+const classifierComp = computed(() => showClassifier.value && defineAsyncComponent(() => import("./TheClassifier.vue")) )
+const getExifDatas = computed(() => props.imageRf.getCustomExifDatas() )
 
 
 function imageLoadError(e){
@@ -106,11 +94,24 @@ function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
 }
 
-function resetAdj(){ console.log("ImageExifViewer.resetAdj() ") }
+function resetAdj(){ 
+  console.log("ImageExifViewer.resetAdj() + classifier + exifs ")
+}
 
 function downloadImg(){ 
   console.log('donwload image')
-  notify({ title: "Download image", text: `processing ${props.imageRf.getNomeFile()}` })
+  notify({ title: "Download image", text: `processing ${props.imageRf.getNomeFile()}...` })
+
+  fetch(props.imageRf.realURL)
+    .then(response => response.blob())
+    .then(function(myBlob) {
+      var fileLink = document.createElement('a')
+      fileLink.setAttribute('href', URL.createObjectURL(myBlob))
+      fileLink.setAttribute('download',props.imageRf.nomeFile)
+      fileLink.click()
+    })
+    .catch(err=> notify({ title: "Error", text: `Download failed ${err}` }))
+
 }
 
 /**
@@ -148,19 +149,17 @@ function hideExtension(str: string){
   return str.replace(/\.[^/.]+$/, "")
 }
 
-
-// let classifier
-
+function runClassifier(){ showClassifier.value = true }
 
 onMounted( async () => {
   props.imageRf.classStyle = 'loadingBG'
-  // props.imageRf.exifDatas = Immagine.requireFakeExifs()
-  swapRealImage()
-})
 
-function runClassifier(){
-  showClassifier.value = true
-}
+  swapRealImage()
+
+  if( ! props.imageRf.classificatore ) setTimeout( () => runClassifier(), 300)
+
+  if( ! props.imageRf.classificatore ) setTimeout( () => runClassifier(), 300)
+})
 
 </script>
 

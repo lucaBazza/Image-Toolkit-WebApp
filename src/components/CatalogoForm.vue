@@ -2,9 +2,9 @@
   <div class="catalogDiv">
     <img v-if=" ! catalogIsReady" src="@/assets/loading-io-spinner.gif" alt="Catalog loading spinner" class="isReadySpinner"/>
     <h3 v-if="catalogo.titolo">{{ catalogo.titolo }}
-      <button @click="downloadAlbum" alt="download album"> ⬇ </button>
-      <button @click="openSortingOptions" alt="sort images"> ↕️ </button>
-      <button @click="shuffleAlbum" alt="shuffle images"> 🔀 </button>
+      <button @click="downloadAlbum" alt="download"> ⬇ </button>
+      <button @click="openSortingOptions" alt="sort"> ↕️ </button>
+      <button @click="shuffleAlbum" alt="shuffle"> 🔀 </button>
     </h3> 
     <transition-group tag="ul" name="list">
       <li v-for="img in catalogo.listaImmagini" :key="img.nomeFile">
@@ -24,15 +24,16 @@ import { deleteImage } from '@/types/Firebase_immagini'
 import { deleteCatalog, updateUser } from '@/types/FirebaseModel'
 import Utente from "@/types/Utente"
 import shuffleArray from '@/utilities/ShuffleArray'
+import JSZip from 'jszip'
+import getBase64 from "@/utilities/convertBase64"
+import { notify } from "@kyvg/vue3-notification"
 
 const props = defineProps({   catalogo: {type: Catalogo, required: true }    })
-const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
+// const emit = defineEmits<{ (e: 'deleteCatalog', cid: string): void }>()
 let catalogIsReady = ref(true)
 
 async function deleteAllImages() {
   if(confirm("Are yuo sure to delete this catalog?") == true){
-
-    /* emit('deleteCatalog', props.catalogo.cid)  */
     deleteCatalog(props.catalogo.cid)
     .then( res =>{ 
       console.log('Delete done: ', res);
@@ -42,11 +43,30 @@ async function deleteAllImages() {
   } 
   else console.log( "Catalog protected from destruction 🛡️ ")
 }
+
 function openSortingOptions(){
-  console.log('openSortingOptions()')
+  const allTags = new Set()
+  props.catalogo.listaImmagini.map( img => img.getClassificatoreAllTags()?.forEach(tag=>allTags.add(tag)) )
+  alert('All image tags: \n' + Array.from(allTags).join(' ') )
 }
-function downloadAlbum(){
-  console.log('downloadAlbum()')
+
+async function downloadAlbum(){
+  console.log('downloadAlbum() images: ', props.catalogo.listaImmagini.length)
+
+  var zip = new JSZip()
+  zip.file(`${props.catalogo.titolo}-images-list.txt`, props.catalogo.listaImmagini.map(i=> i.nomeFile).join('\n'))
+  var img = zip.folder("images")
+  //img.file("test.jpg", getBase64(props.catalogo.listaImmagini[0].realURL), {base64: true});
+
+  await Promise.all( props.catalogo.listaImmagini.map(i => fetch(i.realURL).then( res=> img!.file(i.nomeFile, res.blob(), {base64: true})) ) )
+
+  zip.generateAsync({type:"blob"}).then(function(content) {
+      var fileLink = document.createElement('a')
+      fileLink.setAttribute('href',URL.createObjectURL(content))
+      fileLink.setAttribute('download','export.zip')
+      fileLink.click()
+  })
+  notify({ title: "Download catalog", text: `processing...` })
 }
 
 let utente = reactive(Utente.getInstance())
@@ -67,8 +87,11 @@ function shuffleAlbum(){
 }
 .catalogDiv > h3 > button { float: right; background: transparent; border: none; padding: 0 .5rem 0; }
 .catalogDiv > h3 > button:hover { cursor: grabbing }
-.catalogDiv > h3 > button:after { content: attr(alt); position: absolute; z-index: 1; margin-top: -1rem; margin-left: -2rem; visibility: hidden; }
-.catalogDiv > h3 > button:hover + :after { visibility:initial }
+/* 
+.catalogDiv > h3 > button:before { content: attr(alt); position: absolute; z-index: 1; margin-top: -1rem; margin-left: -1.5rem; visibility: hidden }
+.catalogDiv > h3 > button:nth-child(even):before { margin-top: 1.6rem; }
+.catalogDiv > h3 > button:hover + :before { visibility:initial; background-color: red; } 
+*/
 .isReadySpinner {
   width: 3rem;
   position: absolute;
