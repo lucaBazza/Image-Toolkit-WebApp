@@ -52,7 +52,6 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, defineAsyncComponent, computed } from 'vue'
 import Immagine from '@/types/Immagine'
-// import ImageEditorModalVue from './ImageEditorModal.vue'
 import { deleteImageFacade } from '@/types/Firebase_immagini'
 import Utente from '@/types/Utente'
 import { notify } from '@kyvg/vue3-notification'
@@ -127,7 +126,7 @@ async function deleteImg(){
   deleteImageFacade(props.imageRf)
       .then( ()=> notify({title:'Success', text: `${props.imageRf.getNomeFile()} deleted`}) )
       .catch( ()=> {
-          notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}` })
+          notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}`, type:'error' })
           setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listBefore, 500)
       })
 }

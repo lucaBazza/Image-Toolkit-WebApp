@@ -6,21 +6,25 @@
                 <canvas ref="cnvsLayerA" style="background: url()"></canvas>
             </div>
             <ul>
+                <li class="editActionsBtns">
+                    <button @click="rotate90"> 🔃 </button>
+                    <button @click="downloadTest">⬇️</button>
+                </li>
                 <li @click.shift="parameterReset(saturationValue.value)">
                     <h2>Saturation</h2>
-                    <Slider v-model="saturationValue.value" v-bind="saturationValue"/>
+                    <Slider v-model="saturationValue.value" v-bind="saturationValue" @change="updateImage"/>
                 </li>
                 <li>
                     <h2>Contrast</h2>
-                    <Slider v-model="contrastValue.value"  v-bind="contrastValue"/>
+                    <Slider v-model="contrastValue.value"  v-bind="contrastValue"  @change="updateImage"/>
                 </li>
                 <li>
                     <h2>Temperature</h2>
-                    <Slider v-model="temperatureValue.value" v-bind="temperatureValue"/>
+                    <Slider v-model="temperatureValue.value" v-bind="temperatureValue"  @change="updateImage"/>
                 </li>
                 <li>
                     <h2>Brightness</h2>
-                    <Slider v-model="brightnessValue.value" v-bind="brightnessValue"/>
+                    <Slider v-model="brightnessValue.value" v-bind="brightnessValue"  @change="updateImage"/>
                 </li>
                 <li>
                     <h2>LUTS</h2>
@@ -46,14 +50,13 @@
                         <option value="Luminosity">Luminosity</option>
                     </select>
                 </li>
-            <button @click="downloadTest">⬇️</button>
             </ul>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, getCurrentInstance, reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
 import useEventsBus from '@/utilities/useEmitters'
@@ -63,26 +66,12 @@ import Utente from '@/types/Utente'
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
 // https://codepen.io/manifoldkaizen/pen/BJNJgr
 
+const props = defineProps({     imgIdProp: {type: String, required: true}   })
 let utente = reactive(Utente.getInstance())
-const imgId = getCurrentInstance()?.appContext.config.globalProperties.selectedImageID
-let imageProp : Immagine = utente.getCurrentCatalog_cid().getImmagineByID(imgId)
-/* 
-console.log('TheEditorFullScreen() \t imgId:',imgId,
-                 "\n\t imgs: ", utente.getCurrentCatalog_cid().listaImmagini.map(i=>i.nomeFile).join(), imageProp )
-console.log(utente.getCurrentCatalog_cid().listaImmagini.map(i=>i.nomeFile).join())
- */
+let imageProp : Immagine = utente.getCurrentCatalog_cid().getImmagineByID(props.imgIdProp)
 const cnvsLayerA = ref<HTMLCanvasElement>()
 const { emit } = useEventsBus()
 
-
-let temperatureValue = ref({
-    value: 0,
-    default: 0,
-    min: 0,
-    max: 100,
-    tooltipPosition: 'bottom',
-    format: function (value) { return `${Math.round(value)}%` }
-})
 
 let saturationValue = ref({
     value: 0,
@@ -111,8 +100,17 @@ let brightnessValue = ref({
     format: function (value) { return `${Math.round(value)}%` }
 })
 
-const getStyles = ()=>{
-    return `filter: saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%); `
+let temperatureValue = ref({
+    value: 0,
+    default: 0,
+    min: 0,
+    max: 100,
+    tooltipPosition: 'bottom',
+    format: function (value) { return `${Math.round(value)}%` }
+})
+
+function getStyles(){
+    return `saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%) `
 }
 
 // non aggiorna la gui
@@ -129,19 +127,49 @@ function downloadTest(){
     link.click()
 }
 
-onMounted( async() => {
-    if( cnvsLayerA.value && cnvsLayerA.value.getContext('2d')){
-        let ctxA = cnvsLayerA.value.getContext('2d')!
-        let img = new Image()
-        img.crossOrigin="anonymous"
-        img.src = imageProp.realURL
+let img = new Image()
+img.crossOrigin="anonymous"
+img.src = imageProp.realURL
 
-        img.onload = ()=> {
-            cnvsLayerA.value!.width = img.width
-            cnvsLayerA.value!.height = img.height
-            ctxA.filter = getStyles() //'contrast(1.2)'//'contrast(5.2) sepia(.2)'
-            ctxA.drawImage(img,0,0)
-        }
+function getCanvasA(){ return cnvsLayerA.value }
+
+function getContextA(){
+    if( cnvsLayerA.value && cnvsLayerA.value.getContext('2d'))
+        return cnvsLayerA.value.getContext('2d')!
+    else console.log('Error update image, cannot get context canvas 😡')
+}
+
+function updateImage(){
+    getContextA()!.filter = getStyles()
+    getContextA()!.drawImage(img,0,0)
+}
+
+let degrees = 0
+function rotate90(){
+    degrees += 90
+    let context = getContextA()!
+    let canvas = getCanvasA()!
+    context.clearRect(0,0,canvas.width,canvas.height)
+
+    // save the unrotated context of the canvas so we can restore it later
+    // the alternative is to untranslate & unrotate after drawing
+    context.save()
+    // move to the center of the canvas
+    context.translate(canvas.width/2,canvas.height/2)
+    // rotate the canvas to the specified degrees
+    context.rotate(degrees*Math.PI/180)
+    // draw the image
+    // since the context is rotated, the image will be rotated also
+    context.drawImage(img,-img.width/2,-img.width/2);
+    // we’re done with the rotating so restore the unrotated context
+    context.restore();
+}
+
+onMounted( async() => {
+    img.onload = ()=> {
+        cnvsLayerA.value!.width = img.width
+        cnvsLayerA.value!.height = img.height
+        updateImage()
     }
 })
 
@@ -153,23 +181,14 @@ onMounted( async() => {
     position: fixed;            background-color: rgba(var(--backgroundColor), .6);
     top: 0;                     left: 0;
     width: 100vw;                height: 100vh;
-    /* transition: .5s ease-in; */
 }
 .imgEditorModal{
     position: static;
     background-color: rgba(var(--backgroundColor), .9);
     margin: 2rem 2rem;
     border-radius: 1rem;
-    /*position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);*/
-    /*width: max(90%, 400px ); height: 90%; margin: max(2%, 50px); */
 }
 .cnvs-boxs{ width: 60%; margin: 0 auto; padding-top: 1rem ; object-fit: contain; border-radius: .4rem;  } 
-            /* margin: min(50%, 4rem) auto;  */  /*height: 80%; */
 .cnvs-boxs > canvas{ width: 100% }
 
 .imgEditorModal > button, .imgEditorModal > ul > button {
@@ -181,12 +200,6 @@ onMounted( async() => {
     border: transparent;
 }
 .imgEditorModal > button:hover{ cursor: grab }
-/*.imgEditorModal > div > h2{ 
-    margin: 0 auto; 
-    margin-bottom: 2.5rem;
-    border-bottom: 1px solid white;
-    width: 30%; 
-}*/
 .imgEditorModal > ul{ 
     width: max(90%, 400px );
     margin: 0 auto;
@@ -195,17 +208,10 @@ onMounted( async() => {
 .imgEditorModal > ul > li{ padding: .8rem; margin: 0 auto }
 .imgEditorModal > ul > li:first-child{ padding-top: 0 }
 .imgEditorModal > ul > li:last-child{ height: 10rem }
+.imgEditorModal > ul > .editActionsBtns  > button { background: transparent; border: none; font-size: 1.4rem; padding: 0 1rem; }
 .slider-target{ margin-bottom: 1rem }
 .imgEditorModal > ul > li > h2 { margin-bottom: .1rem; margin-top: 0; }
 .imgEditorModal > ul > li > select{ padding: 1rem; color: var(--mainText); width: 100%; background: transparent; }
 .imgEditorModal > ul > li > select:hover{ background-color: rgba(0, 0, 0, 0.1) }
-
-/*.imgEditorModal > img::before{
-    display: block;
-    position: relative;
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0, #DE0 100%);
-    width: 100%;
-    content: '';
-}*/
 
 </style>

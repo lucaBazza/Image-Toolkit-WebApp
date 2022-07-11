@@ -23,7 +23,7 @@
 
   <CatalogoForm v-if="showCatalogo" :catalogo="catalogoSelezionato"/>
 
-  <TheEditorFullScreen v-if="showEditorFullScreen"/>
+  <TheEditorFullScreen v-if="showEditorFullScreen" :imgIdProp="selectedImageID"/>
 
   <ComeLater v-if="isProductionBuild"/>
 
@@ -32,7 +32,7 @@
 
 
 <script setup lang="ts">
-import { ref,reactive, computed, onMounted, provide, defineAsyncComponent, watch, getCurrentInstance } from 'vue'
+import { ref,reactive, computed, onMounted, provide, defineAsyncComponent, watch } from 'vue'
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
@@ -62,7 +62,10 @@ let showModalInfos = ref(false)
 let showUploadMode = ref(false)
 let showCatalogo = ref(false)
 let showLogInArea = ref(false)
+
 let showEditorFullScreen = ref(false)
+let selectedImageID = ref()
+
 let pageFullyLoaded = ref(false)
 
 const toggleModalInfos = ()=>{ showModalInfos.value = ! showModalInfos.value }
@@ -71,18 +74,14 @@ const openUserSettings = ()=>{ showLogInArea.value = ! showLogInArea.value }
 const postCloseLoggin = ()=>{ toggleModalInfos() }
 const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
-function notificate(data){ notify(data) }
 const catalogoSelezionato = computed( () => utenteSng.getCurrentCatalog_cid() )
 const TheCover = computed( () => !isLogin.value && pageFullyLoaded.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
 
 provide('utente',utenteSng)
 const { bus } = useEventsBus()
-watch(()=>bus.value.get('toggleEditorFullScreen'), (imgId:string) => {
-    getCurrentInstance()?.appContext.config.globalProperties.selectedImageID(imgId)
-    showEditorFullScreen.value = ! showEditorFullScreen.value // console.log('App.watch() - recived: ', imgId)
-        // destruct the parameters
-    //const [openEditorFullScreen] = val ?? []
-    //openEditorFullScreen.value = openEditorFullScreen
+watch( ()=>bus.value.get('toggleEditorFullScreen'), (imgId:string) => {
+    selectedImageID.value =  Array.isArray(imgId) ? imgId[0] : imgId
+    showEditorFullScreen.value = ! showEditorFullScreen.value 
 })
 
 
@@ -108,7 +107,7 @@ onMounted( async () => {
                           await Promise.all(prs).then( () => console.log('\t ✅ loaded all the other catalogs: \t', otherCatalgs.map(c=>c.titolo).join(', ')) )
                         })
                         .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
-                        .catch( err =>{ console.log(' 🕷  : ',err); notificate(err) })
+                        .catch( err => notify({title: 'Error', text: err, type:'error' }) )
                 )
           .catch( ex => console.log(ex))
     }
@@ -123,11 +122,6 @@ onMounted( async () => {
   }) 
 
 })
-/* 
-async function change_catalog(cid : string){
-  change_catalog_logic(cid)
-}
- */
 /**
  *    Metodo call back di TheDropZone
  *  - creo l'oggetto immagine inserendo base64 come src, etc.etc

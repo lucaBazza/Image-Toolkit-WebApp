@@ -73,6 +73,7 @@ export default class Catalogo{
     */
 
     getImmagineByID(imgId: string){
+        if( imgId && imgId.length < 4) console.log('getImmagineByID() invalid imgID: ', imgId)
         return this.listaImmagini.filter( i => i.imgID===imgId )[0]
     }
 

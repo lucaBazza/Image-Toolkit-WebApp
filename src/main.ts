@@ -22,7 +22,4 @@ const emitter = mitt()
 app.config.globalProperties.emitter = emitter
 
 
-app.config.globalProperties.selectedImageID = 'fYJQmNZ9WJfsQjm1rqe3'
-
-
 app.mount("#app")
