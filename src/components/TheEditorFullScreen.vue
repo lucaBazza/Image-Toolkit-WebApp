@@ -7,8 +7,8 @@
             </div>
             <ul>
                 <li class="editActionsBtns">
-                    <button @click="rotate90"> 🔃 </button>
-                    <button @click="downloadTest">⬇️</button>
+                    <button @click="rotate90(getContextA(), getCanvasA(),img)"> 🔃 </button>
+                    <button @click="downloadTest(getCanvasA(), imageProp.nomeFile)">⬇️</button>
                 </li>
                 <li @click.shift="parameterReset(saturationValue.value)">
                     <h2>Saturation</h2>
@@ -28,15 +28,18 @@
                 </li>
                 <li>
                     <h2>LUTS</h2>
-                    <select name="FusionModes">
-                        <option value="lutA">Warm Contrast</option>
-                        <option value="lutA">New York</option>
-                        <option value="lutA">Sean</option>
-                        <option value="lutA">Naville</option>
-                        <option value="lutA">Contrast</option>
-                        <option value="lutA">BW -</option>
-                        <option value="lutA">BW +</option>
-                        <option value="lutA">BW mid key</option>
+                    <select name="FusionModes" @change="testLUT">
+                        <option value="lutReset">Unset</option>
+                        <option value="lutA-warmy+.png">Warm Contrast</option>
+                        <option value="lutB-nigthty.webp">New York Night</option>
+                        <option value="lutC-warmer-soft.png">Sean Warm</option>
+                        <option value="lutD-greeny.png">Naville Greeny</option>
+                        <option value="lutE-softPump.png">Color Pump</option>
+                        <option value="lutF-ultraRED.png">Ultra RED</option>
+                        <option value="lutG-cyan-TealOrange.png">Colder Teal & Orange</option>
+                        <option value="lutH-BW-highKey.png">BW High Key</option>
+                        <option value="lutI-BW-neutral.jpg">BW Neutral</option>
+                        <option value="lutJ-BW-contrasted.jpg">BW Contrasted</option>
                     </select>
                 </li>
                 <li>
@@ -61,6 +64,8 @@ import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
 import useEventsBus from '@/utilities/useEmitters'
 import Utente from '@/types/Utente'
+import { rotate90, downloadTest, filterImage_LUT, resetImageBeforeLutFilter } from '@/utilities/ImageEditorFunctions'
+import { notify } from '@kyvg/vue3-notification'
 
 // https://quasar.dev/vue-components/img#example--native-lazy-loading
 // https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
@@ -120,52 +125,61 @@ function parameterReset(slider : any){
     slider = 0 
 }
 
-function downloadTest(){
-    var link = document.createElement('a')
-    link.download = imageProp.nomeFile
-    link.href = cnvsLayerA.value?.toDataURL()!
-    link.click()
-}
-
 let img = new Image()
 img.crossOrigin="anonymous"
 img.src = imageProp.realURL
 
-function getCanvasA(){ return cnvsLayerA.value }
+function getCanvasA(){ if( ! cnvsLayerA.value) throw Error('No canvas to use'); return cnvsLayerA.value!  }
 
-function getContextA(){
-    if( cnvsLayerA.value && cnvsLayerA.value.getContext('2d'))
-        return cnvsLayerA.value.getContext('2d')!
-    else console.log('Error update image, cannot get context canvas 😡')
+function getContextA() : CanvasRenderingContext2D { 
+    if(getCanvasA().getContext('2d')) return getCanvasA().getContext('2d')!; throw Error('No context canvas to update image 😡')
 }
 
 function updateImage(){
-    getContextA()!.clearRect(0, 0, getCanvasA()!.width, getCanvasA()!.height)
+    getContextA().clearRect(0, 0, getCanvasA().width, getCanvasA().height)
     window.requestAnimationFrame(()=>{          //  the browser calls a specified function to update an animation before the next repaint
-        getContextA()!.filter = getStyles()
-        getContextA()!.drawImage(img,0,0)
+        getContextA().filter = getStyles()
+        getContextA().drawImage(img,0,0)
     })
 }
 
-let degrees = 0
-function rotate90(){
-    degrees += 90
-    let context = getContextA()!
-    let canvas = getCanvasA()!
-    context.clearRect(0,0,canvas.width,canvas.height)
 
-    // save the unrotated context of the canvas so we can restore it later
-    // the alternative is to untranslate & unrotate after drawing
-    context.save()
-    // move to the center of the canvas
-    context.translate(canvas.width/2,canvas.height/2)
-    // rotate the canvas to the specified degrees
-    context.rotate(degrees*Math.PI/180)
-    // draw the image
-    // since the context is rotated, the image will be rotated also
-    context.drawImage(img,-img.width/2,-img.width/2);
-    // we’re done with the rotating so restore the unrotated context
-    context.restore();
+
+/*              BASE64 da url    -> use utils !!            */
+const toDataURL = url => fetch(url)
+  .then(response => response.blob())
+  .then(blob => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+}))
+
+function testLUT(e){
+    let urlLut
+    if( ! e  || ! e.target.value ) throw Error('No LUT to load \t 😢 ')
+    if( e.target.value==='lutReset'){ resetImageBeforeLutFilter(getCanvasA(),img); return }
+
+    try{ urlLut = require(`@/assets/LUTs/${e.target.value}`) } catch(err){}
+    if(!urlLut){ notify({title:'Error', text:'Cant find this LUT in assets 😢 ', type:'error'}); return }
+
+    console.log('testLUt() \t', e.target.value)
+    let imgLut = new Image()
+    let canvasLut = document.createElement('canvas') as HTMLCanvasElement
+    let ctxLut = canvasLut.getContext("2d")!
+    imgLut.crossOrigin = "Anonymous"
+    imgLut.onload = function() {
+        canvasLut.width = imgLut.width
+        canvasLut.height = imgLut.height
+        ctxLut.drawImage(imgLut, 0, 0)
+
+        resetImageBeforeLutFilter(getCanvasA(), img)
+        filterImage_LUT(getCanvasA(), getContextA(),canvasLut , ctxLut , 255)
+        //localStorage.setItem( "savedImageDataLut", canvasLut.toDataURL("image/png") );
+    }
+
+    toDataURL( urlLut )
+        .then( srcLutbyte => imgLut.src = String(srcLutbyte) ) 
 }
 
 onMounted( async() => {
@@ -176,9 +190,10 @@ onMounted( async() => {
     }
 })
 
-</script>
+</script> 
 
 <style src="@vueform/slider/themes/default.css"></style>
+
 <style>
 .backdropModal{
     position: fixed;            background-color: rgba(var(--backgroundColor), .6);
