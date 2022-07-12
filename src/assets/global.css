@@ -90,8 +90,16 @@ ul { list-style-type: none }
         margin: 1rem;
         margin-left: max(10%, 1rem);
     }
-    .imgEditorModal > ul{ width: max(30%, 400px ) }
+    .imgEditorModal > ul{ width: max(30%, 400px );  margin-top: 2rem }
+    .imgEditorModal > ul > li{ margin: 2.8rem 0  }
+    .imgEditorModal > ul > li > h2 { display: inline-block; float: left; }
+    .imgEditorModal > ul > li > .slider-target { width: 60%; float: right }
+    .imgEditorModal > ul > li > select { width: 60%; float: right }
+    .imgEditorModal > button{ top: 1.2rem; right: 1rem }
+    .cnvs-boxs > canvas { padding-bottom: 1rem } 
+    .cnvs-boxs > canvas { width:auto; height: 75vh } 
 }
+
 
 
 /*
@@ -136,9 +144,7 @@ ul { list-style-type: none }
     .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%) }
     .mainViewer > .imgOverlaySpinner{ left: 18%; }
 
-    .backdropModal { position: fixed; /*  min-width: 100%; min-height: 100%;  box-sizing: border-box; */}
     .imgEditorModal { max-height: 95vh; }
-    .cnvs-boxs > canvas {   width:auto; height: 80vh;}
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */

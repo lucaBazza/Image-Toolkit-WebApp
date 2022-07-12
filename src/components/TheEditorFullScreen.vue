@@ -140,8 +140,11 @@ function getContextA(){
 }
 
 function updateImage(){
-    getContextA()!.filter = getStyles()
-    getContextA()!.drawImage(img,0,0)
+    getContextA()!.clearRect(0, 0, getCanvasA()!.width, getCanvasA()!.height)
+    window.requestAnimationFrame(()=>{          //  the browser calls a specified function to update an animation before the next repaint
+        getContextA()!.filter = getStyles()
+        getContextA()!.drawImage(img,0,0)
+    })
 }
 
 let degrees = 0
@@ -213,5 +216,4 @@ onMounted( async() => {
 .imgEditorModal > ul > li > h2 { margin-bottom: .1rem; margin-top: 0; }
 .imgEditorModal > ul > li > select{ padding: 1rem; color: var(--mainText); width: 100%; background: transparent; }
 .imgEditorModal > ul > li > select:hover{ background-color: rgba(0, 0, 0, 0.1) }
-
 </style>

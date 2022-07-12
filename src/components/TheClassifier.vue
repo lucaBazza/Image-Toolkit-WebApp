@@ -26,7 +26,7 @@ import ml5 from 'ml5'
 import Classification from '@/types/Classification'
 import { updateImage } from '@/types/Firebase_immagini'
 
-const props = defineProps({ immagine: {  type: Immagine, required: true }/* , nodeImg: { type: Image, required: true } */ })
+const props = defineProps({   immagine: {  type: Immagine, required: true }  })
 
 let imgRef = ref()
 let imageClass = ref('')
@@ -51,12 +51,11 @@ async function classify(){
     result.label = results[0].label
     result.confidence = Number((results[0].confidence * 100).toFixed(2))
 
-
     let img = utente.getCurrentCatalog_cid().listaImmagini.filter(i=>i.imgID===props.immagine.imgID)[0]
     const cl = results.map( res => { return { label: res.label, confidence: res.confidence} as Classification })
     img.setClassificatore(cl)
-    updateImage(img).then(()=>console.log('😀')).catch(err => console.log(' 😭 ',err, img))
-
+    updateImage(img) // .then(()=>console.log('Update classification successfully'))
+        .catch(err => console.log(' 😭 ',err, img))
 
     status.value = results.map( (r: { label: number | string }) => r.label ).join(',').split(',').slice(0,number_of_showResults).join(',')
     console.log(`\nClassified as : ${status.value} \n`, results, '\n\n')
@@ -75,15 +74,13 @@ async function detectFaceApi(){
 }
 
 onMounted( async () => {
-  if( ! imgRef.value /* props.nodeImg */ )
+  if( ! imgRef.value )
     { status.value = 'Missing image'; return }
 
   classifier = ml5.imageClassifier('MobileNet', classify)  // MobileNet, Darknet, DoodleNet, ...
 
   // => https://www.npmjs.com/package/@vladmandic/face-api
-  //faceApi = ml5.faceApi( {withLandmarks: false, withDescriptors: false }, detectFaceApi);
-
-
+  //faceApi = ml5.faceApi( {withLandmarks: false, withDescriptors: false }, detectFaceApi)
 })
 
 </script>
