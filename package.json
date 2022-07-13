@@ -14,6 +14,7 @@
     "clearProj": "rm -r distr && npm cache clean --force"
   },
   "dependencies": {
+    "@firebase/rules-unit-testing": "^2.0.3",
     "@kyvg/vue3-notification": "^2.3.4",
     "@vue/test-utils": "^2.0.0",
     "@vueform/slider": "^2.0.10",

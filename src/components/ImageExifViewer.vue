@@ -8,9 +8,7 @@
         :alt="imageRf.alt"
         @error="imageLoadError"
         @click="emit('toggleEditorFullScreen', props.imageRf.imgID)"
-    />        
-    <!--   ref="nodeImg"         crossorigin="anonymous" -->
-    <!-- <img class="imgOverlaySpinner" src="@/assets/loading-io-spinner.gif"/> -->
+    />
     <span>
       {{ hideExtension(imageRf.nomeFile) }}
       <div class="cntimgSettingsBtns">
@@ -43,10 +41,6 @@
       </ul>
     </span>
   </div>
-<!--   <ImageEditorModalVue 
-      v-if="showImgEditModal" 
-      :imageProp="imageRf"
-      @toggle-editor-fn="toggleEditorFn" /> -->
 </template>
 
 <script setup lang="ts">
@@ -62,7 +56,6 @@ const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 const { emit } = useEventsBus()
 
 let src_real = ref(props.imageRf.src)
-// let showImgEditModal = ref(false)
 let showFixButton = ref(false)
 let showImageRef = ref(true)
 let showClassifier = ref(false)

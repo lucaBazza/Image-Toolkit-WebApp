@@ -1,5 +1,5 @@
-import { doc, deleteDoc/*,  getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField */ } from "firebase/firestore"
-import { /* getStorage, */ ref, deleteObject } from "firebase/storage"
+// import { doc, deleteDoc/*,  getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField */ } from "firebase/firestore"
+import { ref, deleteObject } from "firebase/storage"
 import { db, storage } from '@/firebase'
 import { CATALOGHI_COL, IMMAGINI_COL  } from "./FirebaseModel"
 import { catalogoConverter,  immagineConverter } from '@/types/Firebase_converters'
@@ -127,7 +127,8 @@ export async function updateImage( img : Immagine) : Promise<void>{
  */
  export async function loadImagesFromCatalog_firebaseA(cid) : Promise<Immagine[]>{
   // console.log('loadImagesFromCatalog_firebaseA() \n\t request catalog id:', cid )
-  let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter).get()
+  let res = await db.collection(`${CATALOGHI_COL}/${cid}/${IMMAGINI_COL}/`).withConverter(immagineConverter)
+                      .get().catch((err)=>console.warn('ERROR loadImagesFromCatalog_firebaseA()\n',err))
   return res.docs.map(imgQuery => imgQuery.data())
 }
 

@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Regola basic togliere post testing !
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /readonly/{docId}{
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /utentiprefs/{userprefID}{
+      allow read, write: if (request.auth.uid == userprefID )
+      
+    }
+
+    // Matches any document in the 'cataloghi' collection or subcollections.
+    match /cataloghi/{catId=**} {
+      allow read, write: if (request.auth.uid == resource.data.uid)
+
+       match /immagini/{imgId} {
+          allow read, write: if true;
+       }
+    }
+
+    // (request.auth.uid == resource.data.uid) // (request.auth.uid == resource.data.uid)
+
+    //match /cataloghi/{catId}/immagini/{imgId} {
+    //  allow read, write: if (request.auth.uid == resource.data.uid)
+    //}
+
+    // custom campi:  request.auth.token.email 
+    //match /cataloghi/{docId} {
+      //allow write: if request.auth.uid == request.resource.data.uid;
+      //allow read: if request.auth.uid == resource.data.uid;
+      //allow write: if request.auth.uid == resource.data.uid;
+      //allow read, write;
+    //}
+     
+  }
+}

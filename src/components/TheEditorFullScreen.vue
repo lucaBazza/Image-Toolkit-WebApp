@@ -42,6 +42,7 @@
                         <option value="lutJ-BW-contrasted.jpg">BW Contrasted</option>
                     </select>
                 </li>
+                <!-- 
                 <li>
                     <h2>Fusion mode</h2>
                     <select name="FusionModes">
@@ -53,6 +54,7 @@
                         <option value="Luminosity">Luminosity</option>
                     </select>
                 </li>
+                 -->
             </ul>
         </div>
     </div>
@@ -67,9 +69,10 @@ import Utente from '@/types/Utente'
 import { rotate90, downloadTest, filterImage_LUT, resetImageBeforeLutFilter } from '@/utilities/ImageEditorFunctions'
 import { notify } from '@kyvg/vue3-notification'
 
-// https://quasar.dev/vue-components/img#example--native-lazy-loading
-// https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_JavaScript_frameworks/Vue_rendering_lists
-// https://codepen.io/manifoldkaizen/pen/BJNJgr
+/**
+ *  CSS-based RGB filtering with fusion modes
+ *      https://codepen.io/manifoldkaizen/pen/BJNJgr
+*/
 
 const props = defineProps({     imgIdProp: {type: String, required: true}   })
 let utente = reactive(Utente.getInstance())
@@ -195,10 +198,11 @@ onMounted( async() => {
 <style src="@vueform/slider/themes/default.css"></style>
 
 <style>
+
 .backdropModal{
     position: fixed;            background-color: rgba(var(--backgroundColor), .6);
     top: 0;                     left: 0;
-    width: 100vw;                height: 100vh;
+    width: 100vw;               height: 100vh;
 }
 .imgEditorModal{
     position: static;
@@ -207,8 +211,7 @@ onMounted( async() => {
     border-radius: 1rem;
 }
 .cnvs-boxs{ width: 60%; margin: 0 auto; padding-top: 1rem ; object-fit: contain; border-radius: .4rem;  } 
-.cnvs-boxs > canvas{ width: 100% }
-
+.cnvs-boxs > canvas{ width: 100%; object-fit: contain }
 .imgEditorModal > button, .imgEditorModal > ul > button {
     background: transparent;
     font-size: 1.5rem;
@@ -218,17 +221,14 @@ onMounted( async() => {
     border: transparent;
 }
 .imgEditorModal > button:hover{ cursor: grab }
-.imgEditorModal > ul{ 
-    width: max(90%, 400px );
-    margin: 0 auto;
-    padding-left: 0;
-}
+.imgEditorModal > ul{ width: max(90%, 400px ); margin: 0 auto; padding-left: 0 }
 .imgEditorModal > ul > li{ padding: .8rem; margin: 0 auto }
 .imgEditorModal > ul > li:first-child{ padding-top: 0 }
 .imgEditorModal > ul > li:last-child{ height: 10rem }
-.imgEditorModal > ul > .editActionsBtns  > button { background: transparent; border: none; font-size: 1.4rem; padding: 0 1rem; }
+.imgEditorModal > ul > .editActionsBtns  > button{ background: transparent; border: none; font-size: 1.4rem; padding: 0 1rem; }
 .slider-target{ margin-bottom: 1rem }
-.imgEditorModal > ul > li > h2 { margin-bottom: .1rem; margin-top: 0; }
+.imgEditorModal > ul > li > h2{ margin-bottom: .1rem; margin-top: 0 }
 .imgEditorModal > ul > li > select{ padding: 1rem; color: var(--mainText); width: 100%; background: transparent; }
 .imgEditorModal > ul > li > select:hover{ background-color: rgba(0, 0, 0, 0.1) }
+
 </style>

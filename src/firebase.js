@@ -6,7 +6,7 @@
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-let firebaseConfig = {
+/* export */ const firebaseConfig = {
   apiKey: "AIzaSyDbPN5NRUzz7Vx3aDTd_CO1PkqRNVD5EZg",
   authDomain: "image-toolkit-app.firebaseapp.com",
   projectId: "image-toolkit-app",
@@ -26,7 +26,12 @@ import { getApp } from "firebase/app"
 const firebaseApp = firebase.initializeApp(firebaseConfig)
 export const db = firebaseApp.firestore()
 export const storage = getStorage()
-export const auth = firebase.auth()
+
+let isTestingMode = false
+const { initializeTestEnvironment } = require("@firebase/rules-unit-testing")
+try{ firebase.auth() } catch(e){ isTestingMode = true; initializeTestEnvironment({projectId: firebaseConfig.MY_PROJECT_ID }).auth }
+export const auth = isTestingMode ? initializeTestEnvironment({projectId:firebaseConfig. MY_PROJECT_ID}).auth : firebase.auth()
+
 export const functions = getFunctions(getApp())
 
 

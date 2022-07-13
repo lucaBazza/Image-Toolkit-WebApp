@@ -1,5 +1,11 @@
-///import MD5 from "@/utilities/MD5.js";
-///import Catalogo from "./Catalogo";
+/**
+ *  - TODO: leggere variabili globali app da catalogo readOnly 'appGlobalSettings' da Firestore
+ *      - apiKey mail sender
+ *      - 
+ * 
+ */
+import { loadReadOnly,sendMailGun } from '@/types/Firebase_settings'
+import { read } from 'fs';
 
 export default class Settings{
 
@@ -41,6 +47,12 @@ export default class Settings{
         return this._number_catalogImagesLoaded
     }
     
+    public async getDatas(){
+        const readOnly = await loadReadOnly()
+        console.log('readOnly: ',readOnly)
+
+        //sendMail()
+    }
 }
 
 

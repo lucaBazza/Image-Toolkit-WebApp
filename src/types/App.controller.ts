@@ -41,17 +41,17 @@ export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
   if( cataloghi && cataloghi.length > 0 ){
     utenteRef.setListaCataloghi(cataloghi)
     if( ! utenteRef.selected_cid )
-      { console.log('❌ utente senza cid nei cataloghi, assegno il primo disponibile'); utenteRef.selectFirstAviableCatalog() }
+      { console.warn('❌ utente senza cid nei cataloghi, assegno il primo disponibile'); utenteRef.selectFirstAviableCatalog() }
 
     if( ! await existCatalogForUtente(utenteRef.uid, utenteRef.selected_cid!) ){ 
-      console.log(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${utenteRef.uid} \t req: ${utenteRef.selected_cid}`); 
+      console.warn(`❌ utente con cid invalido, assegno il primo disponibile\n user: ${utenteRef.uid} \t req: ${utenteRef.selected_cid}`); 
       utenteRef.selectFirstAviableCatalog() 
     }
     
     if( ! utenteRef.selected_cid )
       return Promise.reject({title:'No cid', text: 'User has no cid aviable'})
 
-    const imagesSelectedCat = await loadImagesFromCatalog_firebaseA(utenteRef.selected_cid) 
+    const imagesSelectedCat = await loadImagesFromCatalog_firebaseA(utenteRef.selected_cid)
     Utente.getInstance().getListaCataloghi().forEach( cat =>{
       if(cat.cid === utenteRef.selected_cid)
         cat.setListaImmagini(imagesSelectedCat)
