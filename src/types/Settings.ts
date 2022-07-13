@@ -47,11 +47,9 @@ export default class Settings{
         return this._number_catalogImagesLoaded
     }
     
-    public async getDatas(){
-        const readOnly = await loadReadOnly()
-        console.log('readOnly: ',readOnly)
-
-        //sendMail()
+    public async getImpostazioni(){
+        const impostazioni = await loadReadOnly()
+        return impostazioni[0]
     }
 }
 

@@ -12,6 +12,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    match /impostazioni/{docId}{
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
     match /utentiprefs/{userprefID}{
       allow read, write: if (request.auth.uid == userprefID )
       

@@ -1,16 +1,8 @@
 import { db } from '@/firebase'
 import { Buffer } from 'buffer'
 
-/**
- *  ...
- */
-const apiKey = '2abe0627e648f2b84679d7bd05576d3c-18e06deb-f0b11713'
-
-const freeDomainName = 'sandbox446e2a0726be4ce59e9c4a982fa29a4d.mailgun.org'
-const urlDomainMailGun = `https://api.mailgun.net/v3/${freeDomainName}/messages` //'https://api.mailgun.net/v3/sandbox446e2a0726be4ce59e9c4a982fa29a4d.mailgun.org'
-
 export async function loadReadOnly(){
-    let res = await db.collection(`readonly/`)
+    let res = await db.collection(`impostazioni/`)
                         .get().catch((err)=>console.warn('ERROR loadReadOnly()\n',err))
     return res.docs.map(q => q.data())
 }
@@ -22,6 +14,7 @@ export async function sendMailGun(){
                       'Congratulations Zabba Nella, you just sent an email with Mailgun!  You are truly awesome!')
 }
 
+const apiKey_mailGun = ''
 export async function sendMailGun_fetch(from, to, subject, text){
     const body = new FormData
     body.append("from", `Excited User <mailgun@${freeDomainName}>`)
@@ -36,7 +29,7 @@ export async function sendMailGun_fetch(from, to, subject, text){
       body,
       method: 'POST',
       headers: {
-        authorization: 'Basic ' + Buffer.from('api:' + apiKey).toString('base64'),
+        authorization: 'Basic ' + Buffer.from('api:' + apiKey_mailGun).toString('base64'),
         content: "multipart/form-data",
         "Access-Control-Allow-Origin" : '*'
       }
@@ -44,25 +37,18 @@ export async function sendMailGun_fetch(from, to, subject, text){
 }
 
 
-
-/**
- *  https://app.mailgun.com/app/account/
- *    mail: jasam28522@runfons.com
- *    psw: 9D3vEUxCSmqKf$d
- */
+const freeDomainName = 'sandbox446e2a0726be4ce59e9c4a982fa29a4d.mailgun.org'
+const urlDomainMailGun = `https://api.mailgun.net/v3/${freeDomainName}/messages` //'https://api.mailgun.net/v3/sandbox446e2a0726be4ce59e9c4a982fa29a4d.mailgun.org'
 export async function sendMailGun_Node(){
   
   const formData = require('form-data');
   let Mailgun //= require('mailgun.js');
   const mailgun = new Mailgun(formData);
-  const mg = mailgun.client({
-    username: 'api',
-    key: '551f92fd14bbc89e87fd11d77238c8da-18e06deb-ff509d9f',
-  });
+  const mg = mailgun.client({ username: 'api',key: apiKey_mailGun });
   mg.messages
   .create('sandbox5e3f2c58486c407aa0dfb08e9136a930.mailgun.org', {
     from: "Mailgun Sandbox <postmaster@sandbox5e3f2c58486c407aa0dfb08e9136a930.mailgun.org>",
-    to: ["jasam28522@runfons.com"],
+    to: ["1234@runfons.com"],
     subject: "Hello",
     text: "Testing some Mailgun awesomness!",
   })
@@ -73,4 +59,20 @@ export async function sendMailGun_Node(){
   // You can see a record of this email in your logs: https://app.mailgun.com/app/logs.
   // You can send up to 300 emails/day from this sandbox server.
   // Next, you should add your own domain so you can send 10000 emails/month for free.
+}
+
+export async function sendMail_sendgrid(from, to, subject, text, apiKey_sendgrid){
+  const sendGrid_url = 'https://api.sendgrid.com/v3/mail/send'
+  console.log('sendMail_sendgrid() \t', apiKey_sendgrid)
+  fetch(sendGrid_url, { 
+    headers: {
+      mode: 'no-cors',
+      method: 'post',
+        'Authorization': `Bearer ${apiKey_sendgrid}`,
+        'Content-Type': 'application/json',
+        'Origin': '',
+        body: '{"personalizations": [{"to": [{"email": "luca.bazzanella94@gmail.com"}]}],"from": {"email": "test@example.com"},"subject": "Sending with SendGrid is Fun","content": [{"type": "text/plain", "value": "and easy to do anywhere, even with cURL"}]}'
+      }
+    })
+
 }

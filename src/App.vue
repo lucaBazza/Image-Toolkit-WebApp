@@ -53,6 +53,7 @@ import { loadCatalogo } from '@/types/App.controller'
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 import useEventsBus from '@/utilities/useEmitters'
+import { sendMail_sendgrid } from '@/types/Firebase_settings'
 
 let utenteSng = reactive(Utente.getInstance())
 const isProductionBuild = Settings.getInstance().isProductionMode()
@@ -108,10 +109,9 @@ onMounted( async () => {
                         })
                         .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
                         .catch( err => notify({title: 'Error', text: err, type:'error' }) )
-                )
+          )
           .catch( ex => console.log(ex))
-
-          //Settings.getInstance().getDatas()
+          //Settings.getInstance().getImpostazioni().then( res => sendMail_sendgrid('to','','','',res['apikey-sendgrid']) )
     }
     else {
       console.log('Auth status now is un-logged')
