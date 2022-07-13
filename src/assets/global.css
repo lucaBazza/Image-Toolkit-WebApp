@@ -52,6 +52,8 @@ body{ margin: 0 }
     mix-blend-mode: multiply;
     background: var(--darkModeImageGradinet);
 }
+.controlBtns > button:first-child::after { content: '🌖'}
+.darkMode .controlBtns > button:first-child::after { content: '🌘'}
 ul { list-style-type: none }
 .list-move, .list-enter-active, .list-leave-active{ transition: all .5s ease }
 .list-enter-from, .list-leave-to{ opacity: 0; transform: translateX(-50px); }
@@ -96,8 +98,7 @@ ul { list-style-type: none }
     .imgEditorModal > ul > li > .slider-target { width: 60%; float: right }
     .imgEditorModal > ul > li > select { width: 60%; float: right }
     .imgEditorModal > button{ top: 1.2rem; right: 1rem }
-    .cnvs-boxs > canvas { padding-bottom: 1rem } 
-    .cnvs-boxs > canvas { width:auto; height: 75vh } 
+    .cnvs-boxs > canvas { padding-bottom: 1rem; height: 75vh }
 }
 
 
@@ -144,7 +145,7 @@ ul { list-style-type: none }
     .catalogDiv > ul > li{ flex: 1 1 0px; transform: translateX(-4%) }
     .mainViewer > .imgOverlaySpinner{ left: 18%; }
 
-    .imgEditorModal { max-height: 95vh; }
+    .imgEditorModal { max-height: 95vh }
 }
 
 @media only screen and (min-width: 2140px){     /* ULTRA WIDE DEVICES 4K */

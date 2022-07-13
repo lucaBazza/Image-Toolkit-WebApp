@@ -8,7 +8,7 @@
   </button>
 
   <nav class="controlBtns">
-      <button @click="toggleDarkModeBtn">🌓</button>
+      <button @click="toggleDarkModeBtn"></button>
       <button @click="toggleUploadMode" v-if="isLogin" >☁️</button>
       <button @click="toggleModalInfos">ℹ️</button>
   </nav>
@@ -110,6 +110,8 @@ onMounted( async () => {
                         .catch( err => notify({title: 'Error', text: err, type:'error' }) )
                 )
           .catch( ex => console.log(ex))
+
+          //Settings.getInstance().getDatas()
     }
     else {
       console.log('Auth status now is un-logged')
