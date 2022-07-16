@@ -1,4 +1,3 @@
-// import { doc, deleteDoc/*,  getDoc, setDoc, serverTimestamp, query, updateDoc, deleteField */ } from "firebase/firestore"
 import { ref, deleteObject } from "firebase/storage"
 import { db, storage } from '@/firebase'
 import { CATALOGHI_COL, IMMAGINI_COL  } from "./FirebaseModel"
@@ -30,7 +29,7 @@ import Utente from "./Utente"
 
 
 /**
- *  Metodo con promise all per cancellare immagine di utente
+ *  Metodo con promise all per cancellare immagine di utente (firestore+firebase)
  */
 export async function deleteImageFacade(img : Immagine) : Promise<void>{
   Promise.all([deleteImage_firestore(`immagini/${img.nomeFile}`), deleteImage(img.imgID, img.catalogoID,Utente.getInstance().uid)])
@@ -103,7 +102,7 @@ export async function addImageToCatalog2(img : Immagine) : Promise<string>{
           .catch( ex => { return Promise.reject(`updateCollection() Error adding document: ${ex}`) })
 
   Utente.getInstance()
-          .getCatalog_by_cid(img.catalogoID).listaImmagini
+          .getCatalog_by_cid(img.catalogoID)!.listaImmagini
           .filter( i=> img.imgID == `temp-${i.nomeFile}`)[0].imgID = _imgId
 
   return _imgId

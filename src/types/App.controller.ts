@@ -1,9 +1,7 @@
 import Catalogo from '@/types/Catalogo'
-import { getCatalog_fs, deleteCatalog, updateUser, getCataloghi_C, existCatalogForUtente } from '@/types/FirebaseModel' 
+import { updateUser, getCataloghi_C, existCatalogForUtente } from '@/types/FirebaseModel' 
 import { loadImagesFromCatalog_firebaseA } from '@/types/Firebase_immagini' 
 import Utente from './Utente'
-import { Ref } from 'vue'
-import Immagine from './Immagine'
 
 
 /**
@@ -17,13 +15,13 @@ export async function change_catalog_logic( cid : string){
 
     updateUser(utente)
 
-    if( ! utente.getCatalog_by_cid(cid).listaImmagini){
+    if( ! utente.getTheCatalog().listaImmagini){
       console.log(`Catalogo: ${cid} non ha immagini caricate, provvedo a scaricarle`)
       let listaImgs = await loadImagesFromCatalog_firebaseA(cid)
       utente.setImages_by_cid(listaImgs,cid)
     }
     
-    console.log('App.change_catalog() \t titolo: ', utente.getCurrentCatalog_cid().titolo)
+    console.log('App.change_catalog() \t titolo: ', utente.getTheCatalog().titolo)
 }
 
 
@@ -67,6 +65,10 @@ export async function loadCatalogo( utenteRef : Utente) : Promise<String>{
                     type: 'warn', 
                     duration: 10000 })
 }
+
+
+
+
 
 
 

@@ -3,6 +3,8 @@
  *  @return coppia { location, lastIp }
  */
 export default async function getLocalizationInfos(){
+  if( ! window.navigator.onLine ! )
+    return Promise.reject('No internet connection')
   return (location.protocol == 'https:') ? ipGeolocationIo() : ipApiCom()
 }
 

@@ -7,11 +7,14 @@ import Catalogo from "./Catalogo"
 import Immagine from './Immagine'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 import { utenteConverter, catalogoConverter, immagineConverter } from '@/types/Firebase_converters'
+import { deleteImageFacade } from './Firebase_immagini';
 
 export let unsubscribeToRefs 
 export const USER_COL = "utentiprefs"
 export const CATALOGHI_COL = "cataloghi"
 export const IMMAGINI_COL = "immagini"
+export const IMPOSTAZIONI_COL = "impostazioni"
+
 
 
 /**
@@ -22,6 +25,7 @@ export const IMMAGINI_COL = "immagini"
  *        + TODO: check preliminare se catalogo esiste già con stesso titolo
  */
 export async function addCatalogo3(catalogo : Catalogo ){
+  console.log('addCatalogo3 :', catalogo.setCatalog_cid(`temp-${catalogo.titolo}-${catalogo.uid}`))
   if( 2 > catalogo.uid.length) 
     return Promise.reject(`Failed to add catalog, invalid uid: ${catalogo.uid ? catalogo.uid : '-' }`)
   let cataloghiRef = db.collection(CATALOGHI_COL).withConverter(catalogoConverter)
@@ -87,12 +91,14 @@ export async function getCataloghi_C(user_id: string) : Promise<Catalogo[]> {
   const q = db.collection(CATALOGHI_COL).withConverter(catalogoConverter).where("uid", "==", user_id)
   await q.get().then(querySnapshot => {
       if ( querySnapshot.empty )
-        return Promise.reject('getCataloghi_C() Error, query found empty 😭 ')
-      lc = querySnapshot.docs.map(doc => { return doc.data() as Catalogo })
+        console.log('Warning, dont have catalog inserted 😭')
+        //return Promise.reject('Warning, dont have catalog inserted 😭')
+      else
+        lc = querySnapshot.docs.map(doc => { return doc.data() as Catalogo })
   })
   unsubscribeToRefs = db.collection(CATALOGHI_COL)
   //console.log('💉 getCataloghi_B() ENDS return tot: ', lc.length)
-  return lc.length > 0 ? Promise.resolve(lc) : Promise.reject('\t ✋ Snapshot catalogs is loading...')
+  return lc.length > 0 ? Promise.resolve(lc) : []//Promise.reject('\t ✋ Snapshot catalogs is loading...')
 }
 
 
@@ -143,7 +149,6 @@ export async function getCatalogsID_fromUserID(uid: string) : Promise<string[]>{
  *  Aggiornamento una-tantum utente
  */
 export async function updateUser(utente: Utente){
-  // console.log('update user: ', utente)
   await db.collection(USER_COL).doc(utente.uid).update( utenteConverter.toFirestore(utente) ).catch((ex: any)=>console.log(ex))
 }
 
@@ -153,8 +158,8 @@ export async function updateUser(utente: Utente){
  *    TODO: delete also the images inside!
  */
 export async function deleteCatalog(cid: string){
-  const docRef = doc(db,CATALOGHI_COL, cid)
-  return deleteDoc(docRef).then( ()=> Promise.resolve('callback delete catalog, now update form')).catch(ex => Promise.reject(ex))
+  const promiseDeleteImages = Utente.getInstance().getCatalog_by_cid(cid)!.listaImmagini.map( img => deleteImageFacade(img).catch(err=>console.log(`Fail promiseDeleteImages() ${img.nomeFile} ${err}`)) )
+  return Promise.all([ deleteDoc( doc(db,CATALOGHI_COL, cid) ), promiseDeleteImages ])
 }
 
 

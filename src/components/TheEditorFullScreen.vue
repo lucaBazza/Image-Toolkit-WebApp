@@ -1,7 +1,7 @@
 <template id="imageEditorModalVue_tmpl">
     <div class="backdropModal">
         <div class="imgEditorModal">
-            <button @click="emit('toggleEditorFullScreen')"> ❌ </button>
+            <button @click="onClose"> ❌ </button>
             <div class="cnvs-boxs">
                 <canvas ref="cnvsLayerA" style="background: url()"></canvas>
             </div>
@@ -66,7 +66,7 @@ import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
 import useEventsBus from '@/utilities/useEmitters'
 import Utente from '@/types/Utente'
-import { rotate90, downloadTest, filterImage_LUT, resetImageBeforeLutFilter } from '@/utilities/ImageEditorFunctions'
+import { rotate90, downloadTest, filterImage_LUT, resetImageBeforeLutFilter, generateThumb } from '@/utilities/ImageEditorFunctions'
 import { notify } from '@kyvg/vue3-notification'
 
 /**
@@ -147,7 +147,6 @@ function updateImage(){
 }
 
 
-
 /*              BASE64 da url    -> use utils !!            */
 const toDataURL = url => fetch(url)
   .then(response => response.blob())
@@ -183,6 +182,15 @@ function testLUT(e){
 
     toDataURL( urlLut )
         .then( srcLutbyte => imgLut.src = String(srcLutbyte) ) 
+}
+
+/**
+ *  alla chiusura, aggiorna la thumb image
+ */
+function onClose(){
+    generateThumb(getCanvasA(), getContextA())
+        .then( thumbBase64 => localStorage.setItem(`thumb-${imageProp.imgID}`, thumbBase64) )
+    emit('toggleEditorFullScreen')
 }
 
 onMounted( async() => {

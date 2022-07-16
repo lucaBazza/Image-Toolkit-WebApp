@@ -4,40 +4,42 @@
     <h3 v-if="catalogo.titolo">{{ catalogo.titolo }}
       <button @click="downloadAlbum" alt="download"> ⬇ </button>
       <button @click="openSortingOptions" alt="sort"> ↕️ </button>
+      <button @click="compileScript" alt="script photoshop"> 🔌 </button>
       <button @click="shuffleAlbum" alt="shuffle"> 🔀 </button>
-    </h3> 
+    </h3>
     <transition-group tag="ul" name="list">
       <li v-for="img in catalogo.listaImmagini" :key="img.nomeFile">
         <ImageExifViewer :imageRf="img"/>
       </li>
       <em v-if=" ! catalogo.listaImmagini.length">No images in this catalog, add from ☁️ </em>
     </transition-group>
-    <button @click="deleteAllImages()"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
+    <button @click="deleteCatalogo"> &nbsp; &nbsp; 🗑️ &nbsp;  &nbsp; </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue"
+import { ref, reactive, computed } from "vue"
 import ImageExifViewer from "@/components/ImageExifViewer.vue"
 import Catalogo from "@/types/Catalogo"
 import { deleteCatalog, updateUser } from '@/types/FirebaseModel'
 import Utente from "@/types/Utente"
 import shuffleArray from '@/utilities/ShuffleArray'
 import JSZip from 'jszip'
-import getBase64 from "@/utilities/convertBase64"
 import { notify } from "@kyvg/vue3-notification"
 
 const props = defineProps({   catalogo: {type: Catalogo, required: true }    })
+let utente = reactive(Utente.getInstance())
 let catalogIsReady = ref(true)
 
-async function deleteAllImages() {
-  if(confirm("Are yuo sure to delete this catalog?") == true){
+async function deleteCatalogo() {
+  if(confirm("Are you sure to delete this catalog? ") == true){
     deleteCatalog(props.catalogo.cid)
     .then( res =>{ 
-      console.log('Delete done: ', res);
+      console.log('Delete done: ', res)
       utente.listaCataloghi = utente.listaCataloghi.filter(c => c.cid !== props.catalogo.cid )
       updateUser( utente.selectFirstAviableCatalog() )
     })
+    .catch( err => console.log('Error: ', err))
   } 
   else console.log( "Catalog protected from destruction 🛡️ ")
 }
@@ -67,8 +69,17 @@ async function downloadAlbum(){
   notify({ title: "Download catalog", text: `processing...` })
 }
 
-let utente = reactive(Utente.getInstance())
-function shuffleAlbum(){ shuffleArray(utente.getCurrentCatalog_cid().listaImmagini) }
+/**
+ *  scritp js con zabba.act che croppa le immagini alla giusta res
+ */
+function compileScript(){
+  notify({ title: "Compiling", text: `Photoshop script for IG resizing is compiling...` })
+  var zip = new JSZip()
+  zip.file(`${props.catalogo.titolo}-photoshopScript.js`, props.catalogo.listaImmagini.map(i=> i.nomeFile).join('\n'))
+  //zip.file(`${props.catalogo.titolo}-photoshopScript.js`, props.catalogo.listaImmagini.map(i=> i.nomeFile).join('\n'))
+}
+
+function shuffleAlbum(){ shuffleArray(utente.getTheCatalog().listaImmagini) }
 
 </script>
 

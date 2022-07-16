@@ -71,23 +71,34 @@ export default class Utente{
 
     /**
      *  restituisce il catalogo selezionato:
-     *      -se non settato, lo setta come primo catalogo disponibile
+     *      -se non settato, lo setta come primo catalogo disponibile, altrimenti restituisce undefined
      */
-    getCurrentCatalog_cid(){
-        if( this.listaCataloghi.length == 0)
-            throw new Error(`No catalogs aviable for ${this.nome}`)
+    getCurrentCatalog_cid() : Catalogo | undefined {
+        if( this.listaCataloghi.length == 0){ 
+            console.log(`No catalogs inserted for ${this.nome}`); return undefined; } //throw new Error(`No catalogs aviable for ${this.nome}`)
 
-        let out = this.listaCataloghi.filter(c => c.cid === this.selected_cid)[0]
-        /*if( ! out) {
-            this.selectFirstAviableCatalog()
-            if(this.selected_cid) 
-                out = this.getCatalog_by_cid(this.selected_cid)
-        } return out*/
-        return out ? out : this.getCatalog_by_cid( this.selectFirstAviableCatalog().selected_cid! )
+        let findSelected = this.listaCataloghi.find(c => c.cid === this.selected_cid)
+        if(findSelected)
+            return findSelected
+
+        return ( this.listaCataloghi.length > 0 ) ? this.listaCataloghi[0] :  undefined
+            
+        //let firstAviable = this.getCatalog_by_cid( this.selectFirstAviableCatalog().selected_cid! )
+        //if( ! firstAviable ){
+        //    console.log('No catalogs inserted')}
+        //return out ? out : this.getCatalog_by_cid( this.selectFirstAviableCatalog().selected_cid! )
     }
+
+    /**
+     *  metoodo complementare a getCurrentCatalog_cid() da usare quando si è sicuri che è presente un catalogo
+     */
+    getTheCatalog() : Catalogo { return this.listaCataloghi.find(c => c.cid === this.selected_cid)! }
     
     getCatalog_by_cid(cid : string){
-        return this.listaCataloghi.filter(c => c.cid === cid)[0]
+        const cat = this.listaCataloghi.find(c => c.cid === cid)
+        if( ! cat )
+            console.log(`getCatalog_by_cid() not found catalog with cid: ${cid}`)
+        return cat ? cat : null
     }
 
     getCid(){
@@ -95,10 +106,8 @@ export default class Utente{
     }
 
     selectFirstAviableCatalog(){
-        //console.log('Utente.selectFirstAviableCatalog() ', this.listaCataloghi.map(c => c.cid) )
-        if( 1 > this.listaCataloghi.length){ console.log('selectFirstAviableCatalog() \t no catalogs aviable'); return this; }
-        let firstAviableCat = this.listaCataloghi[0]
-        this.selected_cid = firstAviableCat.cid
+        if( this.listaCataloghi.length < 1 ){ console.log('selectFirstAviableCatalog() \t no catalogs aviable'); return this; }
+        this.selected_cid = this.listaCataloghi[0].cid
         return this
     }
 
@@ -108,8 +117,8 @@ export default class Utente{
     }
 
     isCurrentCatalog(cid : string){
-        console.log(`CID: ${cid} === current cid: ${this.getCurrentCatalog_cid().cid} \t is: ${cid === this.getCurrentCatalog_cid().cid}`)
-        return cid === this.getCurrentCatalog_cid().cid
+        //console.log(`CID: ${cid} === current cid: ${this.getCurrentCatalog_cid().cid} \t is: ${cid === this.getCurrentCatalog_cid().cid}`)
+        return cid === this.getCurrentCatalog_cid()!.cid
     }
 
     setPhotoURL(url: string){
@@ -123,7 +132,7 @@ export default class Utente{
     }
 
     setListaImmagini_currentCatalog(li : Immagine[]){
-        this.getCurrentCatalog_cid().listaImmagini = li
+        this.getCurrentCatalog_cid()!.listaImmagini = li
         return this
     }
 
@@ -132,7 +141,7 @@ export default class Utente{
      *      - invocato da App.loadImages_ofCatalog()
      */
     setImages_by_cid(images: Immagine[], cid: string){
-        this.getCatalog_by_cid(cid) ? this.getCatalog_by_cid(cid).listaImmagini = images : console.log('utente.setImages_by_cid() Cant find cid: ',cid)
+        this.getCatalog_by_cid(cid) ? this.getCatalog_by_cid(cid)!.listaImmagini = images : console.log('utente.setImages_by_cid() Cant find cid: ',cid)
         return this
     }
 
@@ -197,93 +206,3 @@ export default class Utente{
             `
     }
 }
-
-
-
-/*
-let testImgs : Immagine[] = [ new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04644_ps.jpg?alt=media&token=24724b21-eade-4504-aa54-b62c93db78c4',0),
-    new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04514_ps.jpg?alt=media&token=002e505b-941d-4a10-a619-0d31a1e6a271',1),
-    new Immagine('https://firebasestorage.googleapis.com/v0/b/image-toolkit-app.appspot.com/o/immagini%2FDSC04483_ps.jpg?alt=media&token=aa966cbd-b5ae-41a2-a217-15560b7eb862',2),
-    new Immagine('asdD.jpg',3), 
-    new Immagine('asdD.jpg',4), 
-    new Immagine('asdD.jpg',5),
-]
-*/
-
-
-/**
- *   setta indexCatalogNow con l'indice del catalogo indicato da cid
- *          NO UTILIZZA SEMPRE L'ID
-*/
-/*setCurrentCatalog_cid(cid: string){
-    //console.log('\n 🍎 setCurrentCatalog_cid() cid: ', cid, '\n', this.listaCataloghi.map(x => x.cid))
-    let newIDexists = this.listaCataloghi.findIndex(c => c.cid === cid)
-    //console.log('setCurrentCatalog_cid() newIDexists: ', newIDexists)
-    if(newIDexists > -1) 
-        this.indexCatalogNow = newIDexists
-    else 
-        console.log(`Utente.setCurrentCatalog_cid() Error: id ${cid} not exist in user catalog lists`)
-
-    console.log('setCurrentCatalog_cid() . ',newIDexists)
-    return this
-}*/
-/*setCurrentCatalog(index: number){
-    let newIDexists = false
-    newIDexists = this.listaCataloghi.some( c => { return c.id === index })
-    newIDexists ? this.indexCatalogNow = index : console.log(`Utente.setCurrentCatalog() Error: id ${index} not exist in user catalog lists`)
-    return this
-}*/
-
-
-
-
-/*
-static instance: Utente;
-static getInstance(){
-    if( Utente.instance )
-        return Utente.instance
-    else throw Error('User not istanced')
-}
-
-public static InstanceB() {
-    if( ! this.instance )
-        console.log('Utente.InstanceB() istance not found, creating a new one')
-    return this.instance || (this.instance = new this('') );
-}
-*/
-
-
-/*
-constructor(params: Utente = {} as Utente){
-    // https://stackoverflow.com/questions/12702548/constructor-overload-in-typescript/40976608#40976608
-    // Define the properties of the incoming `params` object here. 
-    // Setting a default value with the `= 0` syntax is optional for each parameter
-    let {
-        nome = "",
-        password = '',
-        secretKey = MD5(nome+password),
-        catalogoNow = new Catalogo(''),
-        listaCataloghi = new Array<Catalogo>(),
-        keepLogged = false
-    } = params;
-    
-    //  Use jsdoc comments here for inline ide auto-documentation
-    this.nome = nome
-    this.password = password
-    this.secretKey = secretKey
-    this.catalogoNow = catalogoNow
-    this.listaCataloghi = listaCataloghi
-    this.keepLogged = keepLogged
-}
-*/
-
-
-/*
-getCatalogoCurrent() : Catalogo{
-    return this.listaCataloghi[this.indexCatalogNow]
-}
-
-getIndexCatalogoCurrent(){
-    return this.indexCatalogNow
-}
-*/

@@ -25,10 +25,7 @@ import { defineComponent } from 'vue'
 export default defineComponent({
   props: ["theme"],
   methods: {
-    closeModal(event) {
-      console.log("closeModal");
-      this.$emit("updateCloseMain");
-    },
+    closeModal(event) { this.$emit("updateCloseMain") },  //console.log("closeModal");
     openDocumentation(){ console.log('openDocumentation()') }
   },
 })

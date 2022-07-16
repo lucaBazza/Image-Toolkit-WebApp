@@ -2,7 +2,7 @@
   <img class="headerImg" />
   <component :is="TheCover" />
 
-  <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @showSettings="openUserSettings" @logout="user=auth.signOut()"/>
+  <AvatarUser v-if="isLogin" :nome="user.displayName" :photoURL="user.photoURL" @showSettings="openUserSettings" @logout="user=auth.signOut()" @click="openUserSettings"/>
   <button v-else @click="signIn" class="googleSignIn" :disabled="isProductionBuild">
       <img src='./assets/logoGoogle.svg'/>Sign In
   </button>
@@ -25,7 +25,7 @@
 
   <TheEditorFullScreen v-if="showEditorFullScreen" :imgIdProp="selectedImageID"/>
 
-  <ComeLater v-if="isProductionBuild"/>
+  <!-- <ComeLater v-if="isProductionBuild"/> -->
 
   <notifications position="bottom center"/>
 </template>
@@ -36,7 +36,7 @@ import { ref,reactive, computed, onMounted, provide, defineAsyncComponent, watch
 import CatalogoForm from "./components/CatalogoForm.vue"
 import LoginArea from "./components/LoginArea.vue"
 import AvatarUser from './components/AvatarUser.vue'
-import ComeLater from './components/ComeLater.vue'
+// import ComeLater from './components/ComeLater.vue'
 import Modal from "./components/Modal.vue"
 import TheDropzone from './components/TheDropzone.vue'
 import TheEditorFullScreen from './components/TheEditorFullScreen.vue'
@@ -53,7 +53,6 @@ import { loadCatalogo } from '@/types/App.controller'
 import { notify } from '@kyvg/vue3-notification'
 import getLocalizationInfos from '@/utilities/Ip-localization-api'
 import useEventsBus from '@/utilities/useEmitters'
-import { sendMail_sendgrid } from '@/types/Firebase_settings'
 
 let utenteSng = reactive(Utente.getInstance())
 const isProductionBuild = Settings.getInstance().isProductionMode()
@@ -75,7 +74,7 @@ const openUserSettings = ()=>{ showLogInArea.value = ! showLogInArea.value }
 const postCloseLoggin = ()=>{ toggleModalInfos() }
 const toggleDarkModeBtn = ()=>{ document.body.classList.toggle("darkMode") }
 
-const catalogoSelezionato = computed( () => utenteSng.getCurrentCatalog_cid() )
+const catalogoSelezionato = computed( () => utenteSng.getTheCatalog() )
 const TheCover = computed( () => !isLogin.value && pageFullyLoaded.value && defineAsyncComponent(() => import("./components/TheCover.vue")) )
 
 provide('utente',utenteSng)
@@ -99,20 +98,19 @@ onMounted( async () => {
           .then( () => loadCatalogo(utenteSng as Utente)
                         .then( () => { 
                           showCatalogo.value = true;
-                          console.log('\t Loaded catalog: ',utenteSng.getCurrentCatalog_cid().titolo)
+                          console.log('\t Loaded catalog: ',utenteSng.getTheCatalog().titolo)
                           return utenteSng.getCataloghi_NON_sel() 
                         })
                         .then( async otherCatalgs => { 
                           console.log('Remaining catalogs to load in backgrounds: ', otherCatalgs.length)
-                          let prs = otherCatalgs.map( async c => utenteSng.getCatalog_by_cid(c.cid).setListaImmagini(await loadImagesFromCatalog_firebaseA(c.cid)) )
+                          let prs = otherCatalgs.map( async c => utenteSng.getCatalog_by_cid(c.cid)!.setListaImmagini(await loadImagesFromCatalog_firebaseA(c.cid)) )
                           await Promise.all(prs).then( () => console.log('\t ✅ loaded all the other catalogs: \t', otherCatalgs.map(c=>c.titolo).join(', ')) )
                         })
                         .then( async()=> getLocalizationInfos().then(loc => updateUser(utenteSng.setLocation(loc.location).setLastIp(loc.lastIp)) ))
-                        .catch( err => notify({title: 'Error', text: err, type:'error' }) )
+                        .catch( err => typeof err === 'object' ? notify(err) : notify({title: 'Error', text: err, type:'error'}) )
           )
           .catch( ex => console.log(ex))
-          //Settings.getInstance().getImpostazioni().then( res => sendMail_sendgrid('to','','','',res['apikey-sendgrid']) )
-    }
+    } 
     else {
       console.log('Auth status now is un-logged')
       Utente.newInstance()
@@ -136,7 +134,7 @@ async function requestImageUpload(file: HTMLInputElement, previewImgBase64: stri
                                           .setCatalogID(current_cid)
                                           .setImageDimension(imageSizes).setSize(file.size)
                                           .setTempImgId(file.name)
-  utenteSng.getCurrentCatalog_cid().listaImmagini.unshift(img)
+  utenteSng.getTheCatalog().listaImmagini.unshift(img)
   uploadSingleFile_firestore(file, img.catalogoID, img.clearSrc() )
 }
 

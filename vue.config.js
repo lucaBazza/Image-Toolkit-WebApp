@@ -1,4 +1,4 @@
-const { defineConfig } = require("@vue/cli-service");
+const { defineConfig } = require("@vue/cli-service")
 module.exports = defineConfig({
   lintOnSave: false,
   // https://vue-view.com/access-vue-js-application-from-external-ip/
@@ -13,7 +13,7 @@ module.exports = defineConfig({
   },
   pwa: {
     name: "Pic Kit App",
-    themeColor: "#ffd100",
+    themeColor: "#ffddff",
     msTileColor: '#000000',
     appleMobileWebAppCapable: 'yes',
     appleMobileWebAppStatusBarStyle: 'black',
@@ -31,7 +31,9 @@ module.exports = defineConfig({
     //devtool: 'source-map'
     devtool: 'eval-source-map'
   }
-  /*configureWebpack: (config) => {
+
+  /*
+  configureWebpack: (config) => {
     if (process.env.NODE_ENV === 'development') {
       config.devtool = 'eval-source-map';
       config.output.devtoolFallbackModuleFilenameTemplate = 'webpack:///[resource-path]?[hash]';
@@ -58,5 +60,7 @@ module.exports = defineConfig({
         return `webpack-vue:///${info.resourcePath}`;
       }
     }
-  }*/
+  }
+  */
+
 });

@@ -1,7 +1,7 @@
 <template>
   <div class="loginForm" v-if="utente">
     <h2>{{utente.nome}}</h2><span>{{utente.email}}</span>
-    <transition-group tag="ul" name="list"> <!-- <transition-group v-if="cataloghiLoaded" tag="ul" name="list"> -->
+    <transition-group tag="ul" name="list">
       <h4 key="title">Catalogs</h4>
       <li v-for="cat in utente.listaCataloghi" :key="cat.cid" :imageCount="cat.listaImmagini.length"
                    @click="change_catalog(cat.cid)" :class="utente.selected_cid === cat.cid && 'selezionato'">
@@ -23,13 +23,12 @@ import { notify } from '@kyvg/vue3-notification'
 
 let utente = reactive(Utente.getInstance())
 
-/*const emits = defineEmits(['change_catalog','notificate' , 'add_catalog' ])*/
-
 /**
  *  - creo un catalogo localmente e cancello l'input text
  *  - aggiorno la gui TODO controllare props push non va
  *  - aggiorno catalogo su firebase, se va bene aggiorno il componente padre
  *    TODO: mettere limite per userplan di cataloghi
+ *    ERROR: il primo catalogo quando viene inserito non viene visualizzato in gui, forse problema array null su reattività?
  */
 const addNewCatalogo = (e) =>{
   if( e.target.value == '' || ! utente ) return

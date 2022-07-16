@@ -1,8 +1,9 @@
+import { IMPOSTAZIONI_COL } from '@/types/FirebaseModel'
 import { db } from '@/firebase'
 import { Buffer } from 'buffer'
 
 export async function loadReadOnly(){
-    let res = await db.collection(`impostazioni/`)
+    let res = await db.collection(`${IMPOSTAZIONI_COL}/`)
                         .get().catch((err)=>console.warn('ERROR loadReadOnly()\n',err))
     return res.docs.map(q => q.data())
 }

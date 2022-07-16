@@ -27,9 +27,9 @@
         <li>
             <b>&#9777; Size</b> {{imageRf.getSizeString()}}
         </li>
-        <li>
-          <b @click="runClassifier">&#9826; Classifier </b>
-            <span v-if="imageRf.classificatore">{{imageRf.getClassificatoreString()}}</span>
+        <li @click="runClassifier">
+          <b>&#9826; Tags </b>
+            <span v-if="imageRf.hasClassificatore()">{{imageRf.getClassificatoreString()}}</span>
             <component v-else :is="classifierComp" :immagine="imageRf"/>
         </li>
         <li>
@@ -46,11 +46,12 @@
 <script setup lang="ts">
 import { ref, onMounted, inject, defineAsyncComponent, computed } from 'vue'
 import Immagine from '@/types/Immagine'
-import { deleteImageFacade } from '@/types/Firebase_immagini'
+import { deleteImageFacade, updateImage } from '@/types/Firebase_immagini'
 import Utente from '@/types/Utente'
 import { notify } from '@kyvg/vue3-notification'
 import aspectRatio from '@/utilities/AspectRatio'
 import useEventsBus from '@/utilities/useEmitters'
+import Exif from '@/types/Exif'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 const { emit } = useEventsBus()
@@ -71,13 +72,21 @@ function imageLoadError(e){
   props.imageRf.classStyle = 'loadingError'
   showFixButton.value = true
   showImageRef.value = false
-  setTimeout(() => { showImageRef.value = true }, 500);
+  setTimeout(() => { showImageRef.value = true }, 500)
 }
 
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
 
 function swapRealImage(){
-  src_real.value = props.imageRf.realURL
+
+  const thumbImg = localStorage.getItem(`thumb-${props.imageRf.imgID}`)
+  if( thumbImg ){
+    console.log(`ImageExifViewer hit thumb cache() ${props.imageRf.nomeFile}`)
+    src_real.value = thumbImg
+  }
+  else
+    src_real.value = props.imageRf.realURL
+
   props.imageRf.setClassStyle('imageLoaded')
   // props.imageRf.setClassStyle('imgUploadRequest')
   // classe è triggerata subito da isImgLoaded nel tempalate    => TODO: inserire animazione CSS che copre il passaggio
@@ -87,8 +96,16 @@ function reqEdit() {
     console.log("ImageExifViewer.reqEdit() - ", isImgLoaded() ? 'pass' : 'No' );
 }
 
+/**
+ *  reset thumb, adjustments and classifier
+ *    TODO: not refresh GUI
+ */
 function resetAdj(){ 
   console.log("ImageExifViewer.resetAdj() + classifier + exifs ")
+  localStorage.removeItem(`thumb-${props.imageRf.imgID}`)
+
+  let currentImg = Utente.getInstance().getCatalog_by_cid(props.imageRf.catalogoID)!.getImmagineByID(props.imageRf.imgID).setExifDatas({} as Exif).setClassificatore([]/*  as Classification[] */)
+  updateImage(currentImg)
 }
 
 function downloadImg(){ 
@@ -112,15 +129,19 @@ function downloadImg(){
  *  - cancella parallelamente da firebase e firestore
  */
 async function deleteImg(){
-  const listBefore = utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini
+  let cat = utente.getCatalog_by_cid(props.imageRf.catalogoID)
+  if( ! cat )
+    return Promise.reject()
+
+  const listBefore = cat.listaImmagini
   const listRemoved = listBefore.filter( i => i.imgID !== props.imageRf.imgID )
-  utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listRemoved
+  cat.listaImmagini = listRemoved
 
   deleteImageFacade(props.imageRf)
       .then( ()=> notify({title:'Success', text: `${props.imageRf.getNomeFile()} deleted`}) )
       .catch( ()=> {
           notify({title: "Error",text:`Can't remove ${props.imageRf.getNomeFile()}`, type:'error' })
-          setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID).listaImmagini = listBefore, 500)
+          setTimeout( ()=> utente.getCatalog_by_cid(props.imageRf.catalogoID)!.listaImmagini = listBefore, 500)
       })
 }
 

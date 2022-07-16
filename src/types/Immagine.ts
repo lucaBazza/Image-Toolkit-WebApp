@@ -29,6 +29,7 @@ export default class Immagine implements Iterator<number>{
     size?: number
     classificatore?: Classification[]
     base64?: string
+    thumbBase64?: string
 
     constructor(realUrl) {
         this.nomeFile = this.guessFileName(realUrl)
@@ -143,6 +144,10 @@ export default class Immagine implements Iterator<number>{
         if(this.classificatore)
             return this.classificatore.map( (r: { label: number | string }) => r.label ).join(',').split(',')
                                         .slice(0,number_of_showResults).join(',')
+    }
+
+    hasClassificatore(){
+        return this.classificatore && this.classificatore.length > 0
     }
 
     getClassificatoreAllTags(){
