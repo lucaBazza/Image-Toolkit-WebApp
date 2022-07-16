@@ -17,22 +17,31 @@ import { FirebaseApp } from '@firebase/app'
 
 import { getDoc } from "firebase/firestore"
 
-
 const MY_PROJECT_ID = 'image-toolkit-app'
 
 describe('My firebase test connection',()=>{
+
+    it.todo('Can connect to firebase')
+
+    it.todo('Can login with a fake account')
+
+    it.todo('Can read items in the read-only collection')
+
+    it.todo('Can add a new catalog')
+    
+    /*
     //jest.setTimeout(15*1000)
     it('Can read items in the read-only collection', async ()=>{
-        /* const db = await initializeTestEnvironment({projectId: MY_PROJECT_ID}).firestore({
+        const db = await initializeTestEnvironment({projectId: MY_PROJECT_ID}).firestore({
             rules: fs.readFileSync("firestore.rules", "utf8"),
-          }) */
+          })
         let testEnv = initializeTestEnvironment({
             projectId: {projectId: MY_PROJECT_ID},
-           /*  firestore: {
-                rules: fs.readFileSync("firestore.rules", "utf8"),
-                host: '0.0.0.0',
-                port: '8081'
-            } */
+            //firestore: {
+            //    rules: fs.readFileSync("firestore.rules", "utf8"),
+            //    host: '0.0.0.0',
+            //    port: '8081'
+            //}
         })
         //await assertSucceeds( testEnv.firestore().collection('readonly'). getDoc('testDoc'))
 
@@ -42,6 +51,6 @@ describe('My firebase test connection',()=>{
 
         // await assertSucceeds(true)
     })
-
+    */
     
 })

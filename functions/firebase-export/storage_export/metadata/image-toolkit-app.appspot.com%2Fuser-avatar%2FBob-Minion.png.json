@@ -1,0 +1,20 @@
+{
+  "name": "user-avatar/Bob-Minion.png",
+  "bucket": "image-toolkit-app.appspot.com",
+  "contentType": "image/png",
+  "metageneration": 1,
+  "generation": 1657969590676,
+  "storageClass": "STANDARD",
+  "contentDisposition": "inline",
+  "cacheControl": "public, max-age=3600",
+  "contentEncoding": "identity",
+  "downloadTokens": [
+    "b855f9d8-95ff-41eb-85da-c2087fe284bd"
+  ],
+  "etag": "e255/vKfk/ZwF59rVdSL6VWbv4k",
+  "timeCreated": "2022-07-16T11:06:30.675Z",
+  "updated": "2022-07-16T11:06:30.679Z",
+  "size": 429936,
+  "md5Hash": "agmTMWkJi9h9xMC/AQmN6g==",
+  "crc32c": "2506260137"
+}

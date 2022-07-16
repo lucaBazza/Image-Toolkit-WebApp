@@ -15,20 +15,20 @@
   },
   "emulators": {
     "firestore": {
-      "host":"0.0.0.0",
+      "host":"localhost",
       "port": "8081"
     },
     "auth": {
-      "port": "9099",
-      "host": "0.0.0.0"
+      "host": "localhost",
+      "port": "9099"
     },
     "functions": {
-      "port": "5001",
-      "host": "0.0.0.0"
+      "host": "localhost",
+      "port": "5001"
     },
     "storage": {
-      "port": "9199",
-      "host": "0.0.0.0"
+      "host": "localhost",
+      "port": "9199"
     },
     "ui": {
       "enabled": true
