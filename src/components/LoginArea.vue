@@ -39,12 +39,10 @@ const addNewCatalogo = (e) =>{
   addCatalogo3(cat)
     .then( cid => { utente.listaCataloghi.push(cat.setCatalog_cid(cid)); return cat })
     .then( cat => updateUser(utente.setSelected_cid(cat.cid)).then( ()=> notify({ title:'Catalog added', text: cat.titolo, type:'info'}) ) )
-    .catch( err => notify({ title: "Error", text:`${cat.titolo} \n ${err}`, type:'error'}) )
+    .catch( err => notify({ title: "Error adding", text:`${cat.titolo} \n ${err}`, type:'error'}) )
 }
 
-function change_catalog(cid){ 
-  updateUser( utente.setSelected_cid(cid) )
-}
+function change_catalog(cid){ updateUser( utente.setSelected_cid(cid) ) }
 </script>
 
 <style>
@@ -97,16 +95,3 @@ function change_catalog(cid){
 .loginForm > ul > li:hover { cursor: grab }
 .loginForm > ul > em { color: var(--backText) }
 </style>
-
-<!-- 
-.loginForm > input {
-  margin: 1rem 4rem;
-  width: min(80%, 200px);
-  background-color: transparent;
-}
-
-.loginForm > input[type=checkbox] {
-  width: 1rem;
-  margin-right: 1rem;
-}
--->

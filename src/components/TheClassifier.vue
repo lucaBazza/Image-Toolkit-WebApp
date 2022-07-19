@@ -51,16 +51,16 @@ async function classify(){
     result.label = results[0].label
     result.confidence = Number((results[0].confidence * 100).toFixed(2))
 
-    let img = utente.getCurrentCatalog_cid().listaImmagini.filter(i=>i.imgID===props.immagine.imgID)[0]
+    let img = utente.getTheCatalog().listaImmagini.filter(i=>i.imgID===props.immagine.imgID)[0]
     const cl = results.map( res => { return { label: res.label, confidence: res.confidence} as Classification })
     img.setClassificatore(cl)
-    updateImage(img) // .then(()=>console.log('Update classification successfully'))
+    updateImage(img)
         .catch(err => console.log(' 😭 ',err, img))
 
     status.value = results.map( (r: { label: number | string }) => r.label ).join(',').split(',').slice(0,number_of_showResults).join(',')
     console.log(`\nClassified as : ${status.value} \n`, results, '\n\n')
   })
-  .catch( err => status.value = err.toString().split('.')[0] )
+  .catch( err => { status.value = 'Check your internet connection'; console.log(err.toString().split('.')[0]) })
 }
 
 async function detectFaceApi(){

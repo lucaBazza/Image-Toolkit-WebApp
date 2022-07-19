@@ -1,7 +1,7 @@
 <template>
     <div class="avatar">
-        <img :src="photoURL" @error="imageLoadError" @click="emits('showSettings')">
-        <span @click="emits('showSettings')">{{nomeShorted}}</span>
+        <img :src="photoURL" @error="imageLoadError">
+        <span>{{nameOnly(nome)}}</span>
         <button @click="emits('logout')"> 🚪 </button>
     </div>
 </template>
@@ -14,14 +14,14 @@ const props = defineProps({
   photoURL: { type: String, default: require('@/assets/logo-user-abstract.svg') }
 })
 
-const emits = defineEmits(['showSettings','logout'])
+const emits = defineEmits(['logout'])
 
 function imageLoadError(){ photoURL.value = require('@/assets/logo-user-abstract.svg') }
 
 const nameOnly = (nomeCompleto:string) => { return nomeCompleto.includes(' ') ? nomeCompleto.split(' ')[0] : '' }
 
-let nomeShorted = nameOnly( props.nome )
-let photoURL = ref(props.photoURL)
+const nome = ref(props.nome)
+const photoURL = ref(props.photoURL)
 
 </script>
 

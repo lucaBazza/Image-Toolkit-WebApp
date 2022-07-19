@@ -17,22 +17,18 @@ import Exif from '@/types/Exif'
 import Immagine from '@/types/Immagine'
 import Utente from '@/types/Utente'
 import { uploadImage_2 } from '@/types/Firebase_immagini'
+import { generateLocalStorageThumb } from '@/utilities/ThumbnailStorage'
 
 /**
  *      ROADMAP
  *  - il componente ha l'area di drop immagini
  *  - quando vengono droppate le n-immagini, per ogniuna:
  *      + si genera la preview (base64)
- *      + si emette un'evento 'addImageToCatalog' inviando il file e l'anteprima base64
- *  - l'evento nel parent crea il componente imageViewer con la preview con uno stile di loading dedicato
- *  - parallelamente, viene 
- *      + caricata l'immagine su storage
- *      + viene aggiunto il record nel database
- *      + viene aggiornato utente.catalogoXYZ.listaImgs
+ *      + ....
  *  - TODO indicare dimensione massima file da caricare (100MB per full, 15mb sotto utenti pro)
 */
 
-const emit = defineEmits<{(e: 'requestImageUpload', file: HTMLInputElement, imgBase64: string, imageSizes: ImageSize, exifs: Exif): void}>()
+// const emit = defineEmits<{(e: 'requestImageUpload', file: HTMLInputElement, imgBase64: string, imageSizes: ImageSize, exifs: Exif): void}>()
 let isDragging = ref(false)
 let imgBackgroundUpload_ref = ref(null)
 
@@ -58,11 +54,12 @@ async function drop(e){
     // console.log('\n\n\n FINAL meta res: ', imagesExifs, '\n\n\n\n')
 
 
-
     isDragging.value = false
     //sourcesBase64.forEach( (img,index) => emit('requestImageUpload', files[index], img, imageSizes[index], imagesExifs[index]) )
 
-    images.forEach( (imgFile, idx) => handleImageUpload(imgFile,sourcesBase64[idx], imageSizes[idx], imagesExifs[idx]) )
+
+    images.forEach( (imgFile, idx) => handleImageUpload(imgFile,sourcesBase64[idx], imageSizes[idx], imagesExifs[idx])
+                                        .then( imgId => generateLocalStorageThumb(sourcesBase64[idx],imgId)) )
 }
 
 function dragOver(){
@@ -93,26 +90,29 @@ function imageSize(imgBase64){
  *  - aggiorna 'temporaneamente' la GUI inserendo in cima tale immagine
  *  - procede con l'aggiornamento su Firestore: se accade, aggiorna l'idImg, altrimenti cancella immagine GUI
  */
-async function handleImageUpload(file: File, previewBase64: string, imageSizes: ImageSize, exif: Exif){
+async function handleImageUpload(file: File, previewBase64: string, imageSizes: ImageSize, exif: Exif) : Promise<string>{
     let img = new Immagine(previewBase64)
                     .setNomeFile(file.name)
                     .setClassStyle('imgUploadRequest')
                     .setCatalogID( Utente.getInstance().getCid() )
                     .setImageDimension(imageSizes)
                     .setSize(file.size)
-                    .setTempImgId(file.name)
+                    .setUploadedAt(new Date())
                     .setExifDatas(exif)
-    utente.getCurrentCatalog_cid().listaImmagini.unshift(img)
+                    .setTempImgId(file.name)
+    utente.getTheCatalog().listaImmagini.unshift(img)
     
     const imgId = await uploadImage_2(file, img.clearSrc())
     
-    imgId ? utente.getCurrentCatalog_cid().getImmagineByTempID(img.imgID).imgID = imgId : rollbackGuiUpload(img)       
+    imgId ? utente.getTheCatalog().getImmagineByTempID(img.imgID).imgID = imgId : rollbackGuiUpload(img)
+
+    return imgId ? Promise.resolve(imgId) : Promise.reject('rollbacked')
 }
 
 function rollbackGuiUpload(img: Immagine){
     setTimeout(()=>{  
         console.log('handleImageUpload() failed, rollback gui \t imgId:', img.imgID)
-        utente.getCurrentCatalog_cid().listaImmagini = utente.getCurrentCatalog_cid().getListaImmagini_without(img.imgID)
+        utente.getTheCatalog().listaImmagini = utente.getTheCatalog().getListaImmagini_without(img.imgID)
     },1000) 
 }
 

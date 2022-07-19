@@ -52,6 +52,9 @@ import { notify } from '@kyvg/vue3-notification'
 import aspectRatio from '@/utilities/AspectRatio'
 import useEventsBus from '@/utilities/useEmitters'
 import Exif from '@/types/Exif'
+import { generateLocalStorageThumb } from '@/utilities/ThumbnailStorage'
+import { getBase64_fromUrl } from '@/utilities/convertBase64'
+import EXIF from 'exif-js'
 
 const props = defineProps({   imageRf: { type: Immagine, required: true }   })
 const { emit } = useEventsBus()
@@ -77,15 +80,21 @@ function imageLoadError(e){
 
 function isImgLoaded(){ return src_real.value !== require("@/assets/loading.gif") && src_real.value !== require("@/assets/noImg.jpg") }
 
+/**
+ *    se presente la thumb la visualizza
+ *    - altrimenti visualizza l'immagine reale e in background genera la thumb
+ *    alla fine setta il css dell'immagine come caricata
+ */
 function swapRealImage(){
-
   const thumbImg = localStorage.getItem(`thumb-${props.imageRf.imgID}`)
   if( thumbImg ){
-    console.log(`ImageExifViewer hit thumb cache() ${props.imageRf.nomeFile}`)
+    console.log(`\t\t 💾 ImageExifViewer hit thumb cache() ${props.imageRf.nomeFile}`)
     src_real.value = thumbImg
   }
-  else
+  else { 
     src_real.value = props.imageRf.realURL
+    getBase64_fromUrl(props.imageRf.realURL).then( base64 => generateLocalStorageThumb(base64, props.imageRf.imgID) )
+  }
 
   props.imageRf.setClassStyle('imageLoaded')
   // props.imageRf.setClassStyle('imgUploadRequest')
@@ -145,6 +154,7 @@ async function deleteImg(){
       })
 }
 
+
 /**
  *  Se l'immagine non è disponibile, proponi ricaricamento
  *    - TODO: implementare anche caricamento immagine direttamente da qui    
@@ -153,9 +163,7 @@ function fixLinkImage(){
   console.log('fixLinkImage')
 }
 
-function hideExtension(str: string){
-  return str.replace(/\.[^/.]+$/, "")
-}
+function hideExtension(str: string){ return str.replace(/\.[^/.]+$/, "") }
 
 function runClassifier(){ showClassifier.value = true }
 
@@ -165,7 +173,7 @@ onMounted( async () => {
   swapRealImage()
 
   if( ! props.imageRf.classificatore ) setTimeout( () => runClassifier(), 300)
-  if( ! props.imageRf.exifDatas ) setTimeout( () => console.log(`Image ${props.imageRf.nomeFile} missing Exif`), 300)  
+  if( ! props.imageRf.exifDatas ) setTimeout( () => console.log(`Image ${props.imageRf.nomeFile} missing Exif`), 500)  
 })
 
 </script>
@@ -234,7 +242,6 @@ onMounted( async () => {
   content: url('./../assets/loading.gif');
   object-fit: contain;
   mix-blend-mode: multiply;
-  
   mask-image: var(--mascheraCircolare);
   -webkit-mask-image: var(--mascheraCircolare);
 }
@@ -250,18 +257,16 @@ onMounted( async () => {
 .imgUploadRequest + .imgOverlaySpinner{ opacity: 1; }
 .imgOverlaySpinner{ 
   opacity: 0;
-    /*   width: 50%; position: initial  */
-    /*position: absolute;
-    top: 30%;
-    left: 30%;*/
-    /* 
+}
+/*  
+.imgOverlaySpinner{ width: 50%; position: initial 
+    position: absolute;
+    top: 30%;   left: 30%;
     position: relative;
     width: 10rem;
     height: 10rem;
-    top: 30%;
-    left: -29%;
-     */
-}
+} 
+*/
 
 /*.imgUploadRequest::after{ 
   content: ''; 
@@ -280,7 +285,7 @@ onMounted( async () => {
 
 
 /*
-    Pulsanti azione a sinistra
+*    Pulsanti azione a sinistra
 */
 .cntimgSettingsBtns{ width: 2rem; height: 12rem; float: right; align-items: center; margin-right: -.4rem; /* background-color: rgba(0, 0, 0, .2); */ }
 .cntimgSettingsBtns > button:first-child{
@@ -301,11 +306,9 @@ onMounted( async () => {
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(6){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 3.5s; }
 .cntimgSettingsBtns:hover .imgSettingsBtns:nth-child(7){ /* animation: fadeInBtns .3s; */ opacity: 1; transition: 4s; }
 
-/* @keyframes fadeInBtns {
-    0% { opacity: 0 }     100% { opacity: 1 }
-} */
+/* @keyframes fadeInBtns {    0% { opacity: 0 }     100% { opacity: 1 }      } */
 
-.iconSVG{ width: 1rem; height: 1rem; object-fit: cover; }
+/* .iconSVG{ width: 1rem; height: 1rem; object-fit: cover; } */
 
 </style>
 

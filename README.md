@@ -52,26 +52,8 @@ firebase emulators:start --import seed
 
 ---
 # TODOs
+
 Dockerization (frontend + firebase emulator + raspbarry porting)
-
-.
-
-usare refs + reactive per passare il catalogo utente direttamente senza lista current
-
-.
-
-usare dependecy injection per passare immagine aperta + adjustments da App.vue a ImageViewer.vue etc.
-
-> https://www.youtube.com/watch?v=dOxjzgZpTfk
-
-.
-
-usare funzionalità real time database con snapshot per utente + adjustments
-
-.
-
-Reset firebase storage rules for security
-
 
 ---
 

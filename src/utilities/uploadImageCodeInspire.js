@@ -4,20 +4,29 @@
 
 import firebase from 'firebase/compat/app'
 import 'firebase/compat/storage'
-import Utente from '../types/Utente'
 import { addImageToCatalog2 } from './../types/Firebase_immagini'
+import { generateLocalStorageThumb } from './ThumbnailStorage'
+// import Utente from '../types/Utente'
 
+/*
 export default async function uploadImageCodeInspire(e, cid){
     //console.log(e.target.files, catalogID)
     Array.from(e.target.files).forEach(file => uploadSingleFile_firestore(file, cid, null) )
 }
+*/
+
 
 /**
  *      UPLOAD ONE IMAGE TO FIRESTORE   > storage + firestore <
  *  - TODO: implementare aggiornamento UI man mano che la progress bar aumenta
+ * 
+ * 
+ *      ATTENZIONE NON USATO
+ * 
+ * 
  */
-export function uploadSingleFile_firestore(file, cid, image){
-    //console.log("uploadImageCodeInspire() ", file)
+export function uploadSingleFile_firestore(file,/*  cid, */ image, base64preview){
+    //console.log("uploadSingleFile_firestore() ", file)
     var storageRef = firebase.storage().ref(`immagini/${file.name}`)
     let uploadTask = storageRef.put(file)
     uploadTask.on('state_changed', snapshot => {
@@ -25,17 +34,33 @@ export function uploadSingleFile_firestore(file, cid, image){
           if( progress % 5 == 0 ) console.log(`Upload progress: ${progress} %`)
         },
         error => console.log('Upload error ❌ \n'+ error),
-        () => uploadTask.snapshot.ref.getDownloadURL()
-                                        //.then( downloadURL => updateCollection(file.name, downloadURL, cid) )
-                                        //.then( downloadURL => prepareToFirestore(image, downloadURL))
-                                        .catch( ex => console.log('uploadSingleFile_firestore() error: ', ex) )
-                                        .then( downloadURL => addImageToCatalog2(image.setRealURL(downloadURL)) )
+        () => done_addImageToCatalog(uploadTask, image, base64preview)
+        //() => uploadTask.snapshot.ref.getDownloadURL()
+        //                                //.then( downloadURL => updateCollection(file.name, downloadURL, cid) )
+        //                                //.then( downloadURL => prepareToFirestore(image, downloadURL))
+        //                                .catch( ex => console.log('uploadSingleFile_firestore() error: ', ex) )
+        //                                .then( downloadURL => addImageToCatalog2(image.setRealURL(downloadURL)) )
     )
 }
+
+async function done_addImageToCatalog(uploadTask, image, base64preview){
+    console.log('done_addImageToCatalog() \t', image.nomeFile)
+    uploadTask.snapshot.ref.getDownloadURL()
+        .catch( ex => console.log('uploadSingleFile_firestore() error: ', ex) )
+        .then( downloadURL => addImageToCatalog2(image.setRealURL(downloadURL)) )
+        .then( imgID => { 
+            console.log('imgId uploaded: ', imgID, '\t now generate the thumb')
+            generateLocalStorageThumb(base64preview, imgID)
+        })
+}
+
+
+
 
 /**
  *  prepara 
  */
+/* 
 function prepareToFirestore(image, downloadURL){
     image.realURL = downloadURL
     addImageToCatalog2(image.setRealURL(downloadURL))
@@ -46,7 +71,7 @@ function prepareToFirestore(image, downloadURL){
 
         })
 }
-
+ */
 
 /**
  *  Dopo che l'immagine è stata caricata su FS storage, viene inserito un sotto documento nel catalogo con info dell'immagine

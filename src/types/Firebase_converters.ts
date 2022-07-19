@@ -4,7 +4,7 @@ import Immagine from './Immagine'
 import Classification from "./Classification"
 import firebase from 'firebase/compat/app'
 import Exif from "./Exif"
-import { stringLength } from "@firebase/util"
+// import { stringLength } from "@firebase/util"
 
 /**
  *    C L A S S   C O N V E R T E R
@@ -92,6 +92,7 @@ export const immagineConverter = {
             width: immagine.width,
             height: immagine.height,
             size: immagine.size,
+            uploadedAt: immagine.uploadedAt ? immagine.uploadedAt : firebase.firestore.FieldValue.serverTimestamp(),
             
             exifData: immagine.exifDatas ? exifHelperTo(immagine.exifDatas) : null,
             classifier: immagine.classificatore ? classificatoreHelperTo(immagine.classificatore) : null
@@ -111,6 +112,7 @@ export const immagineConverter = {
         out.width = data.width
         out.height = data.height
         out.size = data.size
+        out.uploadedAt = data.uploadedAt
         
         if(data.exifData)
             out.exifDatas = data.exifData as Exif

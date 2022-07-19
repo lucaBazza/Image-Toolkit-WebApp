@@ -2,8 +2,11 @@
  * 
  */
 
+import Adjustment from "./Adjustment"
 import Classification from "./Classification"
 import Exif from "./Exif"
+// import firebase from 'firebase/compat/app'
+// import formatDate from "@/utilities/FormatDateTime"
 
 export interface ImageSize {
     width: number
@@ -23,7 +26,9 @@ export default class Immagine implements Iterator<number>{
     imgID: string
     catalogoID: string
     adjustmentID: string
+    adjustment?: Adjustment 
     createdAt?: Date
+    uploadedAt?: Date
     width?: number
     height?: number
     size?: number
@@ -33,7 +38,6 @@ export default class Immagine implements Iterator<number>{
 
     constructor(realUrl) {
         this.nomeFile = this.guessFileName(realUrl)
-        //this.src = src ? src : require("./../assets/loading.gif")
         this.realURL = realUrl
         this.imgID = ''
         this.classStyle = 'loadingBG'
@@ -66,22 +70,6 @@ export default class Immagine implements Iterator<number>{
 
     getDescrizione() {
         return this.alt ? this.alt : 'descrizione non prensente';
-    }
-    
-    static requireFakeExifs() {
-        const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
-        return [
-            { label: "Software", val: "Adobe Photoshop 22.1 (Macintosh)" },
-            { label: "Modify date", val: "2021:05:24 16:07:10" },
-            { label: "Copyright", val: "zabba.lucabazzanella.com" },
-            { label: "Aspect ratio", val: "4/5" },
-            { label: "GPS", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
-            { label: "Voto", val: "⭐".repeat(randomVal(0,5)) },
-        //  { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
-        //  { label: "ImageHeight", val: randomVal(5000,400) },
-        //  { label: "Classificazione", val: ['Landscape','Mountain','Nature','Rocks','Portrait'][randomVal(0,4)] },
-            { label: "Note", val: "..." },
-        ];
     }
 
     setCatalogID(cid:string){
@@ -159,6 +147,11 @@ export default class Immagine implements Iterator<number>{
         return this
     }
 
+    setUploadedAt(date : Date){
+        this.uploadedAt = date
+        return this
+    }
+
     /**
      *  in fase di upload la preview è nel campo src, per non invarlo su FS pulisco prima
      */
@@ -174,9 +167,14 @@ export default class Immagine implements Iterator<number>{
         }
     }
 
+    /**
+     *  gestisce la visulaizzione 'ordinata' degli exif principali, altri vengono visualizzati disordinati
+     *  cerca la data di scatto dagli exif, alternativamente la data di visualizzazione, se non presente non visualizzare
+     *   example structure of object: [{label:'a', val: 'b'}, {label:'b', val: 'b'}, {label:'c', val: 'b'}]
+     */
     getCustomExifDatas(){
-        if( ! this.exifDatas) return []
-        let out : {label, val}[] = [] //[{label:'a', val: 'b'}, {label:'b', val: 'b'}, {label:'c', val: 'b'}]
+        if( ! this.exifDatas ) return []
+        let out : { label, val } [] = []
         const checkExist = etichetta => { return this.exifDatas![etichetta] ? true : false }
 
         if(checkExist('Make') && checkExist('Model') )
@@ -188,13 +186,39 @@ export default class Immagine implements Iterator<number>{
         if(checkExist('FNumber') && checkExist('ExposureTime') )
             out.push({ label:'Exposition', val:`f.${this.exifDatas['FNumber']} for ${this.getExposureTime()}` })
 
-        const otherTags = [/* 'FNumber','ExposureTime', */'DateTime','Copyright']
+
+        if(checkExist('DateTime'))
+            out.push({ label: 'Crated', val: this.exifDatas['DateTime'] })
+            
+        if(this.uploadedAt){
+            out.push({ label: 'Uploaded', val: (this.uploadedAt as any).toDate().toDateString() })
+        }    
+            
+        // console.log('aviable exifs: ', this.exifDatas)
+        const otherTags = ['Copyright','WhiteBalance','ComponentsConfiguration','Author','Artist']
         otherTags.forEach( e => checkExist(e) && out.push({ label: e, val: this.exifDatas![e] }) )
         
         return out
     }
 }
 
+/*
+static requireFakeExifs() {
+    const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
+    return [
+        { label: "Software", val: "Adobe Photoshop 22.1 (Macintosh)" },
+        { label: "Modify date", val: "2021:05:24 16:07:10" },
+        { label: "Copyright", val: "zabba.lucabazzanella.com" },
+        { label: "Aspect ratio", val: "4/5" },
+        { label: "GPS", val: `${randomVal(0,50)}.${randomVal(0,10000)} , ${randomVal(0,50)}.${randomVal(0,10000)}` },
+        { label: "Voto", val: "⭐".repeat(randomVal(0,5)) },
+    //  { label: "ImageWidth", val: Math.floor(Math.random() * 6*1000)+500 },
+    //  { label: "ImageHeight", val: randomVal(5000,400) },
+    //  { label: "Classificazione", val: ['Landscape','Mountain','Nature','Rocks','Portrait'][randomVal(0,4)] },
+        { label: "Note", val: "..." },
+    ];
+}
+*/
 
 /*
 getImagePlaceHolder() {

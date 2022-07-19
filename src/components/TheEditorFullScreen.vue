@@ -12,24 +12,24 @@
                 </li>
                 <li @click.shift="parameterReset(saturationValue.value)">
                     <h2>Saturation</h2>
-                    <Slider v-model="saturationValue.value" v-bind="saturationValue" @change="updateImage"/>
+                    <Slider v-model="saturationValue.value" v-bind="saturationValue" @change="updateImage2"/>
                 </li>
                 <li>
                     <h2>Contrast</h2>
-                    <Slider v-model="contrastValue.value"  v-bind="contrastValue"  @change="updateImage"/>
+                    <Slider v-model="contrastValue.value"  v-bind="contrastValue" @change="updateImage2"/>
                 </li>
                 <li>
                     <h2>Temperature</h2>
-                    <Slider v-model="temperatureValue.value" v-bind="temperatureValue"  @change="updateImage"/>
+                    <Slider v-model="temperatureValue.value" v-bind="temperatureValue" @change="updateImage2"/>
                 </li>
                 <li>
                     <h2>Brightness</h2>
-                    <Slider v-model="brightnessValue.value" v-bind="brightnessValue"  @change="updateImage"/>
+                    <Slider v-model="brightnessValue.value" v-bind="brightnessValue" @change="updateImage2"/>
                 </li>
                 <li>
                     <h2>LUTS</h2>
-                    <select name="FusionModes" @change="testLUT">
-                        <option value="lutReset">Unset</option>
+                    <select name="FusionModes" @change="refreshLUT" :value="adjusts.lut">
+                        <option value="lutUnset">Unset</option>
                         <option value="lutA-warmy+.png">Warm Contrast</option>
                         <option value="lutB-nigthty.webp">New York Night</option>
                         <option value="lutC-warmer-soft.png">Sean Warm</option>
@@ -66,23 +66,38 @@ import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
 import useEventsBus from '@/utilities/useEmitters'
 import Utente from '@/types/Utente'
-import { rotate90, downloadTest, filterImage_LUT, resetImageBeforeLutFilter, generateThumb } from '@/utilities/ImageEditorFunctions'
+import { rotate90, downloadTest, resetImageBeforeLutFilter, updateLUT } from '@/utilities/ImageEditorFunctions'
+import { generateLocalStorageThumb } from '@/utilities/ThumbnailStorage'
 import { notify } from '@kyvg/vue3-notification'
+// import getBase64 from '@/utilities/convertBase64'
+import Adjustment from '@/types/Adjustment'
+import getLutURL from '@/utilities/getLutURL'
+import { connectStorageEmulator } from '@firebase/storage'
+import LUT from '@/types/LUT'
+import { lutimes } from 'fs'
 
 /**
  *  CSS-based RGB filtering with fusion modes
  *      https://codepen.io/manifoldkaizen/pen/BJNJgr
+ *  
+ *  VueJS select with dynamic values
+ *      https://vue-select.org/guide/values.html#transforming-selections
 */
 
 const props = defineProps({     imgIdProp: {type: String, required: true}   })
 let utente = reactive(Utente.getInstance())
-let imageProp : Immagine = utente.getCurrentCatalog_cid().getImmagineByID(props.imgIdProp)
+let imageProp : Immagine = utente.getTheCatalog().getImmagineByID(props.imgIdProp)
 const cnvsLayerA = ref<HTMLCanvasElement>()
 const { emit } = useEventsBus()
 
 
+let fakeAdjustments = { lut: 'lutUnset', saturation: 0, contrast: 100 } as Adjustment  // TESTING adjustments from image stored
+imageProp.adjustment = fakeAdjustments
+
+const adjusts = ref(imageProp.adjustment)
+
 let saturationValue = ref({
-    value: 0,
+    value: /* 0 */ adjusts.value.saturation,
     default: 0,
     min: -100,
     max: 100,
@@ -91,7 +106,7 @@ let saturationValue = ref({
 })
 
 let contrastValue = ref({
-    value: 100,
+    value: /* 100 */ adjusts.value.contrast,
     default: 100,
     min: 0,
     max: 200,
@@ -138,66 +153,54 @@ function getContextA() : CanvasRenderingContext2D {
     if(getCanvasA().getContext('2d')) return getCanvasA().getContext('2d')!; throw Error('No context canvas to update image 😡')
 }
 
-function updateImage(){
-    getContextA().clearRect(0, 0, getCanvasA().width, getCanvasA().height)
-    window.requestAnimationFrame(()=>{          //  the browser calls a specified function to update an animation before the next repaint
-        getContextA().filter = getStyles()
-        getContextA().drawImage(img,0,0)
-    })
-}
-
-
-/*              BASE64 da url    -> use utils !!            */
-const toDataURL = url => fetch(url)
-  .then(response => response.blob())
-  .then(blob => new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-}))
-
-function testLUT(e){
-    let urlLut
-    if( ! e  || ! e.target.value ) throw Error('No LUT to load \t 😢 ')
-    if( e.target.value==='lutReset'){ resetImageBeforeLutFilter(getCanvasA(),img); return }
-
-    try{ urlLut = require(`@/assets/LUTs/${e.target.value}`) } catch(err){}
-    if(!urlLut){ notify({title:'Error', text:'Cant find this LUT in assets 😢 ', type:'error'}); return }
-
-    console.log('testLUt() \t', e.target.value)
-    let imgLut = new Image()
-    let canvasLut = document.createElement('canvas') as HTMLCanvasElement
-    let ctxLut = canvasLut.getContext("2d")!
-    imgLut.crossOrigin = "Anonymous"
-    imgLut.onload = function() {
-        canvasLut.width = imgLut.width
-        canvasLut.height = imgLut.height
-        ctxLut.drawImage(imgLut, 0, 0)
-
-        resetImageBeforeLutFilter(getCanvasA(), img)
-        filterImage_LUT(getCanvasA(), getContextA(),canvasLut , ctxLut , 255)
-        //localStorage.setItem( "savedImageDataLut", canvasLut.toDataURL("image/png") );
-    }
-
-    toDataURL( urlLut )
-        .then( srcLutbyte => imgLut.src = String(srcLutbyte) ) 
+/** alla chiusura, notifica e aggiorna la thumb image  */
+function onClose(){
+    generateLocalStorageThumb(getCanvasA(),imageProp.imgID)
+    notify({title:'Saved', text:`${imageProp.nomeFile}`})
+    emit('toggleEditorFullScreen')
 }
 
 /**
- *  alla chiusura, aggiorna la thumb image
+ *  - cancella il frame precedente
+ *  - aggiorna il LUT
  */
-function onClose(){
-    generateThumb(getCanvasA(), getContextA())
-        .then( thumbBase64 => localStorage.setItem(`thumb-${imageProp.imgID}`, thumbBase64) )
-    emit('toggleEditorFullScreen')
+function updateImage2(){
+    getContextA().clearRect(0, 0, getCanvasA().width, getCanvasA().height)
+    window.requestAnimationFrame(()=>{          //  the browser calls a specified function to update an animation before the next repaint
+    
+        let lut = { name: adjusts.value.lut, url: getLutURL(adjusts.value.lut), base64:'', invert: false, opacity: 255} as LUT
+        updateLUT(getCanvasA(),img, lut.url)
+
+        const imageLutted = document.createElement('img') as HTMLImageElement
+        imageLutted.src = getCanvasA().toDataURL()
+
+        getContextA().filter = getStyles()
+        getContextA().drawImage(imageLutted,0,0)
+
+    })
 }
+
+function refreshLUT(e){
+    if( ! e  || ! e.target.value ) throw Error('No LUT to load \t 😢 ')
+    //if( e.target.value==='lutReset'){ 
+    //    resetImageBeforeLutFilter(getCanvasA(),img); return }
+    
+    adjusts.value.lut = e.target.value
+    
+    updateImage2()
+}
+
 
 onMounted( async() => {
     img.onload = ()=> {
         cnvsLayerA.value!.width = img.width
         cnvsLayerA.value!.height = img.height
-        updateImage()
+
+        //if( adjusts.value.lut !== 'lutUnset' )
+        //    updateLUT(getCanvasA(),img, getLutURL(adjusts.value.lut))
+        //updateImage()
+
+        updateImage2() 
     }
 })
 
@@ -208,9 +211,9 @@ onMounted( async() => {
 <style>
 
 .backdropModal{
-    position: fixed;            background-color: rgba(var(--backgroundColor), .6);
-    top: 0;                     left: 0;
-    width: 100vw;               height: 100vh;
+    position: fixed;    background-color: rgba(var(--backgroundColor), .6);
+    top: 0;             left: 0;
+    width: 100vw;       height: 100vh;
 }
 .imgEditorModal{
     position: static;
@@ -233,7 +236,7 @@ onMounted( async() => {
 .imgEditorModal > ul > li{ padding: .8rem; margin: 0 auto }
 .imgEditorModal > ul > li:first-child{ padding-top: 0 }
 .imgEditorModal > ul > li:last-child{ height: 10rem }
-.imgEditorModal > ul > .editActionsBtns  > button{ background: transparent; border: none; font-size: 1.4rem; padding: 0 1rem; }
+.imgEditorModal > ul > .editActionsBtns > button{ background: transparent; border: none; font-size: 1.4rem; padding: 0 1rem; }
 .slider-target{ margin-bottom: 1rem }
 .imgEditorModal > ul > li > h2{ margin-bottom: .1rem; margin-top: 0 }
 .imgEditorModal > ul > li > select{ padding: 1rem; color: var(--mainText); width: 100%; background: transparent; }

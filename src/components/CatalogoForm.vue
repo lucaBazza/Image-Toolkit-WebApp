@@ -109,8 +109,8 @@ function shuffleAlbum(){ shuffleArray(utente.getTheCatalog().listaImmagini) }
   background: transparent;
   border: none;
   font-size: 3rem;
-  opacity: 0.9;
-  backdrop-filter: blur(2px);
+  opacity: 1;
+  filter: drop-shadow(20px 20px 40px var(--mainText) );
 }
 .catalogDiv > button:hover {
   cursor: grab;

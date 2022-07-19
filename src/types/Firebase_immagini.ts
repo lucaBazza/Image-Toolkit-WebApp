@@ -89,7 +89,7 @@ export async function getImages_filenames_fromCID(cid: string){
 
 
 /**
- *  Carica su firebase l'immagine 
+ *  Carica su firebase l'immagine, una volta fatto aggiorna l'imgID temporaneo con quello vero restituito dall'insert
  * @param img immagine da caricare (già specificato campo catalogo)
  * @return id dell'immagine caricata
  *    TODO check catalog id exist
@@ -97,15 +97,16 @@ export async function getImages_filenames_fromCID(cid: string){
  */
 export async function addImageToCatalog2(img : Immagine) : Promise<string>{
   let imgRef = db.collection(CATALOGHI_COL).doc(img.catalogoID).collection(IMMAGINI_COL).withConverter(immagineConverter)
-  let _imgId = await imgRef.add(img)
+  let imgIdReale = await imgRef.add(img)
           .then( res => { return res.id })
           .catch( ex => { return Promise.reject(`updateCollection() Error adding document: ${ex}`) })
 
   Utente.getInstance()
           .getCatalog_by_cid(img.catalogoID)!.listaImmagini
-          .filter( i=> img.imgID == `temp-${i.nomeFile}`)[0].imgID = _imgId
+          .find(i=> img.imgID == `temp-${i.nomeFile}`)!.imgID = imgIdReale
+          //.filter( i=> img.imgID == `temp-${i.nomeFile}`)[0].imgID = imgIdReale
 
-  return _imgId
+  return imgIdReale
 }
 
 
@@ -152,6 +153,7 @@ export async function uploadImage_2(file : File, img: Immagine /* ,progressRef: 
 }
 
 import firebase from 'firebase/compat/app'
+
 async function uploadImage_firestorage(file: File, progressRef: number) : Promise<string>{
   let downloadUrl
 

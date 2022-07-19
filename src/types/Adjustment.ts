@@ -7,10 +7,12 @@ export default interface Adjustment{
 
     lut: string
     lutAlpha: number
-
+    lutInverted: boolean
 
     overlayColA: string
     overlayColB: string
     overlayFusion: string
     overlayGradient: string
+
+    rotation: number
 }
