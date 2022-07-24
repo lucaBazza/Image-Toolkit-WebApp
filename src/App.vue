@@ -73,6 +73,7 @@ const { bus } = useEventsBus()
 watch( ()=>bus.value.get('toggleEditorFullScreen'), (imgId:string) => {
     selectedImageID.value = Array.isArray(imgId) ? imgId[0] : imgId
     showEditorFullScreen.value = ! showEditorFullScreen.value
+
     /** TODO: quando viene chiusa (o aperta) la editor immagine, aggiornare la thumb image relativa nel catalogForm */
 })
 
@@ -81,10 +82,10 @@ onMounted( async () => {
         // Avvio in dark mode
   document.addEventListener("DOMContentLoaded", () => document.body.classList.toggle("darkMode") )
 
-        // Abilita keybindings upload, user area
+        // Abilita keybindings upload, user area    TODO ERRORE attiva keybind quando userarea scrive nuovo catalogo
   window.addEventListener('keydown', function(e) {
     if( e.key === 's') toggleUploadMode() 
-    if( e.key === 'a') toggleUserSettings()
+    // if( e.key === 'a') toggleUserSettings()
   })
   
         // observer sullo stato utente firebase

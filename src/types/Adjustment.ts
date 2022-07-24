@@ -1,13 +1,12 @@
+import LUT from "./LUT"
+
 export default interface Adjustment{
     saturation: number
     contrast: number
     brightness: number
     temperature: number
     vignetting: number
-
-    lut: string
-    lutAlpha: number
-    lutInverted: boolean
+    lut: LUT
 
     overlayColA: string
     overlayColB: string

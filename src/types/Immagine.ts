@@ -5,8 +5,6 @@
 import Adjustment from "./Adjustment"
 import Classification from "./Classification"
 import Exif from "./Exif"
-// import firebase from 'firebase/compat/app'
-// import formatDate from "@/utilities/FormatDateTime"
 
 export interface ImageSize {
     width: number
@@ -77,7 +75,7 @@ export default class Immagine implements Iterator<number>{
         return this
     }
 
-    setExifDatas(exifDatas: Exif /* any[] */){
+    setExifDatas(exifDatas: Exif){
         this.exifDatas = exifDatas
         return this
     }
@@ -178,23 +176,30 @@ export default class Immagine implements Iterator<number>{
         const checkExist = etichetta => { return this.exifDatas![etichetta] ? true : false }
 
         if(checkExist('Make') && checkExist('Model') )
-            out.push({
-                label: 'Device', 
-                val: this.exifDatas['Model'].includes(this.exifDatas['Make']) ? this.exifDatas['Model'] : `${this.exifDatas['Make']} ${this.exifDatas['Model']}`
+            out.push({ label: 'Device', 
+                        val: this.exifDatas['Model'].includes(this.exifDatas['Make']) ? this.exifDatas['Model'] : `${this.exifDatas['Make']} ${this.exifDatas['Model']}`
             })
     
         if(checkExist('FNumber') && checkExist('ExposureTime') )
             out.push({ label:'Exposition', val:`f.${this.exifDatas['FNumber']} for ${this.getExposureTime()}` })
 
-
         if(checkExist('DateTime'))
             out.push({ label: 'Crated', val: this.exifDatas['DateTime'] })
             
         if(this.uploadedAt){
-            out.push({ label: 'Uploaded', val: (this.uploadedAt as any).toDate().toDateString() })
-        }    
+            let d
+            if( typeof this.uploadedAt === "object" )
+                d = this.uploadedAt;
+            if( this.uploadedAt['nanoseconds'] )
+                d = (this.uploadedAt as any).toDate().toDateString()
+            out.push({ label: 'Uploaded', val: d })
+        }
+
+        if(true){
+            const randomVal = (min :number, max:number) : number =>{ return Math.floor(Math.random() * max)+min }
+            out.push({ label:"Stars", val: this.getStelline(randomVal(1,5)) })
+        }
             
-        // console.log('aviable exifs: ', this.exifDatas)
         const otherTags = ['Copyright','WhiteBalance','ComponentsConfiguration','Author','Artist']
         otherTags.forEach( e => checkExist(e) && out.push({ label: e, val: this.exifDatas![e] }) )
         

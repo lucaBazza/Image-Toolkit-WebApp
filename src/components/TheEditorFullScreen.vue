@@ -2,14 +2,14 @@
     <div class="backdropModal">
         <div class="imgEditorModal">
             <button @click="onClose"> ❌ </button>
+            <div class="editActionsBtns-v2">
+                    <button @click="rotate90(getContextA(), getCanvasA(),img)"> 🔃 </button>
+                    <button @click="downloadTest(getCanvasA(), image.nomeFile)">⬇️</button>
+            </div>
             <div class="cnvs-boxs">
                 <canvas ref="cnvsLayerA" style="background: url()"></canvas>
             </div>
             <ul>
-                <li class="editActionsBtns">
-                    <button @click="rotate90(getContextA(), getCanvasA(),img)"> 🔃 </button>
-                    <button @click="downloadTest(getCanvasA(), imageProp.nomeFile)">⬇️</button>
-                </li>
                 <li @click.shift="parameterReset(saturationValue.value)">
                     <h2>Saturation</h2>
                     <Slider v-model="saturationValue.value" v-bind="saturationValue" @change="updateImage2"/>
@@ -28,11 +28,11 @@
                 </li>
                 <li>
                     <h2>LUTS</h2>
-                    <select name="FusionModes" @change="refreshLUT" :value="adjusts.lut">
+                    <select name="FusionModes" @change="refreshLUT" :value="adjusts.lut.name" defa>
                         <option value="lutUnset">Unset</option>
                         <option value="lutA-warmy+.png">Warm Contrast</option>
                         <option value="lutB-nigthty.webp">New York Night</option>
-                        <option value="lutC-warmer-soft.png">Sean Warm</option>
+                        <!-- <option value="lutC-warmer-soft.png">Sean Warm</option> -->
                         <option value="lutD-greeny.png">Naville Greeny</option>
                         <option value="lutE-softPump.png">Color Pump</option>
                         <option value="lutF-ultraRED.png">Ultra RED</option>
@@ -66,15 +66,12 @@ import Immagine from '@/types/Immagine'
 import Slider from '@vueform/slider'
 import useEventsBus from '@/utilities/useEmitters'
 import Utente from '@/types/Utente'
-import { rotate90, downloadTest, resetImageBeforeLutFilter, updateLUT } from '@/utilities/ImageEditorFunctions'
+import { rotate90, downloadTest, updateLUT } from '@/utilities/ImageEditorFunctions'
 import { generateLocalStorageThumb } from '@/utilities/ThumbnailStorage'
 import { notify } from '@kyvg/vue3-notification'
-// import getBase64 from '@/utilities/convertBase64'
 import Adjustment from '@/types/Adjustment'
-import getLutURL from '@/utilities/getLutURL'
-import { connectStorageEmulator } from '@firebase/storage'
-import LUT from '@/types/LUT'
-import { lutimes } from 'fs'
+import { createLut_byName } from '@/types/LUT'
+import { updateImage } from '@/types/Firebase_immagini'
 
 /**
  *  CSS-based RGB filtering with fusion modes
@@ -82,22 +79,29 @@ import { lutimes } from 'fs'
  *  
  *  VueJS select with dynamic values
  *      https://vue-select.org/guide/values.html#transforming-selections
+ * 
+ *  - set default adj if not present
+ *  - load image and the first refresh()
 */
 
 const props = defineProps({     imgIdProp: {type: String, required: true}   })
 let utente = reactive(Utente.getInstance())
-let imageProp : Immagine = utente.getTheCatalog().getImmagineByID(props.imgIdProp)
+let image : Immagine = utente.getTheCatalog().getImmagineByID(props.imgIdProp)
 const cnvsLayerA = ref<HTMLCanvasElement>()
 const { emit } = useEventsBus()
+let hasUnsavedEdits = false;
 
+// console.log('image adji loaded: ', JSON.stringify(image.adjustment))
 
-let fakeAdjustments = { lut: 'lutUnset', saturation: 0, contrast: 100 } as Adjustment  // TESTING adjustments from image stored
-imageProp.adjustment = fakeAdjustments
+// setInterval( ()=> console.log("Update ref image adjusts: ", adjusts.value.saturation, " original data: ", image.adjustment?.saturation), 3000)
 
-const adjusts = ref(imageProp.adjustment)
+if( ! image.adjustment )
+    image.adjustment = { lut: createLut_byName('lutUnset'), saturation: 0, contrast: 100, brightness:0, temperature:0 } as Adjustment
+
+const adjusts = ref(image.adjustment)
 
 let saturationValue = ref({
-    value: /* 0 */ adjusts.value.saturation,
+    value: adjusts.value.saturation,
     default: 0,
     min: -100,
     max: 100,
@@ -106,7 +110,7 @@ let saturationValue = ref({
 })
 
 let contrastValue = ref({
-    value: /* 100 */ adjusts.value.contrast,
+    value: adjusts.value.contrast,
     default: 100,
     min: 0,
     max: 200,
@@ -115,7 +119,7 @@ let contrastValue = ref({
 })
 
 let brightnessValue = ref({
-    value: 0,
+    value: adjusts.value.brightness,
     default: 0,
     min: -100,
     max: 100,
@@ -124,7 +128,7 @@ let brightnessValue = ref({
 })
 
 let temperatureValue = ref({
-    value: 0,
+    value: adjusts.value.temperature,
     default: 0,
     min: 0,
     max: 100,
@@ -133,7 +137,8 @@ let temperatureValue = ref({
 })
 
 function getStyles(){
-    return `saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%) `
+    return `saturate(${saturationValue.value.value + 100}%) contrast(${contrastValue.value.value}%) 
+            sepia(${temperatureValue.value.value}%) brightness(${brightnessValue.value.value +100}%) `
 }
 
 // non aggiorna la gui
@@ -145,18 +150,22 @@ function parameterReset(slider : any){
 
 let img = new Image()
 img.crossOrigin="anonymous"
-img.src = imageProp.realURL
+img.src = image.realURL
 
-function getCanvasA(){ if( ! cnvsLayerA.value) throw Error('No canvas to use'); return cnvsLayerA.value!  }
+function getCanvasA(){ if( ! cnvsLayerA.value ) throw Error('No canvas to use'); return cnvsLayerA.value! }
 
 function getContextA() : CanvasRenderingContext2D { 
     if(getCanvasA().getContext('2d')) return getCanvasA().getContext('2d')!; throw Error('No context canvas to update image 😡')
 }
 
-/** alla chiusura, notifica e aggiorna la thumb image  */
+/** alla chiusura, notifica e aggiorna la thumb image, salva l'immagine con i lut aggiornati  */
 function onClose(){
-    generateLocalStorageThumb(getCanvasA(),imageProp.imgID)
-    notify({title:'Saved', text:`${imageProp.nomeFile}`})
+    if(hasUnsavedEdits){
+        generateLocalStorageThumb(getCanvasA(),image.imgID)
+        updateImage(image)
+        notify({title:'Saved', text:`${image.nomeFile}`})
+        hasUnsavedEdits = false;
+    }
     emit('toggleEditorFullScreen')
 }
 
@@ -167,26 +176,22 @@ function onClose(){
 function updateImage2(){
     getContextA().clearRect(0, 0, getCanvasA().width, getCanvasA().height)
     window.requestAnimationFrame(()=>{          //  the browser calls a specified function to update an animation before the next repaint
-    
-        let lut = { name: adjusts.value.lut, url: getLutURL(adjusts.value.lut), base64:'', invert: false, opacity: 255} as LUT
-        updateLUT(getCanvasA(),img, lut.url)
+        hasUnsavedEdits = true;
+
+        updateLUT(getCanvasA(),img, createLut_byName(adjusts.value.lut.name))
 
         const imageLutted = document.createElement('img') as HTMLImageElement
         imageLutted.src = getCanvasA().toDataURL()
 
         getContextA().filter = getStyles()
         getContextA().drawImage(imageLutted,0,0)
-
     })
 }
 
 function refreshLUT(e){
     if( ! e  || ! e.target.value ) throw Error('No LUT to load \t 😢 ')
-    //if( e.target.value==='lutReset'){ 
-    //    resetImageBeforeLutFilter(getCanvasA(),img); return }
     
-    adjusts.value.lut = e.target.value
-    
+    adjusts.value.lut = createLut_byName(e.target.value);
     updateImage2()
 }
 
@@ -195,12 +200,8 @@ onMounted( async() => {
     img.onload = ()=> {
         cnvsLayerA.value!.width = img.width
         cnvsLayerA.value!.height = img.height
-
-        //if( adjusts.value.lut !== 'lutUnset' )
-        //    updateLUT(getCanvasA(),img, getLutURL(adjusts.value.lut))
-        //updateImage()
-
-        updateImage2() 
+        updateImage2()
+        setTimeout( ()=> hasUnsavedEdits = false, 200)
     }
 })
 
@@ -241,5 +242,14 @@ onMounted( async() => {
 .imgEditorModal > ul > li > h2{ margin-bottom: .1rem; margin-top: 0 }
 .imgEditorModal > ul > li > select{ padding: 1rem; color: var(--mainText); width: 100%; background: transparent; }
 .imgEditorModal > ul > li > select:hover{ background-color: rgba(0, 0, 0, 0.1) }
+
+.editActionsBtns-v2{
+    position: absolute;
+    height: 15rem;
+    width: 3rem;
+    top: 1.2rem;
+    left: 0.6rem;
+}
+.editActionsBtns-v2 > button{  background: transparent; font-size: 1.5rem; border: transparent }
 
 </style>

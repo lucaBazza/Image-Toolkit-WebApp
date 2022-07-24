@@ -7,7 +7,7 @@ export default function getLutURL(lutName : string){
     let urlLut
     try{ urlLut = require(`@/assets/LUTs/${lutName}`) } catch(err){}
     if(!urlLut){ 
-        console.log('\t Cant find this LUT in assets 😢 ')
+        console.log(`\t Cant find this LUT in assets 😢 \t ${lutName}`)
         return 
     }
 

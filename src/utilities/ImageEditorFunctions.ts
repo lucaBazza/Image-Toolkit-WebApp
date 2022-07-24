@@ -1,3 +1,4 @@
+import LUT from "@/types/LUT"
 import { filter } from "jszip"
 import { getBase64_fromUrl } from "./convertBase64"
 
@@ -32,17 +33,16 @@ export function downloadTest( canvas : HTMLCanvasElement, nomeFile: string){
 /**
  *  se LUT unset, renderizza l'immagine dry
  *  controlla se il lut va invertito
- * @param urlLUT indirizzo del LookUpTable
+ * @param _LUT indirizzo del LookUpTable
  * @param canvasToAppy target del filtro
  * @param image target del cavans, per ridisegnarla prima di applicare il lut
  *  
  */
-export function updateLUT(canvasToAppy : HTMLCanvasElement, image : HTMLImageElement, urlLUT: string){
-    if( ! urlLUT ) 
+export function updateLUT(canvasToAppy : HTMLCanvasElement, image : HTMLImageElement, _LUT: LUT){
+    if( ! _LUT || ! _LUT.url ) 
         return canvasToAppy.getContext('2d')!.drawImage(image,0,0);
     
-    const invertLUT = urlLUT === 'lutC-warmer-soft.png';
-    console.log(`${invertLUT} => ${urlLUT} === lutC-warmer-soft.png`);
+    // console.log(`LUt ${JSON.stringify(_LUT)}`)
 
     let imgLut = new Image()
     let canvasLut = document.createElement('canvas') as HTMLCanvasElement
@@ -51,28 +51,29 @@ export function updateLUT(canvasToAppy : HTMLCanvasElement, image : HTMLImageEle
     imgLut.onload = ()=>{
         canvasLut.width = imgLut.width
         canvasLut.height = imgLut.height
-        if(invertLUT) 
+        if(_LUT.invert)
             ctxLut.filter = 'invert(1)'
+
         ctxLut.drawImage(imgLut, 0, 0)
 
         resetImageBeforeLutFilter(canvasToAppy, image)
         filterImage_LUT(canvasToAppy, canvasToAppy.getContext('2d')!, canvasLut , ctxLut , 255)   
     }
 
-    toDataURL( urlLUT ) //getBase64_fromUrl( urlLUT )
+    toDataURL( _LUT.url ) //getBase64_fromUrl( _LUT )
         .then( srcLutbyte => imgLut.src = String(srcLutbyte) ) 
 }
 
 
 export function filterImage_LUT(cnvs, ctx, canvasLutToApply, ctxLutToApply, opacity){
-    console.log('filterImage_LUT()')
+    // console.log('filterImage_LUT()')
     if(0 > opacity || opacity > 255) throw Error('Invald opacity value! \t-> range : 0-255)')
 
     var lutWidth = canvasLutToApply.width
     var imgData = ctx.getImageData(0,0,cnvs.width,cnvs.height)
     var filterData = ctxLutToApply.getImageData(0,0,canvasLutToApply.width,canvasLutToApply.height)
       
-    for (var i=0;i<imgData.data.length;i+=4){   // invert colors
+    for (var i=0;i<imgData.data.length;i+=4){           // invert colors
       var r=Math.floor(imgData.data[i]/4);
       var g=Math.floor(imgData.data[i+1]/4);
       var b=Math.floor(imgData.data[i+2]/4);
@@ -81,9 +82,9 @@ export function filterImage_LUT(cnvs, ctx, canvasLutToApply, ctxLutToApply, opac
       var lutY = Math.floor(b / 8) * 64 + g;
       var lutIndex = (lutY * lutWidth + lutX)*4;
   
-      var Rr =  filterData.data[lutIndex];
-      var Gg =  filterData.data[lutIndex+1];    
-      var Bb =  filterData.data[lutIndex+2];
+      var Rr = filterData.data[lutIndex];
+      var Gg = filterData.data[lutIndex+1];    
+      var Bb = filterData.data[lutIndex+2];
         
       imgData.data[i] = filterData.data[lutIndex];      // Rr
       imgData.data[i+1] = filterData.data[lutIndex+1];  // Gg

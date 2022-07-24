@@ -2,7 +2,7 @@
 
 Image editor native for the web.
 
-![AppThumb](https://raw.githubusercontent.com/lucaBazza/Image-Toolkit-WebApp/master/others/screenshots/20220724-screen.webp
+![AppThumb](https://raw.githubusercontent.com/lucaBazza/Image-Toolkit-WebApp/master/others/screenshots/20220724-screen.webp)
 
 ## Features
 - 🔍 Catalog images combining ML classification and exif metadatas

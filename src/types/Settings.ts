@@ -4,7 +4,7 @@
  *      - 
  * 
  */
-import { loadReadOnly,sendMailGun } from '@/types/Firebase_settings'
+import { loadReadOnlySettings,sendMailGun } from '@/types/Firebase_settings'
 import { read } from 'fs';
 
 export default class Settings{
@@ -48,7 +48,7 @@ export default class Settings{
     }
     
     public async getImpostazioni(){
-        const impostazioni = await loadReadOnly()
+        const impostazioni = await loadReadOnlySettings()
         return impostazioni[0]
     }
 }

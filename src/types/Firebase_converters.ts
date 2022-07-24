@@ -4,6 +4,8 @@ import Immagine from './Immagine'
 import Classification from "./Classification"
 import firebase from 'firebase/compat/app'
 import Exif from "./Exif"
+import Adjustment from "./Adjustment"
+import LUT from "./LUT"
 // import { stringLength } from "@firebase/util"
 
 /**
@@ -88,19 +90,19 @@ export const immagineConverter = {
             alt: alsoEmpty(immagine.alt),
             catalogoID: immagine.catalogoID,
             createdAt: immagine.createdAt ? immagine.createdAt : firebase.firestore.FieldValue.serverTimestamp(),
-            adjustmentID: immagine.adjustmentID,
             width: immagine.width,
             height: immagine.height,
             size: immagine.size,
             uploadedAt: immagine.uploadedAt ? immagine.uploadedAt : firebase.firestore.FieldValue.serverTimestamp(),
             
             exifData: immagine.exifDatas ? exifHelperTo(immagine.exifDatas) : null,
-            classifier: immagine.classificatore ? classificatoreHelperTo(immagine.classificatore) : null
+            classifier: immagine.classificatore ? classificatoreHelperTo(immagine.classificatore) : null,
+            adjustment: immagine.adjustment ? adjustmentHelper(immagine.adjustment) : null
         }
     },
     fromFirestore: (snapshot, options) => {
         const data = snapshot.data(options)
-        let out = new Immagine('') /* data.src */    // indicare realUrl > url   come src
+        let out = new Immagine('')      // indicare realUrl > url   come src
         out.imgID = snapshot.id
 
         out.nomeFile = data.nomeFile
@@ -108,7 +110,6 @@ export const immagineConverter = {
         out.alt = snapshot.alt
         out.catalogoID = data.catalogoID
         out.createdAt = data.createdAt
-        out.adjustmentID = data.adjustmentID
         out.width = data.width
         out.height = data.height
         out.size = data.size
@@ -118,6 +119,8 @@ export const immagineConverter = {
             out.exifDatas = data.exifData as Exif
         if(data.classifier)
             out.classificatore = data.classifier.map( dat => dat as Classification )
+        if(data.adjustment)
+            out.adjustment = data.adjustment as Adjustment
 
         return out
     }
@@ -180,4 +183,29 @@ function exifHelperTo( ex : Exif){
     helper.Artist = checkExist_stringfy( ex.Artist )
 
     return helper
+}
+
+function adjustmentHelper(adj : Adjustment){
+    return {
+        saturation : alsoEmpty(adj.saturation),
+        contrast : alsoEmpty(adj.contrast),
+        brightness : alsoEmpty(adj.brightness),
+        temperature : alsoEmpty(adj.temperature),
+        vignetting : alsoEmpty(adj.vignetting),
+        lut : adj.lut ? lutHelper(adj.lut) : null,
+        overlayColA : alsoEmpty(adj.overlayColA),
+        overlayColB : alsoEmpty(adj.overlayColB),
+        overlayFusion : alsoEmpty(adj.overlayFusion),
+        overlayGradient : alsoEmpty(adj.overlayGradient),
+        rotation : alsoEmpty(adj.rotation),
+    } as Adjustment
+}
+
+function lutHelper(lut : LUT){
+    return {
+        name : lut.name,
+        url : lut.url,
+        invert : lut.invert,
+        opacity : lut.opacity,
+    } as LUT;
 }
