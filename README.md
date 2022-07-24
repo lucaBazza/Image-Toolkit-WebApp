@@ -1,17 +1,36 @@
-# Pic Kit
+# [PicKit.app](https://image-toolkit-app.web.app/)
 
-![AppThumb](https://github.com/lucaBazza/Image-Toolkit-WebApp/blob/testing/src/assets/Thumbnail-ImageToolkitApp-v0.jpg?raw=true)
+Image editor native for the web.
 
-WebApp che permette di gestire un catalogo di immagini caricate dall'utente, modificando metadata ed esportando con watermark, stich panorama, re-frame con differenti dimensioni.
+![AppThumb](https://raw.githubusercontent.com/lucaBazza/Image-Toolkit-WebApp/master/others/screenshots/20220724-screen.webp
 
-.
+## Features
+- 🔍 Catalog images combining ML classification and exif metadatas
 
-> [image-toolkit-app.web.app](https://image-toolkit-app.web.app/)
+- 🎨 Color grading with LUTs, filters and noise algorithm, powered by WebGL direcly on your device 
 
-.
+- ✂️ Crop, resize, add watermark and description based on image subject
 
+- 📸 Integration with Photoshop with custom script compiler
 
-### Project setup
+- 📲 Mobile first
+
+- 🌎 Public showcase gallery
+
+- 🔌 PWA Offline mode
+
+- 🏎 FAST local image caching 50 RAW A7iii catalog in 43ms
+
+## Tech stack
+
+- Vue3
+- Typescript
+- Firebase
+- WebGL + Three.js
+- Ml5, fork of Tensorflow.js
+- PWA
+
+## Project setup
 ```
     npm install  ||   npm ci
 ```
@@ -29,9 +48,8 @@ WebApp che permette di gestire un catalogo di immagini caricate dall'utente, mod
 ### Build and serve locally in production mode
 ```
     npm run build && serve -s dist
-
-    or
-
+```
+```
     firebase serve -o 0.0.0.0
 ```
 
@@ -48,16 +66,24 @@ firebase emulators:export seed
 firebase emulators:start --import seed
 ```
 
+---
+## Features in development
+
+- Dockerization (frontend + firebase emulator + raspbarry porting)
+
+- Face Api
+
+- Custom LUT uploading
+
+- More customizable public galleries
+
+- Premium user plans
+
+
 .
 
----
-# TODOs
 
-Dockerization (frontend + firebase emulator + raspbarry porting)
-
----
-
-# Note varie
+## Misc
 
 PWA > Apple Icon Scaling using ffmpeg
 ```js
@@ -77,8 +103,6 @@ done;
 
 ```
 
-.
-
 fix porte rimaste aperte
 ```
 sudo lsof -i :3000  //Find Pid
@@ -88,7 +112,6 @@ lsof -t -i :8081 | xargs kill -9
 
 ```
 
-.
 
 Note: for ML classifier is needed to get for each classification a GET of the image => crossOrigin = anonymus, check firebase service CORS policy
 
@@ -113,7 +136,7 @@ https://codepen.io/gzkdev/details/VwKqjGm
 .
 
 
-# Check addizionali installazione firebase
+# More Check for firebase installation
 
 > firebase function modules
 ```
@@ -132,11 +155,4 @@ firebase serve -o 0.0.0.0  (on local-network)
 brew install java11
 sudo ln -sfn /usr/local/opt/openjdk@11/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-11.jdk
 java -version
-```
-
----
-
-## Lints and fixes files
-```
-    npm run lint
 ```
